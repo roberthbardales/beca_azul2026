@@ -8,12 +8,13 @@
         <section class="auth-composition__form p-6 sm:p-8 lg:p-10" aria-labelledby="login-title">
             <div class="mb-8">
                 <h1 id="login-title" class="text-2xl font-bold text-[#0f172a]">Ingresar</h1>
+                <p class="mt-2 text-sm text-[#616161]">Accede al sistema de control de Beca Azul.</p>
             </div>
             <form method="post" novalidate class="space-y-5">
                 {% csrf_token %}
 
                 {% if form.non_field_errors %}
-                    <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                    <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
                         {% for error in form.non_field_errors %}
                             {{ error }}
                         {% endfor %}
@@ -22,25 +23,48 @@
 
                 <div>
                     <label for="{{ form.email.id_for_label }}" class="mb-1.5 block text-sm font-medium text-[#0f172a]">Correo electrónico</label>
-                    <input type="email" name="{{ form.email.html_name }}" id="{{ form.email.id_for_label }}" value="{{ form.email.value|default:'' }}"{% if form.email.errors %} aria-invalid="true" aria-describedby="{{ form.email.id_for_label }}-errors"{% endif %}
-                           class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#00B0F0] focus:outline-none focus:ring-2 focus:ring-[#00B0F0]/30" required>
+                    <input type="email" name="{{ form.email.html_name }}" id="{{ form.email.id_for_label }}" value="{{ form.email.value|default:'' }}" autocomplete="email" autofocus{% if form.email.errors %} aria-invalid="true" aria-describedby="{{ form.email.id_for_label }}-errors"{% endif %}
+                           class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm caret-[#0F6FC6] focus:border-[#0F6FC6] focus:outline-none focus:ring-2 focus:ring-[#0F6FC6]/30" required>
                     {% for error in form.email.errors %}
-                        <div id="{{ form.email.id_for_label }}-errors" class="mt-1 text-sm text-red-600">{{ error }}</div>
+                        <div id="{{ form.email.id_for_label }}-errors" class="mt-1 text-sm text-red-600" role="alert">{{ error }}</div>
                     {% endfor %}
                 </div>
 
                 <div>
                     <label for="{{ form.password.id_for_label }}" class="mb-1.5 block text-sm font-medium text-[#0f172a]">Contraseña</label>
-                    <input type="password" name="{{ form.password.html_name }}" id="{{ form.password.id_for_label }}"{% if form.password.errors %} aria-invalid="true" aria-describedby="{{ form.password.id_for_label }}-errors"{% endif %}
-                           class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#00B0F0] focus:outline-none focus:ring-2 focus:ring-[#00B0F0]/30" required>
+                    <div class="relative">
+                        <input type="password" name="{{ form.password.html_name }}" id="{{ form.password.id_for_label }}" autocomplete="current-password"{% if form.password.errors %} aria-invalid="true" aria-describedby="{{ form.password.id_for_label }}-errors"{% endif %}
+                               class="w-full rounded-lg border border-gray-300 py-2 pl-3 pr-12 text-sm caret-[#0F6FC6] focus:border-[#0F6FC6] focus:outline-none focus:ring-2 focus:ring-[#0F6FC6]/30" required>
+                        <button type="button" id="toggle-password" class="absolute inset-y-0 right-0 inline-flex w-11 items-center justify-center rounded-r-lg text-[#616161] hover:text-[#0F6FC6] focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#0F6FC6]" aria-label="Mostrar contraseña" aria-pressed="false">
+                            <svg id="password-eye" class="h-5 w-5" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="2.5"/></svg>
+                        </button>
+                    </div>
                     {% for error in form.password.errors %}
-                        <div id="{{ form.password.id_for_label }}-errors" class="mt-1 text-sm text-red-600">{{ error }}</div>
+                        <div id="{{ form.password.id_for_label }}-errors" class="mt-1 text-sm text-red-600" role="alert">{{ error }}</div>
                     {% endfor %}
                 </div>
 
-                <button class="w-full rounded-lg bg-[#0F6FC6] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#0A5CA3]" type="submit">Entrar</button>
+                <button class="w-full rounded-lg bg-[#0F6FC6] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#0A5CA3] focus:outline-none focus:ring-2 focus:ring-[#0F6FC6] focus:ring-offset-2" type="submit">Entrar</button>
             </form>
         </section>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    (function () {
+        var toggle = document.getElementById('toggle-password');
+        var password = document.getElementById('{{ form.password.id_for_label }}');
+        if (!toggle || !password) return;
+
+        toggle.addEventListener('click', function () {
+            var visible = password.type === 'password';
+            password.type = visible ? 'text' : 'password';
+            toggle.setAttribute('aria-pressed', String(visible));
+            toggle.setAttribute('aria-label', visible ? 'Ocultar contraseña' : 'Mostrar contraseña');
+        });
+
+    })();
+</script>
 {% endblock %}

@@ -28,7 +28,9 @@
             </div>
         </main>
 
-        {% include 'include/footer.html' %}
+        {% if request.path == '/' %}
+            {% include 'include/footer.html' %}
+        {% endif %}
     </div>
 
     <script>

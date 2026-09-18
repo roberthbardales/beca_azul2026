@@ -51,6 +51,8 @@ class LoginUser(FormView):
             form.add_error(None, 'Email o contraseña incorrectos.')
             return self.form_invalid(form)
         messages.success(self.request, f'Bienvenido, {user.first_name}.')
+        if user.role == User.GARITA:
+            return redirect('app_control:empresa_buscar')
         return super().form_valid(form)
 
 

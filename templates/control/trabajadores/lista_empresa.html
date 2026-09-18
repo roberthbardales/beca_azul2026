@@ -58,8 +58,7 @@
                 <td data-label="DNI" class="px-3 py-1 text-sm font-medium">{{ trabajador.dni }}</td>
                 <td data-label="Nombre" class="px-3 py-1 text-sm">{{ trabajador.apellidos }}, {{ trabajador.nombres }}</td>
                 <td data-label="Cargo" class="px-3 py-1 text-sm">
-                    {{ trabajador.cargo|default:'-' }}
-                    {% if trabajador.area %}<div class="text-xs text-[#A5A5A5]">{{ trabajador.area }}</div>{% endif %}
+                     {{ trabajador.cargo|default:'-' }}
                 </td>
                 <td data-label="Certificados" class="px-3 py-1 text-sm">{{ trabajador.certificados_count }}</td>
                 <td data-label="Estado del trabajador" class="px-3 py-1 text-sm">

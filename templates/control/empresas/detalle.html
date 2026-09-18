@@ -83,7 +83,7 @@
 <footer class="control-action-bar flex items-center gap-2 border-t border-gray-100 pt-5">
 <a class="text-sm font-medium text-[#0F6FC6] hover:underline" href="{% url 'app_control:empresa_lista' %}">Volver a empresas</a>
 {% if request.user.role == '1' %}
-<a class="rounded-md bg-[#0F6FC6] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#0A5CA3]" href="{% url 'app_control:trabajador_crear' %}">Nuevo trabajador</a>
+<a class="control-primary-button rounded-md bg-[#0F6FC6] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#0A5CA3]" href="{% url 'app_control:trabajador_crear' %}">Nuevo trabajador</a>
 {% endif %}
 </footer>
 </div>

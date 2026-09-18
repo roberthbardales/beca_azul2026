@@ -3,17 +3,17 @@
 {% block title %}Empresa | Control{% endblock %}
 
 {% block content %}
-<div class="control-form-page flex justify-center">
+<div class="flex justify-center py-2">
     <div class="w-full max-w-4xl">
         <div class="rounded-xl border border-gray-100 bg-white p-5 shadow-sm sm:p-6">
-            <header class="control-page-header mb-6 flex flex-col gap-3 border-b border-gray-100 pb-5 sm:flex-row sm:items-center sm:justify-between">
+            <header class="control-page-header mb-6 flex flex-col gap-3 border-b border-gray-100 pb-5 sm:flex-row sm:items-start sm:justify-between">
                 <div><h1 class="text-xl font-bold text-[#0f172a]">
                     {% if object %}Editar empresa{% else %}Nueva empresa{% endif %}
                 </h1></div>
                 <a class="text-sm font-medium text-[#0F6FC6] hover:underline" href="{% url 'app_control:empresa_lista' %}">Volver</a>
             </header>
 
-            <form method="post" novalidate class="space-y-5">
+            <form method="post" novalidate class="space-y-3">
                 {% csrf_token %}
 
                 {% if form.non_field_errors %}

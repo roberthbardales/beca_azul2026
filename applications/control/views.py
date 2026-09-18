@@ -2,6 +2,7 @@ from datetime import date, timedelta
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import PermissionDenied
 from django.db.models import Count, Q
 from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -29,6 +30,8 @@ class DashboardView(LoginRequiredMixin, View):
     template_name = 'users/dashboard.html'
 
     def get(self, request):
+        if request.user.role == User.GARITA:
+            raise PermissionDenied
         if request.user.role == '3':
             return redirect('app_control:trabajador_empresa_lista')
         hoy = date.today()
@@ -52,6 +55,10 @@ class DashboardView(LoginRequiredMixin, View):
             fecha_vencimiento__gte=hoy, fecha_vencimiento__lte=limite_60
         ).count()
 
+        trabajadores_por_empresa = list(
+            Empresa.objects.annotate(total=Count('trabajadores', distinct=True)).order_by('nombre')
+        )
+
         context = {
             'total_empresas': total_empresas,
             'empresas_activas': empresas_activas,
@@ -65,9 +72,9 @@ class DashboardView(LoginRequiredMixin, View):
             'certificados_vencidos': certificados_vencidos,
             'certificados_proximos_30': certificados_proximos_30,
             'certificados_proximos_60': certificados_proximos_60,
-            'trabajadores_por_empresa': (
-                Empresa.objects.annotate(total=Count('trabajadores', distinct=True)).order_by('nombre')
-            ),
+            'trabajadores_por_empresa': trabajadores_por_empresa,
+            'grafica_empresas_labels': [empresa.nombre for empresa in trabajadores_por_empresa],
+            'grafica_empresas_datos': [empresa.total for empresa in trabajadores_por_empresa],
             'trabajadores_recientes': (
                 Trabajador.objects.select_related('empresa').order_by('-created')[:5]
             ),
@@ -91,7 +98,7 @@ class EmpresaListView(VerEmpresasMixin, ListView):
         queryset = Empresa.objects.annotate(
             total_trabajadores=Count('trabajadores', distinct=True),
             total_usuarios=Count('usuarios', distinct=True),
-        ).order_by('-habilitado', '-created')
+        ).order_by('-activo', 'nombre')
         q = self.request.GET.get('q', '').strip()
         if q:
             queryset = queryset.filter(
@@ -121,7 +128,7 @@ class EmpresaBuscarView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         queryset = Empresa.objects.annotate(
             total_trabajadores=Count('trabajadores', distinct=True)
-        ).order_by('nombre')
+        ).order_by('-habilitado', 'nombre')
         q = self.request.GET.get('q', '').strip()
         if q:
             queryset = queryset.filter(
@@ -234,7 +241,6 @@ class TrabajadorListView(VerTrabajadoresMixin, ListView):
         'nombre': ('apellidos', 'nombres'),
         'empresa': ('empresa__nombre', 'apellidos', 'nombres'),
         'cargo': ('cargo', 'apellidos', 'nombres'),
-        'area': ('area', 'apellidos', 'nombres'),
         'certificados': ('certificados_count', 'apellidos', 'nombres'),
         'estado': ('estado', 'apellidos', 'nombres'),
     }
@@ -288,7 +294,6 @@ class TrabajadorListView(VerTrabajadoresMixin, ListView):
             'nombre': 'Nombre completo',
             'empresa': 'Empresa',
             'cargo': 'Cargo',
-            'area': 'Area',
             'certificados': 'Certificados',
             'estado': 'Estado del trabajador',
         })
@@ -306,7 +311,11 @@ class TrabajadorBuscarView(LoginRequiredMixin, View):
             queryset = Trabajador.objects.select_related('empresa')
             if request.user.role == User.USUARIO_EMPRESA:
                 queryset = queryset.filter(empresa=request.user.empresa)
-            queryset = queryset.filter(dni=q)
+            queryset = queryset.filter(
+                Q(dni__icontains=q)
+                | Q(nombres__icontains=q)
+                | Q(apellidos__icontains=q)
+            )
             resultados = queryset.count()
             if resultados == 1:
                 trabajador = queryset.first()
@@ -550,7 +559,6 @@ class TrabajadorEmpresaListView(TrabajadorEmpresaPermisoMixin, ListView):
             'dni': ('dni',),
             'nombre': ('apellidos', 'nombres'),
             'cargo': ('cargo', 'apellidos', 'nombres'),
-            'area': ('area', 'apellidos', 'nombres'),
             'certificados': ('certificados_count', 'apellidos', 'nombres'),
             'estado': ('estado', 'apellidos', 'nombres'),
         }
@@ -576,7 +584,6 @@ class TrabajadorEmpresaListView(TrabajadorEmpresaPermisoMixin, ListView):
             'dni': 'DNI',
             'nombre': 'Nombre completo',
             'cargo': 'Cargo',
-            'area': 'Area',
             'certificados': 'Certificados',
             'estado': 'Estado del trabajador',
         })

@@ -13,7 +13,7 @@
 <form method="get" action="{% url 'app_control:trabajador_lista' %}" class="control-filter trabajador-filter mb-5 grid gap-3 rounded-xl border border-gray-100 bg-white p-4 shadow-sm sm:grid-cols-2 lg:grid-cols-4" role="search">
     <div class="sm:col-span-2">
         <label class="sr-only" for="trabajadores-q">Buscar trabajadores</label>
-        <input id="trabajadores-q" type="search" name="q" value="{{ q }}" placeholder="Buscar por DNI, nombre, cargo, área o empresa..." class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#0F6FC6] focus:outline-none">
+        <input id="trabajadores-q" type="search" name="q" value="{{ q }}" placeholder="Buscar por DNI, nombre, cargo, área o empresa..." class="w-full lg:w-11/12 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#0F6FC6] focus:outline-none">
     </div>
     <div>
         <label class="sr-only" for="trabajadores-estado">Estado</label>
@@ -68,8 +68,7 @@
                 <td data-label="Nombre" class="px-5 py-3 text-sm">{{ trabajador.apellidos }}, {{ trabajador.nombres }}</td>
                 <td data-label="Empresa" class="px-5 py-3 text-sm">{{ trabajador.empresa.nombre }}</td>
                 <td data-label="Cargo" class="px-5 py-3 text-sm">
-                    {{ trabajador.cargo|default:'-' }}
-                    {% if trabajador.area %}<div class="text-xs text-[#A5A5A5]">{{ trabajador.area }}</div>{% endif %}
+                     {{ trabajador.cargo|default:'-' }}
                 </td>
                 <td data-label="Certificados" class="px-5 py-3 text-sm">{{ trabajador.certificados_count }}</td>
                 <td data-label="Estado del trabajador" class="px-5 py-3 text-sm">

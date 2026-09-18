@@ -37,11 +37,11 @@ class AdministrarEmpresasMixin(BaseRolePermisoMixin):
 
 
 class VerTrabajadoresMixin(BaseRolePermisoMixin):
-    required_roles = (User.ADMINISTRADOR, User.BECA_AZUL)
+    required_roles = (User.ADMINISTRADOR, User.BECA_AZUL, User.GARITA)
 
 
 class VerTrabajadorDetalleMixin(BaseRolePermisoMixin):
-    required_roles = (User.ADMINISTRADOR, User.BECA_AZUL, User.PLANTA)
+    required_roles = (User.ADMINISTRADOR, User.BECA_AZUL, User.PLANTA, User.GARITA)
 
 
 class AdministrarTrabajadoresMixin(BaseRolePermisoMixin):

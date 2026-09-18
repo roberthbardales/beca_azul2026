@@ -1,10 +1,17 @@
 LISTA DE USUARIOS DEL SISTEMA
 ==========================================================
 
-ID   NOMBRE                   EMAIL                         ROL
-1    Admin Principal          administrador@gmail.com       Administrador
-21   ejemplo jimenez          ejemplo@gmail.com             Usuario Empresa
-5    Garita Acceso            garita@gmail.com              Usuario Garita
-6    pepe ramos               pepito@gmail.com              Usuario Planta
-2    ReBeca Azul Sanchez      beca_azul@gmail.com           Beca Azul
-20   russell bardales         roberthbardales@gmail.com     Superusuario
+ID   NOMBRE                   EMAIL                          ROL
+
+21   ejemplo jimenez          ejemplo@gmail.com             Usuario Empresa  S0p0rt3123 
+5    Garita Acceso            garita@gmail.com              Usuario Garita   admin
+6    manuel ramirez           manuelito@gmail.com           Usuario Planta    S0p0rt3123 
+2    ReBeca Azul Sanchez      beca_azul@gmail.com           Beca Azul         admin
+  
+
+
+ Administrador: morado
+- Beca Azul: azul
+- Usuario Empresa: verde azulado
+- Planta: ámbar
+- Garita y otros roles: gris pizarra
