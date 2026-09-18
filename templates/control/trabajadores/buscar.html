@@ -1,0 +1,50 @@
+{% extends 'base.html' %}{% block title %}Buscar trabajador | Control{% endblock %}{% block content %}
+<div class="flex justify-center"><div class="w-full max-w-2xl space-y-6">
+<div class="rounded-xl border border-gray-100 bg-white p-6 shadow-sm sm:p-8">
+<h1 class="mb-6 text-2xl font-bold text-[#0f172a]">Buscar trabajador</h1>
+<form method="get" class="flex gap-2">
+<input type="text" name="q" value="{{ q }}" placeholder="N° de documento (DNI)..." autofocus
+       class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#00B0F0] focus:outline-none focus:ring-2 focus:ring-[#00B0F0]/30">
+<button class="shrink-0 rounded-lg bg-[#0F6FC6] px-4 py-2 text-sm font-semibold text-white hover:bg-[#0A5CA3]" type="submit">Buscar</button>
+</form>
+</div>
+
+{% if q %}
+{% if trabajador %}
+<div class="rounded-xl border border-gray-100 bg-white p-6 shadow-sm sm:p-8">
+<div class="mb-4 flex items-center justify-between">
+<div>
+<h2 class="text-xl font-bold text-[#0f172a]">{{ trabajador.nombres }} {{ trabajador.apellidos }}</h2>
+<p class="text-sm text-[#A5A5A5]">{{ trabajador.empresa }}</p>
+</div>
+<span class="inline-block rounded-full px-2 py-0.5 text-xs font-medium {% if trabajador.estado == 'HABILITADO' %}bg-green-100 text-green-700{% elif trabajador.estado == 'RECHAZADO' %}bg-red-100 text-red-700{% else %}bg-yellow-100 text-yellow-700{% endif %}">{{ trabajador.get_estado_display }}</span>
+</div>
+<div class="rounded-xl border border-gray-100 bg-white">
+<table class="w-full text-sm">
+<tbody class="divide-y divide-gray-100">
+<tr class="bg-white"><th class="w-1/3 px-4 py-2 text-left text-xs font-semibold text-[#A5A5A5]">Tipo de documento</th><td class="px-4 py-2 font-medium">{{ trabajador.get_tipo_documento_display }}</td></tr>
+<tr class="bg-gray-50"><th class="px-4 py-2 text-left text-xs font-semibold text-[#A5A5A5]">N° de documento</th><td class="px-4 py-2 font-medium">{{ trabajador.dni }}</td></tr>
+<tr class="bg-white"><th class="px-4 py-2 text-left text-xs font-semibold text-[#A5A5A5]">Empresa</th><td class="px-4 py-2 font-medium">{{ trabajador.empresa }}</td></tr>
+<tr class="bg-gray-50"><th class="px-4 py-2 text-left text-xs font-semibold text-[#A5A5A5]">Cargo</th><td class="px-4 py-2 font-medium">{{ trabajador.cargo|default:'-' }}</td></tr>
+<tr class="bg-white"><th class="px-4 py-2 text-left text-xs font-semibold text-[#A5A5A5]">Área</th><td class="px-4 py-2 font-medium">{{ trabajador.area|default:'-' }}</td></tr>
+<tr class="bg-gray-50"><th class="px-4 py-2 text-left text-xs font-semibold text-[#A5A5A5]">Teléfono</th><td class="px-4 py-2 font-medium">{{ trabajador.telefono|default:'-' }}</td></tr>
+<tr class="bg-white"><th class="px-4 py-2 text-left text-xs font-semibold text-[#A5A5A5]">Fecha de nacimiento</th><td class="px-4 py-2 font-medium">{{ trabajador.fecha_nacimiento|date:'d/m/Y'|default:'-' }}</td></tr>
+</tbody>
+</table>
+</div>
+{% if puede_ver_detalle %}
+<div class="mt-4"><a class="rounded-md border border-[#0F6FC6] px-3 py-1.5 text-xs font-medium text-[#0F6FC6] hover:bg-[#0F6FC6]/10" href="{% if es_empresa %}{% url 'app_control:trabajador_empresa_detalle' trabajador.pk %}{% else %}{% url 'app_control:trabajador_detalle' trabajador.pk %}{% endif %}">Ver detalle completo</a></div>
+{% endif %}
+</div>
+{% elif resultados > 1 %}
+<div class="rounded-xl border border-gray-100 bg-white p-6 text-sm text-[#A5A5A5] shadow-sm">
+Hay {{ resultados }} coincidencias. Refina la búsqueda con más datos del trabajador.
+</div>
+{% else %}
+<div class="rounded-xl border border-gray-100 bg-white p-6 text-sm text-[#A5A5A5] shadow-sm">
+No se encontró ningún trabajador con "{{ q }}".
+</div>
+{% endif %}
+{% endif %}
+</div></div>
+{% endblock %}

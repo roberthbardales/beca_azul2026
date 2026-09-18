@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block title %}Empresa | Control{% endblock %}
+
+{% block content %}
+<div class="flex justify-center">
+    <div class="w-full max-w-4xl">
+        <div class="rounded-xl border border-gray-100 bg-white p-5 shadow-sm sm:p-6">
+            <div class="mb-5 flex items-center justify-between">
+                <h1 class="text-xl font-bold text-[#0f172a]">
+                    {% if object %}Editar empresa{% else %}Nueva empresa{% endif %}
+                </h1>
+                <a class="text-sm font-medium text-[#0F6FC6] hover:underline" href="{% url 'app_control:empresa_lista' %}">Volver</a>
+            </div>
+
+            <form method="post" novalidate class="space-y-3">
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                    <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                        {% for error in form.non_field_errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <div class="grid gap-3 sm:grid-cols-3">
+                    <div>
+                        <label for="{{ form.nombre.id_for_label }}" class="mb-1 block text-xs font-medium text-[#0f172a]">Nombre</label>
+                        <input type="text" name="{{ form.nombre.html_name }}" id="{{ form.nombre.id_for_label }}" value="{{ form.nombre.value|default:'' }}"
+                               class="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-[#00B0F0] focus:outline-none focus:ring-2 focus:ring-[#00B0F0]/30" required>
+                        {% for error in form.nombre.errors %}
+                            <div class="mt-1 text-xs text-red-600">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    <div>
+                        <label for="{{ form.ruc.id_for_label }}" class="mb-1 block text-xs font-medium text-[#0f172a]">RUC</label>
+                        <input type="text" name="{{ form.ruc.html_name }}" id="{{ form.ruc.id_for_label }}" value="{{ form.ruc.value|default:'' }}"
+                               class="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-[#00B0F0] focus:outline-none focus:ring-2 focus:ring-[#00B0F0]/30" required>
+                        {% for error in form.ruc.errors %}
+                            <div class="mt-1 text-xs text-red-600">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    <div>
+                        <label for="{{ form.telefono.id_for_label }}" class="mb-1 block text-xs font-medium text-[#0f172a]">Teléfono</label>
+                        <input type="text" name="{{ form.telefono.html_name }}" id="{{ form.telefono.id_for_label }}" value="{{ form.telefono.value|default:'' }}"
+                               class="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-[#00B0F0] focus:outline-none focus:ring-2 focus:ring-[#00B0F0]/30">
+                        {% for error in form.telefono.errors %}
+                            <div class="mt-1 text-xs text-red-600">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="grid gap-3 sm:grid-cols-2">
+                    <div>
+                        <label for="{{ form.direccion.id_for_label }}" class="mb-1 block text-xs font-medium text-[#0f172a]">Dirección</label>
+                        <input type="text" name="{{ form.direccion.html_name }}" id="{{ form.direccion.id_for_label }}" value="{{ form.direccion.value|default:'' }}"
+                               class="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-[#00B0F0] focus:outline-none focus:ring-2 focus:ring-[#00B0F0]/30">
+                        {% for error in form.direccion.errors %}
+                            <div class="mt-1 text-xs text-red-600">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    <div>
+                        <label for="{{ form.email.id_for_label }}" class="mb-1 block text-xs font-medium text-[#0f172a]">Correo electrónico</label>
+                        <input type="email" name="{{ form.email.html_name }}" id="{{ form.email.id_for_label }}" value="{{ form.email.value|default:'' }}"
+                               class="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-[#00B0F0] focus:outline-none focus:ring-2 focus:ring-[#00B0F0]/30">
+                        {% for error in form.email.errors %}
+                            <div class="mt-1 text-xs text-red-600">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <input type="checkbox" name="{{ form.activo.html_name }}" id="{{ form.activo.id_for_label }}"
+                           {% if form.activo.value %}checked{% endif %}
+                           class="h-4 w-4 rounded border-gray-300 text-[#0F6FC6] focus:ring-[#00B0F0]">
+                    <label for="{{ form.activo.id_for_label }}" class="text-sm font-medium text-[#0f172a]">Activo</label>
+                    {% for error in form.activo.errors %}
+                        <div class="mt-1 text-sm text-red-600">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="flex items-center gap-3 pt-1">
+                    <button class="rounded-lg bg-[#0F6FC6] px-4 py-2 text-sm font-semibold text-white hover:bg-[#0A5CA3]" type="submit">
+                        {% if object %}Actualizar{% else %}Crear empresa{% endif %}
+                    </button>
+                    <a class="text-sm font-medium text-[#A5A5A5] hover:underline" href="{% url 'app_control:empresa_lista' %}">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

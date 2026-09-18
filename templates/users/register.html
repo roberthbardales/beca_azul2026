@@ -22,7 +22,7 @@
                     <div>
                         <label for="{{ form.first_name.id_for_label }}" class="mb-1 block text-sm font-medium text-[#0f172a]">Nombres</label>
                         <input type="text" name="{{ form.first_name.html_name }}" id="{{ form.first_name.id_for_label }}" value="{{ form.first_name.value|default:'' }}"
-                               class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/30" required>
+                               class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#00B0F0] focus:outline-none focus:ring-2 focus:ring-[#00B0F0]/30" required>
                         {% for error in form.first_name.errors %}
                             <div class="mt-1 text-sm text-red-600">{{ error }}</div>
                         {% endfor %}
@@ -30,7 +30,7 @@
                     <div>
                         <label for="{{ form.last_name.id_for_label }}" class="mb-1 block text-sm font-medium text-[#0f172a]">Apellidos</label>
                         <input type="text" name="{{ form.last_name.html_name }}" id="{{ form.last_name.id_for_label }}" value="{{ form.last_name.value|default:'' }}"
-                               class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/30" required>
+                               class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#00B0F0] focus:outline-none focus:ring-2 focus:ring-[#00B0F0]/30" required>
                         {% for error in form.last_name.errors %}
                             <div class="mt-1 text-sm text-red-600">{{ error }}</div>
                         {% endfor %}
@@ -40,7 +40,7 @@
                 <div>
                     <label for="{{ form.email.id_for_label }}" class="mb-1 block text-sm font-medium text-[#0f172a]">Correo electrónico</label>
                     <input type="email" name="{{ form.email.html_name }}" id="{{ form.email.id_for_label }}" value="{{ form.email.value|default:'' }}"
-                           class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/30" required>
+                           class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#00B0F0] focus:outline-none focus:ring-2 focus:ring-[#00B0F0]/30" required>
                     {% for error in form.email.errors %}
                         <div class="mt-1 text-sm text-red-600">{{ error }}</div>
                     {% endfor %}
@@ -48,26 +48,38 @@
 
                 <div class="grid gap-4 sm:grid-cols-2">
                     <div>
-                        <label for="{{ form.occupation.id_for_label }}" class="mb-1 block text-sm font-medium text-[#0f172a]">Ocupación</label>
-                        <select name="{{ form.occupation.html_name }}" id="{{ form.occupation.id_for_label }}"
-                                class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/30">
-                            {% for value, label in form.fields.occupation.choices %}
-                                <option value="{{ value }}" {% if form.occupation.value == value %}selected{% endif %}>{{ label }}</option>
+                        <label for="{{ form.role.id_for_label }}" class="mb-1 block text-sm font-medium text-[#0f172a]">Rol</label>
+                        <select name="{{ form.role.html_name }}" id="{{ form.role.id_for_label }}"
+                                class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#00B0F0] focus:outline-none focus:ring-2 focus:ring-[#00B0F0]/30">
+                            {% for value, label in form.fields.role.choices %}
+                                <option value="{{ value }}" {% if form.role.value == value %}selected{% endif %}>{{ label }}</option>
                             {% endfor %}
                         </select>
-                        {% for error in form.occupation.errors %}
+                        {% for error in form.role.errors %}
                             <div class="mt-1 text-sm text-red-600">{{ error }}</div>
                         {% endfor %}
                     </div>
                     <div>
                         <label for="{{ form.gender.id_for_label }}" class="mb-1 block text-sm font-medium text-[#0f172a]">Género</label>
                         <select name="{{ form.gender.html_name }}" id="{{ form.gender.id_for_label }}"
-                                class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/30">
+                                class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#00B0F0] focus:outline-none focus:ring-2 focus:ring-[#00B0F0]/30">
                             {% for value, label in form.fields.gender.choices %}
                                 <option value="{{ value }}" {% if form.gender.value == value %}selected{% endif %}>{{ label }}</option>
                             {% endfor %}
                         </select>
                         {% for error in form.gender.errors %}
+                            <div class="mt-1 text-sm text-red-600">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    <div>
+                        <label for="{{ form.empresa.id_for_label }}" class="mb-1 block text-sm font-medium text-[#0f172a]">Empresa</label>
+                        <select name="{{ form.empresa.html_name }}" id="{{ form.empresa.id_for_label }}"
+                                class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#00B0F0] focus:outline-none focus:ring-2 focus:ring-[#00B0F0]/30">
+                            {% for value, label in form.fields.empresa.choices %}
+                                <option value="{{ value }}" {% if form.empresa.value|stringformat:"s" == value|stringformat:"s" %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                        {% for error in form.empresa.errors %}
                             <div class="mt-1 text-sm text-red-600">{{ error }}</div>
                         {% endfor %}
                     </div>
@@ -77,7 +89,7 @@
                     <div>
                         <label for="{{ form.phone.id_for_label }}" class="mb-1 block text-sm font-medium text-[#0f172a]">Celular</label>
                         <input type="text" name="{{ form.phone.html_name }}" id="{{ form.phone.id_for_label }}" value="{{ form.phone.value|default:'' }}"
-                               class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/30">
+                               class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#00B0F0] focus:outline-none focus:ring-2 focus:ring-[#00B0F0]/30">
                         {% for error in form.phone.errors %}
                             <div class="mt-1 text-sm text-red-600">{{ error }}</div>
                         {% endfor %}
@@ -85,7 +97,7 @@
                     <div>
                         <label for="{{ form.date_birth.id_for_label }}" class="mb-1 block text-sm font-medium text-[#0f172a]">Fecha de nacimiento</label>
                         <input type="date" name="{{ form.date_birth.html_name }}" id="{{ form.date_birth.id_for_label }}" value="{{ form.date_birth.value|default:'' }}"
-                               class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/30">
+                               class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#00B0F0] focus:outline-none focus:ring-2 focus:ring-[#00B0F0]/30">
                         {% for error in form.date_birth.errors %}
                             <div class="mt-1 text-sm text-red-600">{{ error }}</div>
                         {% endfor %}
@@ -96,7 +108,7 @@
                     <div>
                         <label for="{{ form.password1.id_for_label }}" class="mb-1 block text-sm font-medium text-[#0f172a]">Contraseña</label>
                         <input type="password" name="{{ form.password1.html_name }}" id="{{ form.password1.id_for_label }}"
-                               class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/30" required>
+                               class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#00B0F0] focus:outline-none focus:ring-2 focus:ring-[#00B0F0]/30" required>
                         {% for error in form.password1.errors %}
                             <div class="mt-1 text-sm text-red-600">{{ error }}</div>
                         {% endfor %}
@@ -104,19 +116,19 @@
                     <div>
                         <label for="{{ form.password2.id_for_label }}" class="mb-1 block text-sm font-medium text-[#0f172a]">Confirmar contraseña</label>
                         <input type="password" name="{{ form.password2.html_name }}" id="{{ form.password2.id_for_label }}"
-                               class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/30" required>
+                               class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#00B0F0] focus:outline-none focus:ring-2 focus:ring-[#00B0F0]/30" required>
                         {% for error in form.password2.errors %}
                             <div class="mt-1 text-sm text-red-600">{{ error }}</div>
                         {% endfor %}
                     </div>
                 </div>
 
-                <button class="w-full rounded-lg bg-[#2563eb] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#1d4ed8]" type="submit">Registrarme</button>
+                <button class="w-full rounded-lg bg-[#0F6FC6] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#0A5CA3]" type="submit">Registrarme</button>
             </form>
 
-            <p class="mt-4 text-center text-sm text-[#64748b]">
+            <p class="mt-4 text-center text-sm text-[#A5A5A5]">
                 ¿Ya tienes cuenta?
-                <a class="font-medium text-[#2563eb] hover:underline" href="{% url 'app_users:login' %}">Inicia sesión</a>
+                <a class="font-medium text-[#0F6FC6] hover:underline" href="{% url 'app_users:login' %}">Inicia sesión</a>
             </p>
         </div>
     </div>

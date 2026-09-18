@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'applications.users',
+    'applications.control',
     'applications.home',
 ]
 
@@ -152,6 +153,12 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 # --------------------------------------------------
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# --------------------------------------------------
+# CERTIFICADOS (validacion de archivos)
+# --------------------------------------------------
+CERTIF_EXTENSIONES = ['.pdf']
+CERTIF_TAMANO_MAX_MB = 5
 
 # --------------------------------------------------
 # DEFAULT PRIMARY KEY

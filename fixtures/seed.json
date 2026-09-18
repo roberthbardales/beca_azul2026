@@ -1,0 +1,6172 @@
+[
+  {
+    "model": "control.empresa",
+    "pk": 1,
+    "fields": {
+      "nombre": "Empresa Demo 01",
+      "ruc": "20100000001",
+      "direccion": "Av. Industrial 100, Lima",
+      "telefono": "900000001",
+      "email": "empresa01@demo.com",
+      "activo": true
+    }
+  },
+  {
+    "model": "control.empresa",
+    "pk": 2,
+    "fields": {
+      "nombre": "Empresa Demo 02",
+      "ruc": "20100000002",
+      "direccion": "Av. Industrial 200, Lima",
+      "telefono": "900000002",
+      "email": "empresa02@demo.com",
+      "activo": true
+    }
+  },
+  {
+    "model": "control.empresa",
+    "pk": 3,
+    "fields": {
+      "nombre": "Empresa Demo 03",
+      "ruc": "20100000003",
+      "direccion": "Av. Industrial 300, Lima",
+      "telefono": "900000003",
+      "email": "empresa03@demo.com",
+      "activo": true
+    }
+  },
+  {
+    "model": "control.empresa",
+    "pk": 4,
+    "fields": {
+      "nombre": "Empresa Demo 04",
+      "ruc": "20100000004",
+      "direccion": "Av. Industrial 400, Lima",
+      "telefono": "900000004",
+      "email": "empresa04@demo.com",
+      "activo": true
+    }
+  },
+  {
+    "model": "control.empresa",
+    "pk": 5,
+    "fields": {
+      "nombre": "Empresa Demo 05",
+      "ruc": "20100000005",
+      "direccion": "Av. Industrial 500, Lima",
+      "telefono": "900000005",
+      "email": "empresa05@demo.com",
+      "activo": true
+    }
+  },
+  {
+    "model": "control.empresa",
+    "pk": 6,
+    "fields": {
+      "nombre": "Empresa Demo 06",
+      "ruc": "20100000006",
+      "direccion": "Av. Industrial 600, Lima",
+      "telefono": "900000006",
+      "email": "empresa06@demo.com",
+      "activo": true
+    }
+  },
+  {
+    "model": "control.empresa",
+    "pk": 7,
+    "fields": {
+      "nombre": "Empresa Demo 07",
+      "ruc": "20100000007",
+      "direccion": "Av. Industrial 700, Lima",
+      "telefono": "900000007",
+      "email": "empresa07@demo.com",
+      "activo": true
+    }
+  },
+  {
+    "model": "control.empresa",
+    "pk": 8,
+    "fields": {
+      "nombre": "Empresa Demo 08",
+      "ruc": "20100000008",
+      "direccion": "Av. Industrial 800, Lima",
+      "telefono": "900000008",
+      "email": "empresa08@demo.com",
+      "activo": true
+    }
+  },
+  {
+    "model": "control.empresa",
+    "pk": 9,
+    "fields": {
+      "nombre": "Empresa Demo 09",
+      "ruc": "20100000009",
+      "direccion": "Av. Industrial 900, Lima",
+      "telefono": "900000009",
+      "email": "empresa09@demo.com",
+      "activo": true
+    }
+  },
+  {
+    "model": "control.empresa",
+    "pk": 10,
+    "fields": {
+      "nombre": "Empresa Demo 10",
+      "ruc": "20100000010",
+      "direccion": "Av. Industrial 1000, Lima",
+      "telefono": "900000010",
+      "email": "empresa10@demo.com",
+      "activo": true
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 1,
+    "fields": {
+      "password": "pbkdf2_sha256$260000$UQasKt6Yf6d2oU1oE4K0dS$AOeXfbC7Ekrv0fdLKbwUSx6uJOWDAHy2i3eN/ajc86M=",
+      "email": "administrador@gmail.com",
+      "first_name": "Admin",
+      "last_name": "Principal",
+      "role": "0",
+      "gender": "M",
+      "date_birth": "1973-09-18",
+      "phone": "920000001",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "empresa": null
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 2,
+    "fields": {
+      "password": "pbkdf2_sha256$260000$UQasKt6Yf6d2oU1oE4K0dS$AOeXfbC7Ekrv0fdLKbwUSx6uJOWDAHy2i3eN/ajc86M=",
+      "email": "beca_azul@gmail.com",
+      "first_name": "Beca",
+      "last_name": "Azul",
+      "role": "1",
+      "gender": "F",
+      "date_birth": "1976-09-17",
+      "phone": "920000002",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "empresa": null
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 3,
+    "fields": {
+      "password": "pbkdf2_sha256$260000$UQasKt6Yf6d2oU1oE4K0dS$AOeXfbC7Ekrv0fdLKbwUSx6uJOWDAHy2i3eN/ajc86M=",
+      "email": "planta@gmail.com",
+      "first_name": "Planta",
+      "last_name": "Operador",
+      "role": "2",
+      "gender": "M",
+      "date_birth": "1989-09-14",
+      "phone": "920000003",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "empresa": null
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 4,
+    "fields": {
+      "password": "pbkdf2_sha256$260000$UQasKt6Yf6d2oU1oE4K0dS$AOeXfbC7Ekrv0fdLKbwUSx6uJOWDAHy2i3eN/ajc86M=",
+      "email": "usuario_empresa@gmail.com",
+      "first_name": "Empresa",
+      "last_name": "Demo",
+      "role": "3",
+      "gender": "M",
+      "date_birth": "2004-09-10",
+      "phone": "920000004",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "empresa": 1
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 5,
+    "fields": {
+      "password": "pbkdf2_sha256$260000$UQasKt6Yf6d2oU1oE4K0dS$AOeXfbC7Ekrv0fdLKbwUSx6uJOWDAHy2i3eN/ajc86M=",
+      "email": "garita@gmail.com",
+      "first_name": "Garita",
+      "last_name": "Acceso",
+      "role": "4",
+      "gender": "M",
+      "date_birth": "1999-09-12",
+      "phone": "920000005",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "empresa": null
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 1,
+    "fields": {
+      "empresa": 1,
+      "dni": "40000000",
+      "nombres": "Rosa Raul",
+      "apellidos": "Tapia Vasquez",
+      "telefono": "950000001",
+      "cargo": "Operario de Planta",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 2,
+    "fields": {
+      "empresa": 1,
+      "dni": "40000001",
+      "nombres": "Gabriela Patricia",
+      "apellidos": "Aguilar Salazar",
+      "telefono": "950000002",
+      "cargo": "Electricista",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 3,
+    "fields": {
+      "empresa": 1,
+      "dni": "40000002",
+      "nombres": "Carlos Milagros",
+      "apellidos": "Reyes Flores",
+      "telefono": "950000003",
+      "cargo": "Auxiliar de Logistica",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 4,
+    "fields": {
+      "empresa": 1,
+      "dni": "40000003",
+      "nombres": "Natalia Camila",
+      "apellidos": "Soto Benites",
+      "telefono": "950000004",
+      "cargo": "Conductor",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 5,
+    "fields": {
+      "empresa": 1,
+      "dni": "40000004",
+      "nombres": "Hugo Mario",
+      "apellidos": "Sulca Campos",
+      "telefono": "950000005",
+      "cargo": "Inspectores de Calidad",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 6,
+    "fields": {
+      "empresa": 1,
+      "dni": "40000005",
+      "nombres": "Pedro Jorge",
+      "apellidos": "Ramirez Callata",
+      "telefono": "950000006",
+      "cargo": "Quimico de Proceso",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 7,
+    "fields": {
+      "empresa": 1,
+      "dni": "40000006",
+      "nombres": "Aldo Fernando",
+      "apellidos": "Chavez Campos",
+      "telefono": "950000007",
+      "cargo": "Tecnico de Mantenimiento",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 8,
+    "fields": {
+      "empresa": 1,
+      "dni": "40000007",
+      "nombres": "Ricardo Valeria",
+      "apellidos": "Aliaga Rios",
+      "telefono": "950000008",
+      "cargo": "Auxiliar de Logistica",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 9,
+    "fields": {
+      "empresa": 1,
+      "dni": "40000008",
+      "nombres": "Claudia Carmen",
+      "apellidos": "Quispe Rodriguez",
+      "telefono": "950000009",
+      "cargo": "Montacarguista",
+      "estado": "PENDIENTE"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 10,
+    "fields": {
+      "empresa": 1,
+      "dni": "40000009",
+      "nombres": "Milagros Renzo",
+      "apellidos": "Rodriguez Tapia",
+      "telefono": "950000010",
+      "cargo": "Montacarguista",
+      "estado": "RECHAZADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 11,
+    "fields": {
+      "empresa": 1,
+      "dni": "40000010",
+      "nombres": "Ricardo Camila",
+      "apellidos": "Cardenas Espinoza",
+      "telefono": "950000011",
+      "cargo": "Supervisor de Seguridad",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 12,
+    "fields": {
+      "empresa": 1,
+      "dni": "40000011",
+      "nombres": "Carlos Natalia",
+      "apellidos": "Cordova Silva",
+      "telefono": "950000012",
+      "cargo": "Tecnico de Mantenimiento",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 13,
+    "fields": {
+      "empresa": 1,
+      "dni": "40000012",
+      "nombres": "Raul Juan",
+      "apellidos": "Quispe Flores",
+      "telefono": "950000013",
+      "cargo": "Montacarguista",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 14,
+    "fields": {
+      "empresa": 1,
+      "dni": "40000013",
+      "nombres": "Rosa Ernesto",
+      "apellidos": "Lopez Rodriguez",
+      "telefono": "950000014",
+      "cargo": "Electricista",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 15,
+    "fields": {
+      "empresa": 1,
+      "dni": "40000014",
+      "nombres": "Brenda Mario",
+      "apellidos": "Rojas Bustamante",
+      "telefono": "950000015",
+      "cargo": "Asistente Administrativo",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 16,
+    "fields": {
+      "empresa": 1,
+      "dni": "40000015",
+      "nombres": "Brenda Hugo",
+      "apellidos": "Paredes Rivas",
+      "telefono": "950000016",
+      "cargo": "Mecanico",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 17,
+    "fields": {
+      "empresa": 1,
+      "dni": "40000016",
+      "nombres": "Carmen Victor",
+      "apellidos": "Callata Ramos",
+      "telefono": "950000017",
+      "cargo": "Operario de Planta",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 18,
+    "fields": {
+      "empresa": 1,
+      "dni": "40000017",
+      "nombres": "Oscar Maria",
+      "apellidos": "Gutierrez Huaman",
+      "telefono": "950000018",
+      "cargo": "Inspectores de Calidad",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 19,
+    "fields": {
+      "empresa": 1,
+      "dni": "40000018",
+      "nombres": "Karla Miguel",
+      "apellidos": "Sulca Lopez",
+      "telefono": "950000019",
+      "cargo": "Jefe de Area",
+      "estado": "PENDIENTE"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 20,
+    "fields": {
+      "empresa": 1,
+      "dni": "40000019",
+      "nombres": "Diego Ernesto",
+      "apellidos": "Espinoza Rodriguez",
+      "telefono": "950000020",
+      "cargo": "Supervisor de Produccion",
+      "estado": "RECHAZADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 21,
+    "fields": {
+      "empresa": 2,
+      "dni": "40000020",
+      "nombres": "Aldo Rocio",
+      "apellidos": "Huaman Rojas",
+      "telefono": "950000021",
+      "cargo": "Controlador de Acceso",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 22,
+    "fields": {
+      "empresa": 2,
+      "dni": "40000021",
+      "nombres": "Rocio Sofia",
+      "apellidos": "Rojas Diaz",
+      "telefono": "950000022",
+      "cargo": "Mecanico",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 23,
+    "fields": {
+      "empresa": 2,
+      "dni": "40000022",
+      "nombres": "Victor Oscar",
+      "apellidos": "Paredes Espinoza",
+      "telefono": "950000023",
+      "cargo": "Operador de Maquinaria",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 24,
+    "fields": {
+      "empresa": 2,
+      "dni": "40000023",
+      "nombres": "Rocio Rosa",
+      "apellidos": "Campos Cardenas",
+      "telefono": "950000024",
+      "cargo": "Inspectores de Calidad",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 25,
+    "fields": {
+      "empresa": 2,
+      "dni": "40000024",
+      "nombres": "Fiorella Sofia",
+      "apellidos": "Mamani Luna",
+      "telefono": "950000025",
+      "cargo": "Operario de Planta",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 26,
+    "fields": {
+      "empresa": 2,
+      "dni": "40000025",
+      "nombres": "Milagros Elena",
+      "apellidos": "Sulca Luna",
+      "telefono": "950000026",
+      "cargo": "Tecnico de Mantenimiento",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 27,
+    "fields": {
+      "empresa": 2,
+      "dni": "40000026",
+      "nombres": "Andrea Cesar",
+      "apellidos": "Cordova Aliaga",
+      "telefono": "950000027",
+      "cargo": "Controlador de Acceso",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 28,
+    "fields": {
+      "empresa": 2,
+      "dni": "40000027",
+      "nombres": "Milagros Ricardo",
+      "apellidos": "Rojas Vasquez",
+      "telefono": "950000028",
+      "cargo": "Tecnico de Mantenimiento",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 29,
+    "fields": {
+      "empresa": 2,
+      "dni": "40000028",
+      "nombres": "Sofia Renzo",
+      "apellidos": "Vasquez Rivas",
+      "telefono": "950000029",
+      "cargo": "Electricista",
+      "estado": "PENDIENTE"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 30,
+    "fields": {
+      "empresa": 2,
+      "dni": "40000029",
+      "nombres": "Hugo Jorge",
+      "apellidos": "Quispe Ramirez",
+      "telefono": "950000030",
+      "cargo": "Soldador",
+      "estado": "RECHAZADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 31,
+    "fields": {
+      "empresa": 2,
+      "dni": "40000030",
+      "nombres": "Milagros Renzo",
+      "apellidos": "Sulca Gutierrez",
+      "telefono": "950000031",
+      "cargo": "Montacarguista",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 32,
+    "fields": {
+      "empresa": 2,
+      "dni": "40000031",
+      "nombres": "Manuel Patricia",
+      "apellidos": "Lopez Rodriguez",
+      "telefono": "950000032",
+      "cargo": "Seguridad y Vigilancia",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 33,
+    "fields": {
+      "empresa": 2,
+      "dni": "40000032",
+      "nombres": "Rosa Ricardo",
+      "apellidos": "Soto Rivas",
+      "telefono": "950000033",
+      "cargo": "Mecanico",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 34,
+    "fields": {
+      "empresa": 2,
+      "dni": "40000033",
+      "nombres": "Fiorella Valeria",
+      "apellidos": "Tapia Castillo",
+      "telefono": "950000034",
+      "cargo": "Quimico de Proceso",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 35,
+    "fields": {
+      "empresa": 2,
+      "dni": "40000034",
+      "nombres": "Luis Oscar",
+      "apellidos": "Rojas Callata",
+      "telefono": "950000035",
+      "cargo": "Asistente Administrativo",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 36,
+    "fields": {
+      "empresa": 2,
+      "dni": "40000035",
+      "nombres": "Hugo Paola",
+      "apellidos": "Vera Vera",
+      "telefono": "950000036",
+      "cargo": "Quimico de Proceso",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 37,
+    "fields": {
+      "empresa": 2,
+      "dni": "40000036",
+      "nombres": "Fernando Ernesto",
+      "apellidos": "Rojas Espinoza",
+      "telefono": "950000037",
+      "cargo": "Operario de Planta",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 38,
+    "fields": {
+      "empresa": 2,
+      "dni": "40000037",
+      "nombres": "Carmen Maria",
+      "apellidos": "Cruz Huaman",
+      "telefono": "950000038",
+      "cargo": "Electricista",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 39,
+    "fields": {
+      "empresa": 2,
+      "dni": "40000038",
+      "nombres": "Milagros Ricardo",
+      "apellidos": "Rodriguez Rivas",
+      "telefono": "950000039",
+      "cargo": "Seguridad y Vigilancia",
+      "estado": "PENDIENTE"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 40,
+    "fields": {
+      "empresa": 2,
+      "dni": "40000039",
+      "nombres": "Patricia Milagros",
+      "apellidos": "Soto Cruz",
+      "telefono": "950000040",
+      "cargo": "Electricista",
+      "estado": "RECHAZADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 41,
+    "fields": {
+      "empresa": 3,
+      "dni": "40000040",
+      "nombres": "Oscar Milagros",
+      "apellidos": "Benites Benites",
+      "telefono": "950000041",
+      "cargo": "Supervisor de Seguridad",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 42,
+    "fields": {
+      "empresa": 3,
+      "dni": "40000041",
+      "nombres": "Brenda Miguel",
+      "apellidos": "Paredes Ramos",
+      "telefono": "950000042",
+      "cargo": "Quimico de Proceso",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 43,
+    "fields": {
+      "empresa": 3,
+      "dni": "40000042",
+      "nombres": "Rocio Sofia",
+      "apellidos": "Mamani Rodriguez",
+      "telefono": "950000043",
+      "cargo": "Conductor",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 44,
+    "fields": {
+      "empresa": 3,
+      "dni": "40000043",
+      "nombres": "Ernesto Valeria",
+      "apellidos": "Salazar Guerrero",
+      "telefono": "950000044",
+      "cargo": "Supervisor de Produccion",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 45,
+    "fields": {
+      "empresa": 3,
+      "dni": "40000044",
+      "nombres": "Milagros Luis",
+      "apellidos": "Vega Paredes",
+      "telefono": "950000045",
+      "cargo": "Controlador de Acceso",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 46,
+    "fields": {
+      "empresa": 3,
+      "dni": "40000045",
+      "nombres": "Ernesto Pedro",
+      "apellidos": "Tapia Gutierrez",
+      "telefono": "950000046",
+      "cargo": "Mecanico",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 47,
+    "fields": {
+      "empresa": 3,
+      "dni": "40000046",
+      "nombres": "Diego Aldo",
+      "apellidos": "Quispe Bustamante",
+      "telefono": "950000047",
+      "cargo": "Quimico de Proceso",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 48,
+    "fields": {
+      "empresa": 3,
+      "dni": "40000047",
+      "nombres": "Miguel Sofia",
+      "apellidos": "Callata Huaman",
+      "telefono": "950000048",
+      "cargo": "Seguridad y Vigilancia",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 49,
+    "fields": {
+      "empresa": 3,
+      "dni": "40000048",
+      "nombres": "Juan Natalia",
+      "apellidos": "Soto Torres",
+      "telefono": "950000049",
+      "cargo": "Asistente Administrativo",
+      "estado": "PENDIENTE"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 50,
+    "fields": {
+      "empresa": 3,
+      "dni": "40000049",
+      "nombres": "Carlos Andrea",
+      "apellidos": "Vera Vega",
+      "telefono": "950000050",
+      "cargo": "Asistente Administrativo",
+      "estado": "RECHAZADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 51,
+    "fields": {
+      "empresa": 3,
+      "dni": "40000050",
+      "nombres": "Rosa Paola",
+      "apellidos": "Aliaga Callata",
+      "telefono": "950000051",
+      "cargo": "Operador de Grua",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 52,
+    "fields": {
+      "empresa": 3,
+      "dni": "40000051",
+      "nombres": "Karla Lucia",
+      "apellidos": "Guerrero Gutierrez",
+      "telefono": "950000052",
+      "cargo": "Conductor",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 53,
+    "fields": {
+      "empresa": 3,
+      "dni": "40000052",
+      "nombres": "Ricardo Renzo",
+      "apellidos": "Cruz Diaz",
+      "telefono": "950000053",
+      "cargo": "Quimico de Proceso",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 54,
+    "fields": {
+      "empresa": 3,
+      "dni": "40000053",
+      "nombres": "Diego Oscar",
+      "apellidos": "Benites Cruz",
+      "telefono": "950000054",
+      "cargo": "Operador de Grua",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 55,
+    "fields": {
+      "empresa": 3,
+      "dni": "40000054",
+      "nombres": "Rosa Raul",
+      "apellidos": "Aguilar Cordova",
+      "telefono": "950000055",
+      "cargo": "Electricista",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 56,
+    "fields": {
+      "empresa": 3,
+      "dni": "40000055",
+      "nombres": "Fiorella Rosa",
+      "apellidos": "Chavez Aliaga",
+      "telefono": "950000056",
+      "cargo": "Electricista",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 57,
+    "fields": {
+      "empresa": 3,
+      "dni": "40000056",
+      "nombres": "Alberto Patricia",
+      "apellidos": "Sulca Benites",
+      "telefono": "950000057",
+      "cargo": "Mecanico",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 58,
+    "fields": {
+      "empresa": 3,
+      "dni": "40000057",
+      "nombres": "Hugo Gabriela",
+      "apellidos": "Reyes Vasquez",
+      "telefono": "950000058",
+      "cargo": "Auxiliar de Logistica",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 59,
+    "fields": {
+      "empresa": 3,
+      "dni": "40000058",
+      "nombres": "Juan Ricardo",
+      "apellidos": "Cordova Aliaga",
+      "telefono": "950000059",
+      "cargo": "Jefe de Area",
+      "estado": "PENDIENTE"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 60,
+    "fields": {
+      "empresa": 3,
+      "dni": "40000059",
+      "nombres": "Rosa Maria",
+      "apellidos": "Cordova Aguilar",
+      "telefono": "950000060",
+      "cargo": "Controlador de Acceso",
+      "estado": "RECHAZADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 61,
+    "fields": {
+      "empresa": 4,
+      "dni": "40000060",
+      "nombres": "Natalia Diego",
+      "apellidos": "Flores Aliaga",
+      "telefono": "950000061",
+      "cargo": "Auxiliar de Logistica",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 62,
+    "fields": {
+      "empresa": 4,
+      "dni": "40000061",
+      "nombres": "Juan Fiorella",
+      "apellidos": "Vasquez Chavez",
+      "telefono": "950000062",
+      "cargo": "Soldador",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 63,
+    "fields": {
+      "empresa": 4,
+      "dni": "40000062",
+      "nombres": "Valeria Hugo",
+      "apellidos": "Flores Sulca",
+      "telefono": "950000063",
+      "cargo": "Inspectores de Calidad",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 64,
+    "fields": {
+      "empresa": 4,
+      "dni": "40000063",
+      "nombres": "Sofia Fernando",
+      "apellidos": "Aliaga Rivas",
+      "telefono": "950000064",
+      "cargo": "Supervisor de Seguridad",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 65,
+    "fields": {
+      "empresa": 4,
+      "dni": "40000064",
+      "nombres": "Gabriela Aldo",
+      "apellidos": "Rojas Huaman",
+      "telefono": "950000065",
+      "cargo": "Operador de Grua",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 66,
+    "fields": {
+      "empresa": 4,
+      "dni": "40000065",
+      "nombres": "Natalia Patricia",
+      "apellidos": "Cordova Rivas",
+      "telefono": "950000066",
+      "cargo": "Asistente Administrativo",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 67,
+    "fields": {
+      "empresa": 4,
+      "dni": "40000066",
+      "nombres": "Elena Hugo",
+      "apellidos": "Guerrero Ramirez",
+      "telefono": "950000067",
+      "cargo": "Conductor",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 68,
+    "fields": {
+      "empresa": 4,
+      "dni": "40000067",
+      "nombres": "Aldo Mario",
+      "apellidos": "Lopez Flores",
+      "telefono": "950000068",
+      "cargo": "Inspectores de Calidad",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 69,
+    "fields": {
+      "empresa": 4,
+      "dni": "40000068",
+      "nombres": "Milagros Rocio",
+      "apellidos": "Espinoza Vega",
+      "telefono": "950000069",
+      "cargo": "Inspectores de Calidad",
+      "estado": "PENDIENTE"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 70,
+    "fields": {
+      "empresa": 4,
+      "dni": "40000069",
+      "nombres": "Pedro Claudia",
+      "apellidos": "Rivas Salazar",
+      "telefono": "950000070",
+      "cargo": "Supervisor de Seguridad",
+      "estado": "RECHAZADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 71,
+    "fields": {
+      "empresa": 4,
+      "dni": "40000070",
+      "nombres": "Natalia Andrea",
+      "apellidos": "Rios Luna",
+      "telefono": "950000071",
+      "cargo": "Auxiliar de Logistica",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 72,
+    "fields": {
+      "empresa": 4,
+      "dni": "40000071",
+      "nombres": "Diego Milagros",
+      "apellidos": "Chavez Bustamante",
+      "telefono": "950000072",
+      "cargo": "Jefe de Area",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 73,
+    "fields": {
+      "empresa": 4,
+      "dni": "40000072",
+      "nombres": "Cesar Claudia",
+      "apellidos": "Ramirez Rodriguez",
+      "telefono": "950000073",
+      "cargo": "Asistente Administrativo",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 74,
+    "fields": {
+      "empresa": 4,
+      "dni": "40000073",
+      "nombres": "Karla Ana",
+      "apellidos": "Diaz Espinoza",
+      "telefono": "950000074",
+      "cargo": "Operador de Maquinaria",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 75,
+    "fields": {
+      "empresa": 4,
+      "dni": "40000074",
+      "nombres": "Karla Renzo",
+      "apellidos": "Mamani Chavez",
+      "telefono": "950000075",
+      "cargo": "Jefe de Area",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 76,
+    "fields": {
+      "empresa": 4,
+      "dni": "40000075",
+      "nombres": "Jorge Ricardo",
+      "apellidos": "Gutierrez Guerrero",
+      "telefono": "950000076",
+      "cargo": "Seguridad y Vigilancia",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 77,
+    "fields": {
+      "empresa": 4,
+      "dni": "40000076",
+      "nombres": "Maria Diego",
+      "apellidos": "Diaz Rivas",
+      "telefono": "950000077",
+      "cargo": "Conductor",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 78,
+    "fields": {
+      "empresa": 4,
+      "dni": "40000077",
+      "nombres": "Paola Elena",
+      "apellidos": "Cruz Silva",
+      "telefono": "950000078",
+      "cargo": "Operador de Grua",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 79,
+    "fields": {
+      "empresa": 4,
+      "dni": "40000078",
+      "nombres": "Elena Milagros",
+      "apellidos": "Paredes Cardenas",
+      "telefono": "950000079",
+      "cargo": "Supervisor de Seguridad",
+      "estado": "PENDIENTE"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 80,
+    "fields": {
+      "empresa": 4,
+      "dni": "40000079",
+      "nombres": "Sofia Diego",
+      "apellidos": "Salazar Zapata",
+      "telefono": "950000080",
+      "cargo": "Quimico de Proceso",
+      "estado": "RECHAZADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 81,
+    "fields": {
+      "empresa": 5,
+      "dni": "40000080",
+      "nombres": "Claudia Patricia",
+      "apellidos": "Tapia Soto",
+      "telefono": "950000081",
+      "cargo": "Operario de Planta",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 82,
+    "fields": {
+      "empresa": 5,
+      "dni": "40000081",
+      "nombres": "Aldo Claudia",
+      "apellidos": "Callata Benites",
+      "telefono": "950000082",
+      "cargo": "Operador de Grua",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 83,
+    "fields": {
+      "empresa": 5,
+      "dni": "40000082",
+      "nombres": "Carmen Oscar",
+      "apellidos": "Aliaga Cruz",
+      "telefono": "950000083",
+      "cargo": "Montacarguista",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 84,
+    "fields": {
+      "empresa": 5,
+      "dni": "40000083",
+      "nombres": "Lucia Oscar",
+      "apellidos": "Benites Benites",
+      "telefono": "950000084",
+      "cargo": "Auxiliar de Logistica",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 85,
+    "fields": {
+      "empresa": 5,
+      "dni": "40000084",
+      "nombres": "Raul Victor",
+      "apellidos": "Sulca Vasquez",
+      "telefono": "950000085",
+      "cargo": "Montacarguista",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 86,
+    "fields": {
+      "empresa": 5,
+      "dni": "40000085",
+      "nombres": "Renzo Jorge",
+      "apellidos": "Rojas Huaman",
+      "telefono": "950000086",
+      "cargo": "Mecanico",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 87,
+    "fields": {
+      "empresa": 5,
+      "dni": "40000086",
+      "nombres": "Lucia Ricardo",
+      "apellidos": "Diaz Luna",
+      "telefono": "950000087",
+      "cargo": "Operario de Planta",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 88,
+    "fields": {
+      "empresa": 5,
+      "dni": "40000087",
+      "nombres": "Rocio Carmen",
+      "apellidos": "Castillo Reyes",
+      "telefono": "950000088",
+      "cargo": "Asistente Administrativo",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 89,
+    "fields": {
+      "empresa": 5,
+      "dni": "40000088",
+      "nombres": "Paola Hugo",
+      "apellidos": "Rivas Aguilar",
+      "telefono": "950000089",
+      "cargo": "Supervisor de Produccion",
+      "estado": "PENDIENTE"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 90,
+    "fields": {
+      "empresa": 5,
+      "dni": "40000089",
+      "nombres": "Rocio Elena",
+      "apellidos": "Huaman Silva",
+      "telefono": "950000090",
+      "cargo": "Mecanico",
+      "estado": "RECHAZADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 91,
+    "fields": {
+      "empresa": 5,
+      "dni": "40000090",
+      "nombres": "Alberto Renzo",
+      "apellidos": "Mendoza Callata",
+      "telefono": "950000091",
+      "cargo": "Electricista",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 92,
+    "fields": {
+      "empresa": 5,
+      "dni": "40000091",
+      "nombres": "Camila Oscar",
+      "apellidos": "Guerrero Huaman",
+      "telefono": "950000092",
+      "cargo": "Inspectores de Calidad",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 93,
+    "fields": {
+      "empresa": 5,
+      "dni": "40000092",
+      "nombres": "Natalia Carlos",
+      "apellidos": "Salazar Guerrero",
+      "telefono": "950000093",
+      "cargo": "Auxiliar de Logistica",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 94,
+    "fields": {
+      "empresa": 5,
+      "dni": "40000093",
+      "nombres": "Juan Ana",
+      "apellidos": "Mendoza Ramos",
+      "telefono": "950000094",
+      "cargo": "Electricista",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 95,
+    "fields": {
+      "empresa": 5,
+      "dni": "40000094",
+      "nombres": "Milagros Milagros",
+      "apellidos": "Castillo Cardenas",
+      "telefono": "950000095",
+      "cargo": "Supervisor de Produccion",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 96,
+    "fields": {
+      "empresa": 5,
+      "dni": "40000095",
+      "nombres": "Karla Diego",
+      "apellidos": "Rivas Rodriguez",
+      "telefono": "950000096",
+      "cargo": "Supervisor de Seguridad",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 97,
+    "fields": {
+      "empresa": 5,
+      "dni": "40000096",
+      "nombres": "Ana Miguel",
+      "apellidos": "Tapia Flores",
+      "telefono": "950000097",
+      "cargo": "Conductor",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 98,
+    "fields": {
+      "empresa": 5,
+      "dni": "40000097",
+      "nombres": "Andrea Ricardo",
+      "apellidos": "Rodriguez Campos",
+      "telefono": "950000098",
+      "cargo": "Conductor",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 99,
+    "fields": {
+      "empresa": 5,
+      "dni": "40000098",
+      "nombres": "Ana Fernando",
+      "apellidos": "Luna Gutierrez",
+      "telefono": "950000099",
+      "cargo": "Auxiliar de Logistica",
+      "estado": "PENDIENTE"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 100,
+    "fields": {
+      "empresa": 5,
+      "dni": "40000099",
+      "nombres": "Miguel Milagros",
+      "apellidos": "Mendoza Diaz",
+      "telefono": "950000100",
+      "cargo": "Controlador de Acceso",
+      "estado": "RECHAZADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 101,
+    "fields": {
+      "empresa": 6,
+      "dni": "40000100",
+      "nombres": "Claudia Lucia",
+      "apellidos": "Diaz Benites",
+      "telefono": "950000101",
+      "cargo": "Operario de Planta",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 102,
+    "fields": {
+      "empresa": 6,
+      "dni": "40000101",
+      "nombres": "Oscar Cesar",
+      "apellidos": "Torres Rojas",
+      "telefono": "950000102",
+      "cargo": "Inspectores de Calidad",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 103,
+    "fields": {
+      "empresa": 6,
+      "dni": "40000102",
+      "nombres": "Carmen Gabriela",
+      "apellidos": "Aguilar Espinoza",
+      "telefono": "950000103",
+      "cargo": "Auxiliar de Logistica",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 104,
+    "fields": {
+      "empresa": 6,
+      "dni": "40000103",
+      "nombres": "Hugo Mario",
+      "apellidos": "Sulca Reyes",
+      "telefono": "950000104",
+      "cargo": "Operador de Grua",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 105,
+    "fields": {
+      "empresa": 6,
+      "dni": "40000104",
+      "nombres": "Cesar Ernesto",
+      "apellidos": "Espinoza Paredes",
+      "telefono": "950000105",
+      "cargo": "Operario de Planta",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 106,
+    "fields": {
+      "empresa": 6,
+      "dni": "40000105",
+      "nombres": "Karla Paola",
+      "apellidos": "Guerrero Vasquez",
+      "telefono": "950000106",
+      "cargo": "Supervisor de Seguridad",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 107,
+    "fields": {
+      "empresa": 6,
+      "dni": "40000106",
+      "nombres": "Miguel Aldo",
+      "apellidos": "Bustamante Rivas",
+      "telefono": "950000107",
+      "cargo": "Tecnico de Mantenimiento",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 108,
+    "fields": {
+      "empresa": 6,
+      "dni": "40000107",
+      "nombres": "Rocio Hugo",
+      "apellidos": "Paredes Chavez",
+      "telefono": "950000108",
+      "cargo": "Electricista",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 109,
+    "fields": {
+      "empresa": 6,
+      "dni": "40000108",
+      "nombres": "Brenda Fernando",
+      "apellidos": "Castillo Vasquez",
+      "telefono": "950000109",
+      "cargo": "Seguridad y Vigilancia",
+      "estado": "PENDIENTE"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 110,
+    "fields": {
+      "empresa": 6,
+      "dni": "40000109",
+      "nombres": "Hugo Renzo",
+      "apellidos": "Campos Tapia",
+      "telefono": "950000110",
+      "cargo": "Operador de Maquinaria",
+      "estado": "RECHAZADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 111,
+    "fields": {
+      "empresa": 6,
+      "dni": "40000110",
+      "nombres": "Elena Fernando",
+      "apellidos": "Tapia Rios",
+      "telefono": "950000111",
+      "cargo": "Seguridad y Vigilancia",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 112,
+    "fields": {
+      "empresa": 6,
+      "dni": "40000111",
+      "nombres": "Miguel Victor",
+      "apellidos": "Vasquez Cruz",
+      "telefono": "950000112",
+      "cargo": "Jefe de Area",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 113,
+    "fields": {
+      "empresa": 6,
+      "dni": "40000112",
+      "nombres": "Elena Valeria",
+      "apellidos": "Lopez Aliaga",
+      "telefono": "950000113",
+      "cargo": "Auxiliar de Logistica",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 114,
+    "fields": {
+      "empresa": 6,
+      "dni": "40000113",
+      "nombres": "Valeria Diego",
+      "apellidos": "Rodriguez Lopez",
+      "telefono": "950000114",
+      "cargo": "Asistente Administrativo",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 115,
+    "fields": {
+      "empresa": 6,
+      "dni": "40000114",
+      "nombres": "Valeria Mario",
+      "apellidos": "Rodriguez Bustamante",
+      "telefono": "950000115",
+      "cargo": "Seguridad y Vigilancia",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 116,
+    "fields": {
+      "empresa": 6,
+      "dni": "40000115",
+      "nombres": "Ernesto Andrea",
+      "apellidos": "Rivas Tapia",
+      "telefono": "950000116",
+      "cargo": "Inspectores de Calidad",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 117,
+    "fields": {
+      "empresa": 6,
+      "dni": "40000116",
+      "nombres": "Oscar Rocio",
+      "apellidos": "Gutierrez Vera",
+      "telefono": "950000117",
+      "cargo": "Soldador",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 118,
+    "fields": {
+      "empresa": 6,
+      "dni": "40000117",
+      "nombres": "Andrea Milagros",
+      "apellidos": "Soto Mendoza",
+      "telefono": "950000118",
+      "cargo": "Mecanico",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 119,
+    "fields": {
+      "empresa": 6,
+      "dni": "40000118",
+      "nombres": "Gabriela Aldo",
+      "apellidos": "Lopez Rios",
+      "telefono": "950000119",
+      "cargo": "Operador de Maquinaria",
+      "estado": "PENDIENTE"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 120,
+    "fields": {
+      "empresa": 6,
+      "dni": "40000119",
+      "nombres": "Rosa Oscar",
+      "apellidos": "Benites Bustamante",
+      "telefono": "950000120",
+      "cargo": "Inspectores de Calidad",
+      "estado": "RECHAZADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 121,
+    "fields": {
+      "empresa": 7,
+      "dni": "40000120",
+      "nombres": "Valeria Carlos",
+      "apellidos": "Quispe Vasquez",
+      "telefono": "950000121",
+      "cargo": "Seguridad y Vigilancia",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 122,
+    "fields": {
+      "empresa": 7,
+      "dni": "40000121",
+      "nombres": "Carmen Jorge",
+      "apellidos": "Benites Mamani",
+      "telefono": "950000122",
+      "cargo": "Tecnico de Mantenimiento",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 123,
+    "fields": {
+      "empresa": 7,
+      "dni": "40000122",
+      "nombres": "Fiorella Rosa",
+      "apellidos": "Bustamante Espinoza",
+      "telefono": "950000123",
+      "cargo": "Conductor",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 124,
+    "fields": {
+      "empresa": 7,
+      "dni": "40000123",
+      "nombres": "Camila Maria",
+      "apellidos": "Rojas Flores",
+      "telefono": "950000124",
+      "cargo": "Montacarguista",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 125,
+    "fields": {
+      "empresa": 7,
+      "dni": "40000124",
+      "nombres": "Carlos Rocio",
+      "apellidos": "Vega Luna",
+      "telefono": "950000125",
+      "cargo": "Soldador",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 126,
+    "fields": {
+      "empresa": 7,
+      "dni": "40000125",
+      "nombres": "Miguel Manuel",
+      "apellidos": "Quispe Chavez",
+      "telefono": "950000126",
+      "cargo": "Asistente Administrativo",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 127,
+    "fields": {
+      "empresa": 7,
+      "dni": "40000126",
+      "nombres": "Ricardo Fernando",
+      "apellidos": "Zapata Vasquez",
+      "telefono": "950000127",
+      "cargo": "Operador de Grua",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 128,
+    "fields": {
+      "empresa": 7,
+      "dni": "40000127",
+      "nombres": "Cesar Renzo",
+      "apellidos": "Lopez Vega",
+      "telefono": "950000128",
+      "cargo": "Quimico de Proceso",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 129,
+    "fields": {
+      "empresa": 7,
+      "dni": "40000128",
+      "nombres": "Hugo Milagros",
+      "apellidos": "Vega Rodriguez",
+      "telefono": "950000129",
+      "cargo": "Electricista",
+      "estado": "PENDIENTE"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 130,
+    "fields": {
+      "empresa": 7,
+      "dni": "40000129",
+      "nombres": "Rocio Valeria",
+      "apellidos": "Paredes Vega",
+      "telefono": "950000130",
+      "cargo": "Tecnico de Mantenimiento",
+      "estado": "RECHAZADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 131,
+    "fields": {
+      "empresa": 7,
+      "dni": "40000130",
+      "nombres": "Diego Fiorella",
+      "apellidos": "Bustamante Bustamante",
+      "telefono": "950000131",
+      "cargo": "Seguridad y Vigilancia",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 132,
+    "fields": {
+      "empresa": 7,
+      "dni": "40000131",
+      "nombres": "Rosa Camila",
+      "apellidos": "Reyes Rios",
+      "telefono": "950000132",
+      "cargo": "Montacarguista",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 133,
+    "fields": {
+      "empresa": 7,
+      "dni": "40000132",
+      "nombres": "Camila Renzo",
+      "apellidos": "Cardenas Guerrero",
+      "telefono": "950000133",
+      "cargo": "Mecanico",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 134,
+    "fields": {
+      "empresa": 7,
+      "dni": "40000133",
+      "nombres": "Aldo Hugo",
+      "apellidos": "Quispe Soto",
+      "telefono": "950000134",
+      "cargo": "Montacarguista",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 135,
+    "fields": {
+      "empresa": 7,
+      "dni": "40000134",
+      "nombres": "Ricardo Ricardo",
+      "apellidos": "Vera Paredes",
+      "telefono": "950000135",
+      "cargo": "Operario de Planta",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 136,
+    "fields": {
+      "empresa": 7,
+      "dni": "40000135",
+      "nombres": "Fernando Natalia",
+      "apellidos": "Espinoza Ramirez",
+      "telefono": "950000136",
+      "cargo": "Auxiliar de Logistica",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 137,
+    "fields": {
+      "empresa": 7,
+      "dni": "40000136",
+      "nombres": "Karla Ernesto",
+      "apellidos": "Vasquez Lopez",
+      "telefono": "950000137",
+      "cargo": "Inspectores de Calidad",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 138,
+    "fields": {
+      "empresa": 7,
+      "dni": "40000137",
+      "nombres": "Jorge Rosa",
+      "apellidos": "Mamani Cruz",
+      "telefono": "950000138",
+      "cargo": "Conductor",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 139,
+    "fields": {
+      "empresa": 7,
+      "dni": "40000138",
+      "nombres": "Milagros Hugo",
+      "apellidos": "Huaman Tapia",
+      "telefono": "950000139",
+      "cargo": "Operador de Grua",
+      "estado": "PENDIENTE"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 140,
+    "fields": {
+      "empresa": 7,
+      "dni": "40000139",
+      "nombres": "Miguel Ana",
+      "apellidos": "Bustamante Rios",
+      "telefono": "950000140",
+      "cargo": "Conductor",
+      "estado": "RECHAZADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 141,
+    "fields": {
+      "empresa": 8,
+      "dni": "40000140",
+      "nombres": "Raul Alberto",
+      "apellidos": "Chavez Quispe",
+      "telefono": "950000141",
+      "cargo": "Tecnico de Mantenimiento",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 142,
+    "fields": {
+      "empresa": 8,
+      "dni": "40000141",
+      "nombres": "Pedro Claudia",
+      "apellidos": "Zapata Ramos",
+      "telefono": "950000142",
+      "cargo": "Montacarguista",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 143,
+    "fields": {
+      "empresa": 8,
+      "dni": "40000142",
+      "nombres": "Renzo Maria",
+      "apellidos": "Diaz Tapia",
+      "telefono": "950000143",
+      "cargo": "Tecnico de Mantenimiento",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 144,
+    "fields": {
+      "empresa": 8,
+      "dni": "40000143",
+      "nombres": "Natalia Claudia",
+      "apellidos": "Sulca Flores",
+      "telefono": "950000144",
+      "cargo": "Auxiliar de Logistica",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 145,
+    "fields": {
+      "empresa": 8,
+      "dni": "40000144",
+      "nombres": "Milagros Miguel",
+      "apellidos": "Gutierrez Rojas",
+      "telefono": "950000145",
+      "cargo": "Jefe de Area",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 146,
+    "fields": {
+      "empresa": 8,
+      "dni": "40000145",
+      "nombres": "Rosa Brenda",
+      "apellidos": "Vera Vega",
+      "telefono": "950000146",
+      "cargo": "Supervisor de Seguridad",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 147,
+    "fields": {
+      "empresa": 8,
+      "dni": "40000146",
+      "nombres": "Natalia Sofia",
+      "apellidos": "Ramos Ramos",
+      "telefono": "950000147",
+      "cargo": "Operador de Grua",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 148,
+    "fields": {
+      "empresa": 8,
+      "dni": "40000147",
+      "nombres": "Pedro Ernesto",
+      "apellidos": "Lopez Tapia",
+      "telefono": "950000148",
+      "cargo": "Supervisor de Produccion",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 149,
+    "fields": {
+      "empresa": 8,
+      "dni": "40000148",
+      "nombres": "Valeria Karla",
+      "apellidos": "Chavez Cordova",
+      "telefono": "950000149",
+      "cargo": "Mecanico",
+      "estado": "PENDIENTE"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 150,
+    "fields": {
+      "empresa": 8,
+      "dni": "40000149",
+      "nombres": "Pedro Alberto",
+      "apellidos": "Ramirez Torres",
+      "telefono": "950000150",
+      "cargo": "Quimico de Proceso",
+      "estado": "RECHAZADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 151,
+    "fields": {
+      "empresa": 8,
+      "dni": "40000150",
+      "nombres": "Diego Maria",
+      "apellidos": "Luna Quispe",
+      "telefono": "950000151",
+      "cargo": "Seguridad y Vigilancia",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 152,
+    "fields": {
+      "empresa": 8,
+      "dni": "40000151",
+      "nombres": "Diego Jorge",
+      "apellidos": "Huaman Aguilar",
+      "telefono": "950000152",
+      "cargo": "Electricista",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 153,
+    "fields": {
+      "empresa": 8,
+      "dni": "40000152",
+      "nombres": "Fiorella Fernando",
+      "apellidos": "Luna Lopez",
+      "telefono": "950000153",
+      "cargo": "Supervisor de Produccion",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 154,
+    "fields": {
+      "empresa": 8,
+      "dni": "40000153",
+      "nombres": "Fiorella Ernesto",
+      "apellidos": "Soto Ramos",
+      "telefono": "950000154",
+      "cargo": "Electricista",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 155,
+    "fields": {
+      "empresa": 8,
+      "dni": "40000154",
+      "nombres": "Ana Aldo",
+      "apellidos": "Bustamante Rodriguez",
+      "telefono": "950000155",
+      "cargo": "Jefe de Area",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 156,
+    "fields": {
+      "empresa": 8,
+      "dni": "40000155",
+      "nombres": "Oscar Rosa",
+      "apellidos": "Castillo Vega",
+      "telefono": "950000156",
+      "cargo": "Soldador",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 157,
+    "fields": {
+      "empresa": 8,
+      "dni": "40000156",
+      "nombres": "Camila Claudia",
+      "apellidos": "Cruz Salazar",
+      "telefono": "950000157",
+      "cargo": "Controlador de Acceso",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 158,
+    "fields": {
+      "empresa": 8,
+      "dni": "40000157",
+      "nombres": "Luis Oscar",
+      "apellidos": "Callata Campos",
+      "telefono": "950000158",
+      "cargo": "Operador de Maquinaria",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 159,
+    "fields": {
+      "empresa": 8,
+      "dni": "40000158",
+      "nombres": "Manuel Valeria",
+      "apellidos": "Paredes Espinoza",
+      "telefono": "950000159",
+      "cargo": "Quimico de Proceso",
+      "estado": "PENDIENTE"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 160,
+    "fields": {
+      "empresa": 8,
+      "dni": "40000159",
+      "nombres": "Elena Manuel",
+      "apellidos": "Bustamante Luna",
+      "telefono": "950000160",
+      "cargo": "Supervisor de Seguridad",
+      "estado": "RECHAZADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 161,
+    "fields": {
+      "empresa": 9,
+      "dni": "40000160",
+      "nombres": "Paola Lucia",
+      "apellidos": "Reyes Aliaga",
+      "telefono": "950000161",
+      "cargo": "Controlador de Acceso",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 162,
+    "fields": {
+      "empresa": 9,
+      "dni": "40000161",
+      "nombres": "Claudia Karla",
+      "apellidos": "Espinoza Flores",
+      "telefono": "950000162",
+      "cargo": "Operador de Maquinaria",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 163,
+    "fields": {
+      "empresa": 9,
+      "dni": "40000162",
+      "nombres": "Andrea Karla",
+      "apellidos": "Mamani Benites",
+      "telefono": "950000163",
+      "cargo": "Supervisor de Produccion",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 164,
+    "fields": {
+      "empresa": 9,
+      "dni": "40000163",
+      "nombres": "Karla Victor",
+      "apellidos": "Reyes Torres",
+      "telefono": "950000164",
+      "cargo": "Inspectores de Calidad",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 165,
+    "fields": {
+      "empresa": 9,
+      "dni": "40000164",
+      "nombres": "Pedro Cesar",
+      "apellidos": "Mendoza Aguilar",
+      "telefono": "950000165",
+      "cargo": "Seguridad y Vigilancia",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 166,
+    "fields": {
+      "empresa": 9,
+      "dni": "40000165",
+      "nombres": "Juan Cesar",
+      "apellidos": "Tapia Diaz",
+      "telefono": "950000166",
+      "cargo": "Electricista",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 167,
+    "fields": {
+      "empresa": 9,
+      "dni": "40000166",
+      "nombres": "Aldo Rocio",
+      "apellidos": "Cordova Benites",
+      "telefono": "950000167",
+      "cargo": "Conductor",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 168,
+    "fields": {
+      "empresa": 9,
+      "dni": "40000167",
+      "nombres": "Claudia Sofia",
+      "apellidos": "Rios Quispe",
+      "telefono": "950000168",
+      "cargo": "Mecanico",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 169,
+    "fields": {
+      "empresa": 9,
+      "dni": "40000168",
+      "nombres": "Milagros Ana",
+      "apellidos": "Quispe Torres",
+      "telefono": "950000169",
+      "cargo": "Operario de Planta",
+      "estado": "PENDIENTE"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 170,
+    "fields": {
+      "empresa": 9,
+      "dni": "40000169",
+      "nombres": "Jorge Diego",
+      "apellidos": "Cardenas Ramirez",
+      "telefono": "950000170",
+      "cargo": "Jefe de Area",
+      "estado": "RECHAZADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 171,
+    "fields": {
+      "empresa": 9,
+      "dni": "40000170",
+      "nombres": "Natalia Diego",
+      "apellidos": "Cardenas Rodriguez",
+      "telefono": "950000171",
+      "cargo": "Supervisor de Produccion",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 172,
+    "fields": {
+      "empresa": 9,
+      "dni": "40000171",
+      "nombres": "Valeria Aldo",
+      "apellidos": "Callata Rivas",
+      "telefono": "950000172",
+      "cargo": "Montacarguista",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 173,
+    "fields": {
+      "empresa": 9,
+      "dni": "40000172",
+      "nombres": "Patricia Valeria",
+      "apellidos": "Torres Vasquez",
+      "telefono": "950000173",
+      "cargo": "Mecanico",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 174,
+    "fields": {
+      "empresa": 9,
+      "dni": "40000173",
+      "nombres": "Mario Ana",
+      "apellidos": "Mendoza Rodriguez",
+      "telefono": "950000174",
+      "cargo": "Asistente Administrativo",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 175,
+    "fields": {
+      "empresa": 9,
+      "dni": "40000174",
+      "nombres": "Camila Fiorella",
+      "apellidos": "Silva Vasquez",
+      "telefono": "950000175",
+      "cargo": "Operador de Grua",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 176,
+    "fields": {
+      "empresa": 9,
+      "dni": "40000175",
+      "nombres": "Lucia Raul",
+      "apellidos": "Rojas Mamani",
+      "telefono": "950000176",
+      "cargo": "Supervisor de Produccion",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 177,
+    "fields": {
+      "empresa": 9,
+      "dni": "40000176",
+      "nombres": "Mario Manuel",
+      "apellidos": "Flores Chavez",
+      "telefono": "950000177",
+      "cargo": "Montacarguista",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 178,
+    "fields": {
+      "empresa": 9,
+      "dni": "40000177",
+      "nombres": "Manuel Andrea",
+      "apellidos": "Espinoza Guerrero",
+      "telefono": "950000178",
+      "cargo": "Operador de Maquinaria",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 179,
+    "fields": {
+      "empresa": 9,
+      "dni": "40000178",
+      "nombres": "Gabriela Hugo",
+      "apellidos": "Vasquez Rivas",
+      "telefono": "950000179",
+      "cargo": "Tecnico de Mantenimiento",
+      "estado": "PENDIENTE"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 180,
+    "fields": {
+      "empresa": 9,
+      "dni": "40000179",
+      "nombres": "Gabriela Aldo",
+      "apellidos": "Huaman Rios",
+      "telefono": "950000180",
+      "cargo": "Seguridad y Vigilancia",
+      "estado": "RECHAZADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 181,
+    "fields": {
+      "empresa": 10,
+      "dni": "40000180",
+      "nombres": "Ana Fernando",
+      "apellidos": "Zapata Rios",
+      "telefono": "950000181",
+      "cargo": "Seguridad y Vigilancia",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 182,
+    "fields": {
+      "empresa": 10,
+      "dni": "40000181",
+      "nombres": "Jorge Hugo",
+      "apellidos": "Rios Silva",
+      "telefono": "950000182",
+      "cargo": "Inspectores de Calidad",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 183,
+    "fields": {
+      "empresa": 10,
+      "dni": "40000182",
+      "nombres": "Karla Milagros",
+      "apellidos": "Ramos Vega",
+      "telefono": "950000183",
+      "cargo": "Conductor",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 184,
+    "fields": {
+      "empresa": 10,
+      "dni": "40000183",
+      "nombres": "Hugo Rocio",
+      "apellidos": "Rios Chavez",
+      "telefono": "950000184",
+      "cargo": "Operador de Maquinaria",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 185,
+    "fields": {
+      "empresa": 10,
+      "dni": "40000184",
+      "nombres": "Alberto Miguel",
+      "apellidos": "Rojas Rios",
+      "telefono": "950000185",
+      "cargo": "Inspectores de Calidad",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 186,
+    "fields": {
+      "empresa": 10,
+      "dni": "40000185",
+      "nombres": "Manuel Victor",
+      "apellidos": "Soto Rodriguez",
+      "telefono": "950000186",
+      "cargo": "Supervisor de Produccion",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 187,
+    "fields": {
+      "empresa": 10,
+      "dni": "40000186",
+      "nombres": "Rosa Brenda",
+      "apellidos": "Luna Callata",
+      "telefono": "950000187",
+      "cargo": "Auxiliar de Logistica",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 188,
+    "fields": {
+      "empresa": 10,
+      "dni": "40000187",
+      "nombres": "Renzo Ernesto",
+      "apellidos": "Castillo Benites",
+      "telefono": "950000188",
+      "cargo": "Supervisor de Produccion",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 189,
+    "fields": {
+      "empresa": 10,
+      "dni": "40000188",
+      "nombres": "Brenda Diego",
+      "apellidos": "Soto Zapata",
+      "telefono": "950000189",
+      "cargo": "Supervisor de Seguridad",
+      "estado": "PENDIENTE"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 190,
+    "fields": {
+      "empresa": 10,
+      "dni": "40000189",
+      "nombres": "Brenda Sofia",
+      "apellidos": "Rios Vasquez",
+      "telefono": "950000190",
+      "cargo": "Tecnico de Mantenimiento",
+      "estado": "RECHAZADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 191,
+    "fields": {
+      "empresa": 10,
+      "dni": "40000190",
+      "nombres": "Ana Maria",
+      "apellidos": "Benites Rodriguez",
+      "telefono": "950000191",
+      "cargo": "Operador de Maquinaria",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 192,
+    "fields": {
+      "empresa": 10,
+      "dni": "40000191",
+      "nombres": "Pedro Patricia",
+      "apellidos": "Salazar Luna",
+      "telefono": "950000192",
+      "cargo": "Mecanico",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 193,
+    "fields": {
+      "empresa": 10,
+      "dni": "40000192",
+      "nombres": "Ricardo Gabriela",
+      "apellidos": "Cruz Rojas",
+      "telefono": "950000193",
+      "cargo": "Asistente Administrativo",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 194,
+    "fields": {
+      "empresa": 10,
+      "dni": "40000193",
+      "nombres": "Natalia Ana",
+      "apellidos": "Castillo Ramirez",
+      "telefono": "950000194",
+      "cargo": "Quimico de Proceso",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 195,
+    "fields": {
+      "empresa": 10,
+      "dni": "40000194",
+      "nombres": "Claudia Natalia",
+      "apellidos": "Cruz Mendoza",
+      "telefono": "950000195",
+      "cargo": "Conductor",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 196,
+    "fields": {
+      "empresa": 10,
+      "dni": "40000195",
+      "nombres": "Manuel Ernesto",
+      "apellidos": "Aliaga Mamani",
+      "telefono": "950000196",
+      "cargo": "Operario de Planta",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 197,
+    "fields": {
+      "empresa": 10,
+      "dni": "40000196",
+      "nombres": "Jorge Elena",
+      "apellidos": "Aguilar Vega",
+      "telefono": "950000197",
+      "cargo": "Tecnico de Mantenimiento",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 198,
+    "fields": {
+      "empresa": 10,
+      "dni": "40000197",
+      "nombres": "Maria Oscar",
+      "apellidos": "Chavez Espinoza",
+      "telefono": "950000198",
+      "cargo": "Operario de Planta",
+      "estado": "HABILITADO"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 199,
+    "fields": {
+      "empresa": 10,
+      "dni": "40000198",
+      "nombres": "Rosa Ernesto",
+      "apellidos": "Flores Cordova",
+      "telefono": "950000199",
+      "cargo": "Jefe de Area",
+      "estado": "PENDIENTE"
+    }
+  },
+  {
+    "model": "control.trabajador",
+    "pk": 200,
+    "fields": {
+      "empresa": 10,
+      "dni": "40000199",
+      "nombres": "Pedro Patricia",
+      "apellidos": "Salazar Rivas",
+      "telefono": "950000200",
+      "cargo": "Conductor",
+      "estado": "RECHAZADO"
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 1,
+    "fields": {
+      "trabajador": 2,
+      "nombre": "Inspeccion Tecnica de Vehiculos",
+      "descripcion": "Revision tecnica de unidades de transporte.",
+      "fecha_emision": "2024-12-31",
+      "fecha_vencimiento": "2027-06-09",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 2,
+    "fields": {
+      "trabajador": 3,
+      "nombre": "Certificado de Operacion de Grua",
+      "descripcion": "Habilitacion para operar grua de carga.",
+      "fecha_emision": "2024-10-21",
+      "fecha_vencimiento": "2027-08-12",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 3,
+    "fields": {
+      "trabajador": 3,
+      "nombre": "Curso de Manejo Defensivo",
+      "descripcion": "Curso de conduccion segura de vehiculos de la empresa.",
+      "fecha_emision": "2024-11-12",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 4,
+    "fields": {
+      "trabajador": 4,
+      "nombre": "Certificado de Manipulacion de Alimentos",
+      "descripcion": "Aprobacion de higiene y manipulacion de alimentos.",
+      "fecha_emision": "2026-07-01",
+      "fecha_vencimiento": "2028-11-22",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 5,
+    "fields": {
+      "trabajador": 4,
+      "nombre": "Curso Basico de Seguridad y Salud",
+      "descripcion": "Entrenamiento en normas de seguridad ocupacional.",
+      "fecha_emision": "2025-03-11",
+      "fecha_vencimiento": "2027-11-15",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 6,
+    "fields": {
+      "trabajador": 4,
+      "nombre": "Curso de Proteccion Contra Incendios",
+      "descripcion": "Entrenamiento en prevencion y evacuacion ante incendios.",
+      "fecha_emision": "2025-02-11",
+      "fecha_vencimiento": "2026-11-02",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 7,
+    "fields": {
+      "trabajador": 5,
+      "nombre": "Certificado de Salud Ocupacional",
+      "descripcion": "Evaluacion medica anual de aptitud para trabajo en planta.",
+      "fecha_emision": "2025-08-12",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 8,
+    "fields": {
+      "trabajador": 7,
+      "nombre": "Curso de Proteccion Contra Incendios",
+      "descripcion": "Entrenamiento en prevencion y evacuacion ante incendios.",
+      "fecha_emision": "2025-11-21",
+      "fecha_vencimiento": "2028-06-01",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 9,
+    "fields": {
+      "trabajador": 8,
+      "nombre": "Certificado de Soldadura y Corte",
+      "descripcion": "Habilitacion certificada para tareas de soldadura.",
+      "fecha_emision": "2025-12-16",
+      "fecha_vencimiento": "2028-01-31",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 10,
+    "fields": {
+      "trabajador": 8,
+      "nombre": "Certificado de Manipulacion de Alimentos",
+      "descripcion": "Aprobacion de higiene y manipulacion de alimentos.",
+      "fecha_emision": "2024-07-26",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 11,
+    "fields": {
+      "trabajador": 9,
+      "nombre": "Certificado de Soldadura y Corte",
+      "descripcion": "Habilitacion certificada para tareas de soldadura.",
+      "fecha_emision": "2025-05-16",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 12,
+    "fields": {
+      "trabajador": 9,
+      "nombre": "Curso de Primeros Auxilios",
+      "descripcion": "Capacitacion en primeros auxilios y rescate basico.",
+      "fecha_emision": "2024-09-23",
+      "fecha_vencimiento": "2027-01-13",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 13,
+    "fields": {
+      "trabajador": 9,
+      "nombre": "Certificado de Soldadura y Corte",
+      "descripcion": "Habilitacion certificada para tareas de soldadura.",
+      "fecha_emision": "2026-02-24",
+      "fecha_vencimiento": "2028-05-13",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 14,
+    "fields": {
+      "trabajador": 10,
+      "nombre": "Curso Basico de Seguridad y Salud",
+      "descripcion": "Entrenamiento en normas de seguridad ocupacional.",
+      "fecha_emision": "2025-03-24",
+      "fecha_vencimiento": "2027-09-02",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 15,
+    "fields": {
+      "trabajador": 12,
+      "nombre": "Curso de Primeros Auxilios",
+      "descripcion": "Capacitacion en primeros auxilios y rescate basico.",
+      "fecha_emision": "2026-02-04",
+      "fecha_vencimiento": "2027-07-03",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 16,
+    "fields": {
+      "trabajador": 13,
+      "nombre": "Curso de Manejo Defensivo",
+      "descripcion": "Curso de conduccion segura de vehiculos de la empresa.",
+      "fecha_emision": "2025-07-13",
+      "fecha_vencimiento": "2026-10-06",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 17,
+    "fields": {
+      "trabajador": 13,
+      "nombre": "Curso de Manejo Defensivo",
+      "descripcion": "Curso de conduccion segura de vehiculos de la empresa.",
+      "fecha_emision": "2026-03-23",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 18,
+    "fields": {
+      "trabajador": 14,
+      "nombre": "Inspeccion Tecnica de Vehiculos",
+      "descripcion": "Revision tecnica de unidades de transporte.",
+      "fecha_emision": "2024-06-07",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 19,
+    "fields": {
+      "trabajador": 14,
+      "nombre": "Curso de Manejo Defensivo",
+      "descripcion": "Curso de conduccion segura de vehiculos de la empresa.",
+      "fecha_emision": "2025-08-11",
+      "fecha_vencimiento": "2027-12-27",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 20,
+    "fields": {
+      "trabajador": 14,
+      "nombre": "Certificado de Trabajo en Altura",
+      "descripcion": "Aprobacion de habilidades para trabajo en altura.",
+      "fecha_emision": "2025-07-12",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 21,
+    "fields": {
+      "trabajador": 15,
+      "nombre": "Curso Basico de Seguridad y Salud",
+      "descripcion": "Entrenamiento en normas de seguridad ocupacional.",
+      "fecha_emision": "2025-03-03",
+      "fecha_vencimiento": "2026-07-19",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 22,
+    "fields": {
+      "trabajador": 17,
+      "nombre": "Curso Basico de Seguridad y Salud",
+      "descripcion": "Entrenamiento en normas de seguridad ocupacional.",
+      "fecha_emision": "2025-02-02",
+      "fecha_vencimiento": "2026-03-26",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 23,
+    "fields": {
+      "trabajador": 18,
+      "nombre": "Curso de Proteccion Contra Incendios",
+      "descripcion": "Entrenamiento en prevencion y evacuacion ante incendios.",
+      "fecha_emision": "2024-12-01",
+      "fecha_vencimiento": "2027-03-06",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 24,
+    "fields": {
+      "trabajador": 18,
+      "nombre": "Inspeccion Tecnica de Vehiculos",
+      "descripcion": "Revision tecnica de unidades de transporte.",
+      "fecha_emision": "2026-07-24",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 25,
+    "fields": {
+      "trabajador": 19,
+      "nombre": "Curso de Manejo Defensivo",
+      "descripcion": "Curso de conduccion segura de vehiculos de la empresa.",
+      "fecha_emision": "2025-06-16",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 26,
+    "fields": {
+      "trabajador": 19,
+      "nombre": "Curso de Manejo Defensivo",
+      "descripcion": "Curso de conduccion segura de vehiculos de la empresa.",
+      "fecha_emision": "2024-12-10",
+      "fecha_vencimiento": "2026-08-05",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 27,
+    "fields": {
+      "trabajador": 19,
+      "nombre": "Curso Basico de Seguridad y Salud",
+      "descripcion": "Entrenamiento en normas de seguridad ocupacional.",
+      "fecha_emision": "2025-07-14",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 28,
+    "fields": {
+      "trabajador": 20,
+      "nombre": "Curso de Proteccion Contra Incendios",
+      "descripcion": "Entrenamiento en prevencion y evacuacion ante incendios.",
+      "fecha_emision": "2026-06-07",
+      "fecha_vencimiento": "2027-12-17",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 29,
+    "fields": {
+      "trabajador": 22,
+      "nombre": "Certificado de Operacion de Grua",
+      "descripcion": "Habilitacion para operar grua de carga.",
+      "fecha_emision": "2025-03-11",
+      "fecha_vencimiento": "2026-05-30",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 30,
+    "fields": {
+      "trabajador": 23,
+      "nombre": "Certificado de Operacion de Grua",
+      "descripcion": "Habilitacion para operar grua de carga.",
+      "fecha_emision": "2025-04-20",
+      "fecha_vencimiento": "2027-06-19",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 31,
+    "fields": {
+      "trabajador": 23,
+      "nombre": "Certificado de Operacion de Grua",
+      "descripcion": "Habilitacion para operar grua de carga.",
+      "fecha_emision": "2025-04-23",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 32,
+    "fields": {
+      "trabajador": 24,
+      "nombre": "Certificado de Soldadura y Corte",
+      "descripcion": "Habilitacion certificada para tareas de soldadura.",
+      "fecha_emision": "2026-03-26",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 33,
+    "fields": {
+      "trabajador": 24,
+      "nombre": "Curso Basico de Seguridad y Salud",
+      "descripcion": "Entrenamiento en normas de seguridad ocupacional.",
+      "fecha_emision": "2026-05-18",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 34,
+    "fields": {
+      "trabajador": 24,
+      "nombre": "Certificado de Salud Ocupacional",
+      "descripcion": "Evaluacion medica anual de aptitud para trabajo en planta.",
+      "fecha_emision": "2024-04-05",
+      "fecha_vencimiento": "2027-01-26",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 35,
+    "fields": {
+      "trabajador": 25,
+      "nombre": "Inspeccion Tecnica de Vehiculos",
+      "descripcion": "Revision tecnica de unidades de transporte.",
+      "fecha_emision": "2026-05-16",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 36,
+    "fields": {
+      "trabajador": 27,
+      "nombre": "Curso de Manejo Defensivo",
+      "descripcion": "Curso de conduccion segura de vehiculos de la empresa.",
+      "fecha_emision": "2024-10-28",
+      "fecha_vencimiento": "2027-09-14",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 37,
+    "fields": {
+      "trabajador": 28,
+      "nombre": "Certificado de Manipulacion de Alimentos",
+      "descripcion": "Aprobacion de higiene y manipulacion de alimentos.",
+      "fecha_emision": "2024-06-24",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 38,
+    "fields": {
+      "trabajador": 28,
+      "nombre": "Certificado de Salud Ocupacional",
+      "descripcion": "Evaluacion medica anual de aptitud para trabajo en planta.",
+      "fecha_emision": "2026-02-16",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 39,
+    "fields": {
+      "trabajador": 29,
+      "nombre": "Curso de Manejo Defensivo",
+      "descripcion": "Curso de conduccion segura de vehiculos de la empresa.",
+      "fecha_emision": "2026-05-07",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 40,
+    "fields": {
+      "trabajador": 29,
+      "nombre": "Inspeccion Tecnica de Vehiculos",
+      "descripcion": "Revision tecnica de unidades de transporte.",
+      "fecha_emision": "2024-06-14",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 41,
+    "fields": {
+      "trabajador": 29,
+      "nombre": "Curso Basico de Seguridad y Salud",
+      "descripcion": "Entrenamiento en normas de seguridad ocupacional.",
+      "fecha_emision": "2024-01-15",
+      "fecha_vencimiento": "2025-10-04",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 42,
+    "fields": {
+      "trabajador": 30,
+      "nombre": "Certificado de Salud Ocupacional",
+      "descripcion": "Evaluacion medica anual de aptitud para trabajo en planta.",
+      "fecha_emision": "2024-11-13",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 43,
+    "fields": {
+      "trabajador": 32,
+      "nombre": "Curso de Manejo Defensivo",
+      "descripcion": "Curso de conduccion segura de vehiculos de la empresa.",
+      "fecha_emision": "2024-08-08",
+      "fecha_vencimiento": "2026-10-18",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 44,
+    "fields": {
+      "trabajador": 33,
+      "nombre": "Certificado de Operacion de Grua",
+      "descripcion": "Habilitacion para operar grua de carga.",
+      "fecha_emision": "2026-04-16",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 45,
+    "fields": {
+      "trabajador": 33,
+      "nombre": "Certificado de Manipulacion de Alimentos",
+      "descripcion": "Aprobacion de higiene y manipulacion de alimentos.",
+      "fecha_emision": "2026-06-18",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 46,
+    "fields": {
+      "trabajador": 34,
+      "nombre": "Inspeccion Tecnica de Vehiculos",
+      "descripcion": "Revision tecnica de unidades de transporte.",
+      "fecha_emision": "2025-08-22",
+      "fecha_vencimiento": "2028-02-28",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 47,
+    "fields": {
+      "trabajador": 34,
+      "nombre": "Inspeccion Tecnica de Vehiculos",
+      "descripcion": "Revision tecnica de unidades de transporte.",
+      "fecha_emision": "2024-07-21",
+      "fecha_vencimiento": "2025-11-13",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 48,
+    "fields": {
+      "trabajador": 34,
+      "nombre": "Certificado de Trabajo en Altura",
+      "descripcion": "Aprobacion de habilidades para trabajo en altura.",
+      "fecha_emision": "2025-09-25",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 49,
+    "fields": {
+      "trabajador": 35,
+      "nombre": "Certificado de Salud Ocupacional",
+      "descripcion": "Evaluacion medica anual de aptitud para trabajo en planta.",
+      "fecha_emision": "2025-03-10",
+      "fecha_vencimiento": "2027-03-09",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 50,
+    "fields": {
+      "trabajador": 37,
+      "nombre": "Certificado de Soldadura y Corte",
+      "descripcion": "Habilitacion certificada para tareas de soldadura.",
+      "fecha_emision": "2025-12-01",
+      "fecha_vencimiento": "2027-08-19",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 51,
+    "fields": {
+      "trabajador": 38,
+      "nombre": "Certificado de Soldadura y Corte",
+      "descripcion": "Habilitacion certificada para tareas de soldadura.",
+      "fecha_emision": "2025-05-05",
+      "fecha_vencimiento": "2027-03-23",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 52,
+    "fields": {
+      "trabajador": 38,
+      "nombre": "Certificado de Trabajo en Altura",
+      "descripcion": "Aprobacion de habilidades para trabajo en altura.",
+      "fecha_emision": "2025-10-03",
+      "fecha_vencimiento": "2027-04-04",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 53,
+    "fields": {
+      "trabajador": 39,
+      "nombre": "Certificado de Soldadura y Corte",
+      "descripcion": "Habilitacion certificada para tareas de soldadura.",
+      "fecha_emision": "2026-02-11",
+      "fecha_vencimiento": "2027-04-09",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 54,
+    "fields": {
+      "trabajador": 39,
+      "nombre": "Certificado de Salud Ocupacional",
+      "descripcion": "Evaluacion medica anual de aptitud para trabajo en planta.",
+      "fecha_emision": "2025-10-04",
+      "fecha_vencimiento": "2028-01-28",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 55,
+    "fields": {
+      "trabajador": 39,
+      "nombre": "Certificado de Salud Ocupacional",
+      "descripcion": "Evaluacion medica anual de aptitud para trabajo en planta.",
+      "fecha_emision": "2024-08-15",
+      "fecha_vencimiento": "2026-01-16",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 56,
+    "fields": {
+      "trabajador": 40,
+      "nombre": "Inspeccion Tecnica de Vehiculos",
+      "descripcion": "Revision tecnica de unidades de transporte.",
+      "fecha_emision": "2026-05-31",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 57,
+    "fields": {
+      "trabajador": 42,
+      "nombre": "Certificado de Trabajo en Altura",
+      "descripcion": "Aprobacion de habilidades para trabajo en altura.",
+      "fecha_emision": "2025-05-11",
+      "fecha_vencimiento": "2027-05-08",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 58,
+    "fields": {
+      "trabajador": 43,
+      "nombre": "Certificado de Operacion de Grua",
+      "descripcion": "Habilitacion para operar grua de carga.",
+      "fecha_emision": "2025-01-16",
+      "fecha_vencimiento": "2026-10-14",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 59,
+    "fields": {
+      "trabajador": 43,
+      "nombre": "Certificado de Trabajo en Altura",
+      "descripcion": "Aprobacion de habilidades para trabajo en altura.",
+      "fecha_emision": "2026-01-01",
+      "fecha_vencimiento": "2027-01-19",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 60,
+    "fields": {
+      "trabajador": 44,
+      "nombre": "Certificado de Manipulacion de Alimentos",
+      "descripcion": "Aprobacion de higiene y manipulacion de alimentos.",
+      "fecha_emision": "2025-01-24",
+      "fecha_vencimiento": "2027-07-06",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 61,
+    "fields": {
+      "trabajador": 44,
+      "nombre": "Certificado de Trabajo en Altura",
+      "descripcion": "Aprobacion de habilidades para trabajo en altura.",
+      "fecha_emision": "2025-06-04",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 62,
+    "fields": {
+      "trabajador": 44,
+      "nombre": "Certificado de Trabajo en Altura",
+      "descripcion": "Aprobacion de habilidades para trabajo en altura.",
+      "fecha_emision": "2026-01-20",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 63,
+    "fields": {
+      "trabajador": 45,
+      "nombre": "Certificado de Trabajo en Altura",
+      "descripcion": "Aprobacion de habilidades para trabajo en altura.",
+      "fecha_emision": "2026-07-09",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 64,
+    "fields": {
+      "trabajador": 47,
+      "nombre": "Inspeccion Tecnica de Vehiculos",
+      "descripcion": "Revision tecnica de unidades de transporte.",
+      "fecha_emision": "2026-04-11",
+      "fecha_vencimiento": "2028-10-12",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 65,
+    "fields": {
+      "trabajador": 48,
+      "nombre": "Certificado de Soldadura y Corte",
+      "descripcion": "Habilitacion certificada para tareas de soldadura.",
+      "fecha_emision": "2024-05-28",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 66,
+    "fields": {
+      "trabajador": 48,
+      "nombre": "Curso Basico de Seguridad y Salud",
+      "descripcion": "Entrenamiento en normas de seguridad ocupacional.",
+      "fecha_emision": "2025-06-11",
+      "fecha_vencimiento": "2028-06-01",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 67,
+    "fields": {
+      "trabajador": 49,
+      "nombre": "Curso de Primeros Auxilios",
+      "descripcion": "Capacitacion en primeros auxilios y rescate basico.",
+      "fecha_emision": "2025-06-28",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 68,
+    "fields": {
+      "trabajador": 49,
+      "nombre": "Curso de Manejo Defensivo",
+      "descripcion": "Curso de conduccion segura de vehiculos de la empresa.",
+      "fecha_emision": "2024-09-11",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 69,
+    "fields": {
+      "trabajador": 49,
+      "nombre": "Inspeccion Tecnica de Vehiculos",
+      "descripcion": "Revision tecnica de unidades de transporte.",
+      "fecha_emision": "2025-05-11",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 70,
+    "fields": {
+      "trabajador": 50,
+      "nombre": "Curso Basico de Seguridad y Salud",
+      "descripcion": "Entrenamiento en normas de seguridad ocupacional.",
+      "fecha_emision": "2024-12-22",
+      "fecha_vencimiento": "2027-05-16",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 71,
+    "fields": {
+      "trabajador": 52,
+      "nombre": "Curso Basico de Seguridad y Salud",
+      "descripcion": "Entrenamiento en normas de seguridad ocupacional.",
+      "fecha_emision": "2026-04-07",
+      "fecha_vencimiento": "2028-02-20",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 72,
+    "fields": {
+      "trabajador": 53,
+      "nombre": "Certificado de Soldadura y Corte",
+      "descripcion": "Habilitacion certificada para tareas de soldadura.",
+      "fecha_emision": "2025-07-29",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 73,
+    "fields": {
+      "trabajador": 53,
+      "nombre": "Curso de Proteccion Contra Incendios",
+      "descripcion": "Entrenamiento en prevencion y evacuacion ante incendios.",
+      "fecha_emision": "2025-02-16",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 74,
+    "fields": {
+      "trabajador": 54,
+      "nombre": "Certificado de Manipulacion de Alimentos",
+      "descripcion": "Aprobacion de higiene y manipulacion de alimentos.",
+      "fecha_emision": "2026-05-01",
+      "fecha_vencimiento": "2028-05-25",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 75,
+    "fields": {
+      "trabajador": 54,
+      "nombre": "Curso de Primeros Auxilios",
+      "descripcion": "Capacitacion en primeros auxilios y rescate basico.",
+      "fecha_emision": "2024-06-07",
+      "fecha_vencimiento": "2027-01-08",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 76,
+    "fields": {
+      "trabajador": 54,
+      "nombre": "Certificado de Trabajo en Altura",
+      "descripcion": "Aprobacion de habilidades para trabajo en altura.",
+      "fecha_emision": "2025-03-17",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 77,
+    "fields": {
+      "trabajador": 55,
+      "nombre": "Certificado de Trabajo en Altura",
+      "descripcion": "Aprobacion de habilidades para trabajo en altura.",
+      "fecha_emision": "2025-07-12",
+      "fecha_vencimiento": "2027-03-08",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 78,
+    "fields": {
+      "trabajador": 57,
+      "nombre": "Certificado de Salud Ocupacional",
+      "descripcion": "Evaluacion medica anual de aptitud para trabajo en planta.",
+      "fecha_emision": "2025-07-16",
+      "fecha_vencimiento": "2028-06-05",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 79,
+    "fields": {
+      "trabajador": 58,
+      "nombre": "Certificado de Soldadura y Corte",
+      "descripcion": "Habilitacion certificada para tareas de soldadura.",
+      "fecha_emision": "2024-08-02",
+      "fecha_vencimiento": "2027-05-27",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 80,
+    "fields": {
+      "trabajador": 58,
+      "nombre": "Inspeccion Tecnica de Vehiculos",
+      "descripcion": "Revision tecnica de unidades de transporte.",
+      "fecha_emision": "2024-03-02",
+      "fecha_vencimiento": "2025-08-26",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 81,
+    "fields": {
+      "trabajador": 59,
+      "nombre": "Inspeccion Tecnica de Vehiculos",
+      "descripcion": "Revision tecnica de unidades de transporte.",
+      "fecha_emision": "2025-08-15",
+      "fecha_vencimiento": "2027-10-13",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 82,
+    "fields": {
+      "trabajador": 59,
+      "nombre": "Curso de Proteccion Contra Incendios",
+      "descripcion": "Entrenamiento en prevencion y evacuacion ante incendios.",
+      "fecha_emision": "2026-05-21",
+      "fecha_vencimiento": "2028-05-01",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 83,
+    "fields": {
+      "trabajador": 59,
+      "nombre": "Certificado de Salud Ocupacional",
+      "descripcion": "Evaluacion medica anual de aptitud para trabajo en planta.",
+      "fecha_emision": "2024-02-08",
+      "fecha_vencimiento": "2026-11-20",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 84,
+    "fields": {
+      "trabajador": 60,
+      "nombre": "Curso de Proteccion Contra Incendios",
+      "descripcion": "Entrenamiento en prevencion y evacuacion ante incendios.",
+      "fecha_emision": "2025-06-11",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 85,
+    "fields": {
+      "trabajador": 62,
+      "nombre": "Curso de Proteccion Contra Incendios",
+      "descripcion": "Entrenamiento en prevencion y evacuacion ante incendios.",
+      "fecha_emision": "2024-07-30",
+      "fecha_vencimiento": "2026-01-20",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 86,
+    "fields": {
+      "trabajador": 63,
+      "nombre": "Curso de Manejo Defensivo",
+      "descripcion": "Curso de conduccion segura de vehiculos de la empresa.",
+      "fecha_emision": "2025-07-26",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 87,
+    "fields": {
+      "trabajador": 63,
+      "nombre": "Certificado de Salud Ocupacional",
+      "descripcion": "Evaluacion medica anual de aptitud para trabajo en planta.",
+      "fecha_emision": "2024-10-04",
+      "fecha_vencimiento": "2025-11-18",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 88,
+    "fields": {
+      "trabajador": 64,
+      "nombre": "Inspeccion Tecnica de Vehiculos",
+      "descripcion": "Revision tecnica de unidades de transporte.",
+      "fecha_emision": "2024-12-17",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 89,
+    "fields": {
+      "trabajador": 64,
+      "nombre": "Curso de Manejo Defensivo",
+      "descripcion": "Curso de conduccion segura de vehiculos de la empresa.",
+      "fecha_emision": "2025-05-06",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 90,
+    "fields": {
+      "trabajador": 64,
+      "nombre": "Inspeccion Tecnica de Vehiculos",
+      "descripcion": "Revision tecnica de unidades de transporte.",
+      "fecha_emision": "2026-05-09",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 91,
+    "fields": {
+      "trabajador": 65,
+      "nombre": "Certificado de Operacion de Grua",
+      "descripcion": "Habilitacion para operar grua de carga.",
+      "fecha_emision": "2026-05-06",
+      "fecha_vencimiento": "2027-11-25",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 92,
+    "fields": {
+      "trabajador": 67,
+      "nombre": "Certificado de Soldadura y Corte",
+      "descripcion": "Habilitacion certificada para tareas de soldadura.",
+      "fecha_emision": "2025-11-29",
+      "fecha_vencimiento": "2027-09-30",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 93,
+    "fields": {
+      "trabajador": 68,
+      "nombre": "Curso de Manejo Defensivo",
+      "descripcion": "Curso de conduccion segura de vehiculos de la empresa.",
+      "fecha_emision": "2024-11-28",
+      "fecha_vencimiento": "2027-10-05",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 94,
+    "fields": {
+      "trabajador": 68,
+      "nombre": "Inspeccion Tecnica de Vehiculos",
+      "descripcion": "Revision tecnica de unidades de transporte.",
+      "fecha_emision": "2025-01-03",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 95,
+    "fields": {
+      "trabajador": 69,
+      "nombre": "Certificado de Manipulacion de Alimentos",
+      "descripcion": "Aprobacion de higiene y manipulacion de alimentos.",
+      "fecha_emision": "2025-10-07",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 96,
+    "fields": {
+      "trabajador": 69,
+      "nombre": "Curso de Manejo Defensivo",
+      "descripcion": "Curso de conduccion segura de vehiculos de la empresa.",
+      "fecha_emision": "2024-08-07",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 97,
+    "fields": {
+      "trabajador": 69,
+      "nombre": "Curso de Primeros Auxilios",
+      "descripcion": "Capacitacion en primeros auxilios y rescate basico.",
+      "fecha_emision": "2024-08-02",
+      "fecha_vencimiento": "2027-01-23",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 98,
+    "fields": {
+      "trabajador": 70,
+      "nombre": "Certificado de Trabajo en Altura",
+      "descripcion": "Aprobacion de habilidades para trabajo en altura.",
+      "fecha_emision": "2025-07-26",
+      "fecha_vencimiento": "2027-06-24",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 99,
+    "fields": {
+      "trabajador": 72,
+      "nombre": "Certificado de Trabajo en Altura",
+      "descripcion": "Aprobacion de habilidades para trabajo en altura.",
+      "fecha_emision": "2024-05-14",
+      "fecha_vencimiento": "2027-03-17",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 100,
+    "fields": {
+      "trabajador": 73,
+      "nombre": "Certificado de Trabajo en Altura",
+      "descripcion": "Aprobacion de habilidades para trabajo en altura.",
+      "fecha_emision": "2024-05-22",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 101,
+    "fields": {
+      "trabajador": 73,
+      "nombre": "Certificado de Soldadura y Corte",
+      "descripcion": "Habilitacion certificada para tareas de soldadura.",
+      "fecha_emision": "2025-12-10",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 102,
+    "fields": {
+      "trabajador": 74,
+      "nombre": "Certificado de Trabajo en Altura",
+      "descripcion": "Aprobacion de habilidades para trabajo en altura.",
+      "fecha_emision": "2025-02-27",
+      "fecha_vencimiento": "2027-07-13",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 103,
+    "fields": {
+      "trabajador": 74,
+      "nombre": "Certificado de Soldadura y Corte",
+      "descripcion": "Habilitacion certificada para tareas de soldadura.",
+      "fecha_emision": "2024-01-30",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 104,
+    "fields": {
+      "trabajador": 74,
+      "nombre": "Certificado de Soldadura y Corte",
+      "descripcion": "Habilitacion certificada para tareas de soldadura.",
+      "fecha_emision": "2025-01-07",
+      "fecha_vencimiento": "2026-04-11",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 105,
+    "fields": {
+      "trabajador": 75,
+      "nombre": "Certificado de Soldadura y Corte",
+      "descripcion": "Habilitacion certificada para tareas de soldadura.",
+      "fecha_emision": "2024-02-11",
+      "fecha_vencimiento": "2025-04-10",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 106,
+    "fields": {
+      "trabajador": 77,
+      "nombre": "Certificado de Manipulacion de Alimentos",
+      "descripcion": "Aprobacion de higiene y manipulacion de alimentos.",
+      "fecha_emision": "2025-11-10",
+      "fecha_vencimiento": "2027-05-03",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 107,
+    "fields": {
+      "trabajador": 78,
+      "nombre": "Certificado de Trabajo en Altura",
+      "descripcion": "Aprobacion de habilidades para trabajo en altura.",
+      "fecha_emision": "2025-07-02",
+      "fecha_vencimiento": "2027-09-07",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 108,
+    "fields": {
+      "trabajador": 78,
+      "nombre": "Certificado de Manipulacion de Alimentos",
+      "descripcion": "Aprobacion de higiene y manipulacion de alimentos.",
+      "fecha_emision": "2025-04-15",
+      "fecha_vencimiento": "2028-04-05",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 109,
+    "fields": {
+      "trabajador": 79,
+      "nombre": "Curso Basico de Seguridad y Salud",
+      "descripcion": "Entrenamiento en normas de seguridad ocupacional.",
+      "fecha_emision": "2026-06-18",
+      "fecha_vencimiento": "2028-01-04",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 110,
+    "fields": {
+      "trabajador": 79,
+      "nombre": "Curso Basico de Seguridad y Salud",
+      "descripcion": "Entrenamiento en normas de seguridad ocupacional.",
+      "fecha_emision": "2026-02-13",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 111,
+    "fields": {
+      "trabajador": 79,
+      "nombre": "Curso de Manejo Defensivo",
+      "descripcion": "Curso de conduccion segura de vehiculos de la empresa.",
+      "fecha_emision": "2025-12-05",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 112,
+    "fields": {
+      "trabajador": 80,
+      "nombre": "Certificado de Salud Ocupacional",
+      "descripcion": "Evaluacion medica anual de aptitud para trabajo en planta.",
+      "fecha_emision": "2025-07-14",
+      "fecha_vencimiento": "2028-05-07",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 113,
+    "fields": {
+      "trabajador": 82,
+      "nombre": "Curso de Proteccion Contra Incendios",
+      "descripcion": "Entrenamiento en prevencion y evacuacion ante incendios.",
+      "fecha_emision": "2024-05-21",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 114,
+    "fields": {
+      "trabajador": 83,
+      "nombre": "Certificado de Manipulacion de Alimentos",
+      "descripcion": "Aprobacion de higiene y manipulacion de alimentos.",
+      "fecha_emision": "2025-09-15",
+      "fecha_vencimiento": "2026-11-03",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 115,
+    "fields": {
+      "trabajador": 83,
+      "nombre": "Certificado de Soldadura y Corte",
+      "descripcion": "Habilitacion certificada para tareas de soldadura.",
+      "fecha_emision": "2024-11-30",
+      "fecha_vencimiento": "2027-10-29",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 116,
+    "fields": {
+      "trabajador": 84,
+      "nombre": "Certificado de Soldadura y Corte",
+      "descripcion": "Habilitacion certificada para tareas de soldadura.",
+      "fecha_emision": "2026-04-20",
+      "fecha_vencimiento": "2027-07-29",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 117,
+    "fields": {
+      "trabajador": 84,
+      "nombre": "Certificado de Operacion de Grua",
+      "descripcion": "Habilitacion para operar grua de carga.",
+      "fecha_emision": "2024-10-30",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 118,
+    "fields": {
+      "trabajador": 84,
+      "nombre": "Curso de Manejo Defensivo",
+      "descripcion": "Curso de conduccion segura de vehiculos de la empresa.",
+      "fecha_emision": "2024-02-12",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 119,
+    "fields": {
+      "trabajador": 85,
+      "nombre": "Curso de Manejo Defensivo",
+      "descripcion": "Curso de conduccion segura de vehiculos de la empresa.",
+      "fecha_emision": "2025-05-05",
+      "fecha_vencimiento": "2026-10-08",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 120,
+    "fields": {
+      "trabajador": 87,
+      "nombre": "Certificado de Salud Ocupacional",
+      "descripcion": "Evaluacion medica anual de aptitud para trabajo en planta.",
+      "fecha_emision": "2026-02-05",
+      "fecha_vencimiento": "2028-10-13",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 121,
+    "fields": {
+      "trabajador": 88,
+      "nombre": "Curso de Proteccion Contra Incendios",
+      "descripcion": "Entrenamiento en prevencion y evacuacion ante incendios.",
+      "fecha_emision": "2024-09-04",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 122,
+    "fields": {
+      "trabajador": 88,
+      "nombre": "Curso de Proteccion Contra Incendios",
+      "descripcion": "Entrenamiento en prevencion y evacuacion ante incendios.",
+      "fecha_emision": "2025-12-08",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 123,
+    "fields": {
+      "trabajador": 89,
+      "nombre": "Curso de Proteccion Contra Incendios",
+      "descripcion": "Entrenamiento en prevencion y evacuacion ante incendios.",
+      "fecha_emision": "2024-09-12",
+      "fecha_vencimiento": "2026-12-05",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 124,
+    "fields": {
+      "trabajador": 89,
+      "nombre": "Curso de Primeros Auxilios",
+      "descripcion": "Capacitacion en primeros auxilios y rescate basico.",
+      "fecha_emision": "2026-02-26",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 125,
+    "fields": {
+      "trabajador": 89,
+      "nombre": "Curso de Proteccion Contra Incendios",
+      "descripcion": "Entrenamiento en prevencion y evacuacion ante incendios.",
+      "fecha_emision": "2025-08-27",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 126,
+    "fields": {
+      "trabajador": 90,
+      "nombre": "Certificado de Salud Ocupacional",
+      "descripcion": "Evaluacion medica anual de aptitud para trabajo en planta.",
+      "fecha_emision": "2025-06-26",
+      "fecha_vencimiento": "2026-11-16",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 127,
+    "fields": {
+      "trabajador": 92,
+      "nombre": "Certificado de Trabajo en Altura",
+      "descripcion": "Aprobacion de habilidades para trabajo en altura.",
+      "fecha_emision": "2025-06-27",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 128,
+    "fields": {
+      "trabajador": 93,
+      "nombre": "Certificado de Trabajo en Altura",
+      "descripcion": "Aprobacion de habilidades para trabajo en altura.",
+      "fecha_emision": "2025-04-13",
+      "fecha_vencimiento": "2026-08-04",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 129,
+    "fields": {
+      "trabajador": 93,
+      "nombre": "Curso Basico de Seguridad y Salud",
+      "descripcion": "Entrenamiento en normas de seguridad ocupacional.",
+      "fecha_emision": "2026-04-04",
+      "fecha_vencimiento": "2028-05-18",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 130,
+    "fields": {
+      "trabajador": 94,
+      "nombre": "Certificado de Trabajo en Altura",
+      "descripcion": "Aprobacion de habilidades para trabajo en altura.",
+      "fecha_emision": "2025-06-21",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 131,
+    "fields": {
+      "trabajador": 94,
+      "nombre": "Inspeccion Tecnica de Vehiculos",
+      "descripcion": "Revision tecnica de unidades de transporte.",
+      "fecha_emision": "2024-03-27",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 132,
+    "fields": {
+      "trabajador": 94,
+      "nombre": "Certificado de Salud Ocupacional",
+      "descripcion": "Evaluacion medica anual de aptitud para trabajo en planta.",
+      "fecha_emision": "2024-08-11",
+      "fecha_vencimiento": "2027-05-19",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 133,
+    "fields": {
+      "trabajador": 95,
+      "nombre": "Inspeccion Tecnica de Vehiculos",
+      "descripcion": "Revision tecnica de unidades de transporte.",
+      "fecha_emision": "2026-06-22",
+      "fecha_vencimiento": "2029-06-01",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 134,
+    "fields": {
+      "trabajador": 97,
+      "nombre": "Certificado de Operacion de Grua",
+      "descripcion": "Habilitacion para operar grua de carga.",
+      "fecha_emision": "2024-07-28",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 135,
+    "fields": {
+      "trabajador": 98,
+      "nombre": "Certificado de Soldadura y Corte",
+      "descripcion": "Habilitacion certificada para tareas de soldadura.",
+      "fecha_emision": "2024-06-20",
+      "fecha_vencimiento": "2026-12-01",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 136,
+    "fields": {
+      "trabajador": 98,
+      "nombre": "Curso de Manejo Defensivo",
+      "descripcion": "Curso de conduccion segura de vehiculos de la empresa.",
+      "fecha_emision": "2025-07-07",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 137,
+    "fields": {
+      "trabajador": 99,
+      "nombre": "Certificado de Manipulacion de Alimentos",
+      "descripcion": "Aprobacion de higiene y manipulacion de alimentos.",
+      "fecha_emision": "2025-04-20",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 138,
+    "fields": {
+      "trabajador": 99,
+      "nombre": "Certificado de Salud Ocupacional",
+      "descripcion": "Evaluacion medica anual de aptitud para trabajo en planta.",
+      "fecha_emision": "2024-01-16",
+      "fecha_vencimiento": "2026-08-07",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 139,
+    "fields": {
+      "trabajador": 99,
+      "nombre": "Curso Basico de Seguridad y Salud",
+      "descripcion": "Entrenamiento en normas de seguridad ocupacional.",
+      "fecha_emision": "2025-03-27",
+      "fecha_vencimiento": "2026-09-25",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 140,
+    "fields": {
+      "trabajador": 100,
+      "nombre": "Certificado de Soldadura y Corte",
+      "descripcion": "Habilitacion certificada para tareas de soldadura.",
+      "fecha_emision": "2026-02-13",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 141,
+    "fields": {
+      "trabajador": 102,
+      "nombre": "Curso de Primeros Auxilios",
+      "descripcion": "Capacitacion en primeros auxilios y rescate basico.",
+      "fecha_emision": "2026-04-22",
+      "fecha_vencimiento": "2029-04-01",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 142,
+    "fields": {
+      "trabajador": 103,
+      "nombre": "Curso Basico de Seguridad y Salud",
+      "descripcion": "Entrenamiento en normas de seguridad ocupacional.",
+      "fecha_emision": "2024-05-22",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 143,
+    "fields": {
+      "trabajador": 103,
+      "nombre": "Certificado de Manipulacion de Alimentos",
+      "descripcion": "Aprobacion de higiene y manipulacion de alimentos.",
+      "fecha_emision": "2024-04-01",
+      "fecha_vencimiento": "2026-08-23",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 144,
+    "fields": {
+      "trabajador": 104,
+      "nombre": "Curso Basico de Seguridad y Salud",
+      "descripcion": "Entrenamiento en normas de seguridad ocupacional.",
+      "fecha_emision": "2026-01-30",
+      "fecha_vencimiento": "2027-02-20",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 145,
+    "fields": {
+      "trabajador": 104,
+      "nombre": "Certificado de Operacion de Grua",
+      "descripcion": "Habilitacion para operar grua de carga.",
+      "fecha_emision": "2024-08-31",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 146,
+    "fields": {
+      "trabajador": 104,
+      "nombre": "Curso de Primeros Auxilios",
+      "descripcion": "Capacitacion en primeros auxilios y rescate basico.",
+      "fecha_emision": "2024-11-07",
+      "fecha_vencimiento": "2027-06-20",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 147,
+    "fields": {
+      "trabajador": 105,
+      "nombre": "Certificado de Salud Ocupacional",
+      "descripcion": "Evaluacion medica anual de aptitud para trabajo en planta.",
+      "fecha_emision": "2024-12-16",
+      "fecha_vencimiento": "2026-06-13",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 148,
+    "fields": {
+      "trabajador": 107,
+      "nombre": "Curso Basico de Seguridad y Salud",
+      "descripcion": "Entrenamiento en normas de seguridad ocupacional.",
+      "fecha_emision": "2024-05-10",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 149,
+    "fields": {
+      "trabajador": 108,
+      "nombre": "Certificado de Salud Ocupacional",
+      "descripcion": "Evaluacion medica anual de aptitud para trabajo en planta.",
+      "fecha_emision": "2025-03-30",
+      "fecha_vencimiento": "2026-08-31",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 150,
+    "fields": {
+      "trabajador": 108,
+      "nombre": "Certificado de Manipulacion de Alimentos",
+      "descripcion": "Aprobacion de higiene y manipulacion de alimentos.",
+      "fecha_emision": "2025-10-10",
+      "fecha_vencimiento": "2028-01-07",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 151,
+    "fields": {
+      "trabajador": 109,
+      "nombre": "Curso de Proteccion Contra Incendios",
+      "descripcion": "Entrenamiento en prevencion y evacuacion ante incendios.",
+      "fecha_emision": "2026-04-09",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 152,
+    "fields": {
+      "trabajador": 109,
+      "nombre": "Certificado de Manipulacion de Alimentos",
+      "descripcion": "Aprobacion de higiene y manipulacion de alimentos.",
+      "fecha_emision": "2024-10-07",
+      "fecha_vencimiento": "2027-01-04",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 153,
+    "fields": {
+      "trabajador": 109,
+      "nombre": "Certificado de Operacion de Grua",
+      "descripcion": "Habilitacion para operar grua de carga.",
+      "fecha_emision": "2024-09-13",
+      "fecha_vencimiento": "2027-06-11",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 154,
+    "fields": {
+      "trabajador": 110,
+      "nombre": "Curso Basico de Seguridad y Salud",
+      "descripcion": "Entrenamiento en normas de seguridad ocupacional.",
+      "fecha_emision": "2025-09-19",
+      "fecha_vencimiento": "2027-04-16",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 155,
+    "fields": {
+      "trabajador": 112,
+      "nombre": "Curso de Manejo Defensivo",
+      "descripcion": "Curso de conduccion segura de vehiculos de la empresa.",
+      "fecha_emision": "2024-12-09",
+      "fecha_vencimiento": "2027-01-17",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 156,
+    "fields": {
+      "trabajador": 113,
+      "nombre": "Certificado de Soldadura y Corte",
+      "descripcion": "Habilitacion certificada para tareas de soldadura.",
+      "fecha_emision": "2025-01-22",
+      "fecha_vencimiento": "2027-01-12",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 157,
+    "fields": {
+      "trabajador": 113,
+      "nombre": "Curso de Proteccion Contra Incendios",
+      "descripcion": "Entrenamiento en prevencion y evacuacion ante incendios.",
+      "fecha_emision": "2024-09-05",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 158,
+    "fields": {
+      "trabajador": 114,
+      "nombre": "Certificado de Trabajo en Altura",
+      "descripcion": "Aprobacion de habilidades para trabajo en altura.",
+      "fecha_emision": "2026-05-18",
+      "fecha_vencimiento": "2029-01-01",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 159,
+    "fields": {
+      "trabajador": 114,
+      "nombre": "Certificado de Trabajo en Altura",
+      "descripcion": "Aprobacion de habilidades para trabajo en altura.",
+      "fecha_emision": "2025-03-31",
+      "fecha_vencimiento": "2028-01-11",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 160,
+    "fields": {
+      "trabajador": 114,
+      "nombre": "Curso de Proteccion Contra Incendios",
+      "descripcion": "Entrenamiento en prevencion y evacuacion ante incendios.",
+      "fecha_emision": "2025-11-28",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 161,
+    "fields": {
+      "trabajador": 115,
+      "nombre": "Certificado de Soldadura y Corte",
+      "descripcion": "Habilitacion certificada para tareas de soldadura.",
+      "fecha_emision": "2024-11-01",
+      "fecha_vencimiento": "2026-06-20",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 162,
+    "fields": {
+      "trabajador": 117,
+      "nombre": "Certificado de Salud Ocupacional",
+      "descripcion": "Evaluacion medica anual de aptitud para trabajo en planta.",
+      "fecha_emision": "2025-03-07",
+      "fecha_vencimiento": "2027-04-07",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 163,
+    "fields": {
+      "trabajador": 118,
+      "nombre": "Inspeccion Tecnica de Vehiculos",
+      "descripcion": "Revision tecnica de unidades de transporte.",
+      "fecha_emision": "2026-06-03",
+      "fecha_vencimiento": "2027-07-02",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 164,
+    "fields": {
+      "trabajador": 118,
+      "nombre": "Curso Basico de Seguridad y Salud",
+      "descripcion": "Entrenamiento en normas de seguridad ocupacional.",
+      "fecha_emision": "2024-08-29",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 165,
+    "fields": {
+      "trabajador": 119,
+      "nombre": "Certificado de Manipulacion de Alimentos",
+      "descripcion": "Aprobacion de higiene y manipulacion de alimentos.",
+      "fecha_emision": "2025-06-09",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 166,
+    "fields": {
+      "trabajador": 119,
+      "nombre": "Certificado de Salud Ocupacional",
+      "descripcion": "Evaluacion medica anual de aptitud para trabajo en planta.",
+      "fecha_emision": "2025-07-12",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 167,
+    "fields": {
+      "trabajador": 119,
+      "nombre": "Curso Basico de Seguridad y Salud",
+      "descripcion": "Entrenamiento en normas de seguridad ocupacional.",
+      "fecha_emision": "2024-04-29",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 168,
+    "fields": {
+      "trabajador": 120,
+      "nombre": "Curso Basico de Seguridad y Salud",
+      "descripcion": "Entrenamiento en normas de seguridad ocupacional.",
+      "fecha_emision": "2025-03-02",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 169,
+    "fields": {
+      "trabajador": 122,
+      "nombre": "Curso de Primeros Auxilios",
+      "descripcion": "Capacitacion en primeros auxilios y rescate basico.",
+      "fecha_emision": "2026-06-14",
+      "fecha_vencimiento": "2028-10-23",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 170,
+    "fields": {
+      "trabajador": 123,
+      "nombre": "Inspeccion Tecnica de Vehiculos",
+      "descripcion": "Revision tecnica de unidades de transporte.",
+      "fecha_emision": "2024-08-30",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 171,
+    "fields": {
+      "trabajador": 123,
+      "nombre": "Curso de Proteccion Contra Incendios",
+      "descripcion": "Entrenamiento en prevencion y evacuacion ante incendios.",
+      "fecha_emision": "2026-05-25",
+      "fecha_vencimiento": "2028-12-08",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 172,
+    "fields": {
+      "trabajador": 124,
+      "nombre": "Certificado de Manipulacion de Alimentos",
+      "descripcion": "Aprobacion de higiene y manipulacion de alimentos.",
+      "fecha_emision": "2026-06-16",
+      "fecha_vencimiento": "2028-09-10",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 173,
+    "fields": {
+      "trabajador": 124,
+      "nombre": "Curso de Proteccion Contra Incendios",
+      "descripcion": "Entrenamiento en prevencion y evacuacion ante incendios.",
+      "fecha_emision": "2024-03-03",
+      "fecha_vencimiento": "2026-02-25",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 174,
+    "fields": {
+      "trabajador": 124,
+      "nombre": "Curso Basico de Seguridad y Salud",
+      "descripcion": "Entrenamiento en normas de seguridad ocupacional.",
+      "fecha_emision": "2024-02-18",
+      "fecha_vencimiento": "2026-05-01",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 175,
+    "fields": {
+      "trabajador": 125,
+      "nombre": "Certificado de Manipulacion de Alimentos",
+      "descripcion": "Aprobacion de higiene y manipulacion de alimentos.",
+      "fecha_emision": "2024-04-21",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 176,
+    "fields": {
+      "trabajador": 127,
+      "nombre": "Curso Basico de Seguridad y Salud",
+      "descripcion": "Entrenamiento en normas de seguridad ocupacional.",
+      "fecha_emision": "2025-02-24",
+      "fecha_vencimiento": "2026-05-19",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 177,
+    "fields": {
+      "trabajador": 128,
+      "nombre": "Curso de Manejo Defensivo",
+      "descripcion": "Curso de conduccion segura de vehiculos de la empresa.",
+      "fecha_emision": "2026-06-06",
+      "fecha_vencimiento": "2028-01-31",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 178,
+    "fields": {
+      "trabajador": 128,
+      "nombre": "Curso de Manejo Defensivo",
+      "descripcion": "Curso de conduccion segura de vehiculos de la empresa.",
+      "fecha_emision": "2025-06-20",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 179,
+    "fields": {
+      "trabajador": 129,
+      "nombre": "Certificado de Soldadura y Corte",
+      "descripcion": "Habilitacion certificada para tareas de soldadura.",
+      "fecha_emision": "2025-04-16",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 180,
+    "fields": {
+      "trabajador": 129,
+      "nombre": "Certificado de Operacion de Grua",
+      "descripcion": "Habilitacion para operar grua de carga.",
+      "fecha_emision": "2024-07-31",
+      "fecha_vencimiento": "2027-03-27",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 181,
+    "fields": {
+      "trabajador": 129,
+      "nombre": "Curso de Proteccion Contra Incendios",
+      "descripcion": "Entrenamiento en prevencion y evacuacion ante incendios.",
+      "fecha_emision": "2024-06-15",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 182,
+    "fields": {
+      "trabajador": 130,
+      "nombre": "Curso de Manejo Defensivo",
+      "descripcion": "Curso de conduccion segura de vehiculos de la empresa.",
+      "fecha_emision": "2024-09-09",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 183,
+    "fields": {
+      "trabajador": 132,
+      "nombre": "Curso de Manejo Defensivo",
+      "descripcion": "Curso de conduccion segura de vehiculos de la empresa.",
+      "fecha_emision": "2025-01-20",
+      "fecha_vencimiento": "2027-02-05",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 184,
+    "fields": {
+      "trabajador": 133,
+      "nombre": "Inspeccion Tecnica de Vehiculos",
+      "descripcion": "Revision tecnica de unidades de transporte.",
+      "fecha_emision": "2024-01-15",
+      "fecha_vencimiento": "2026-02-13",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 185,
+    "fields": {
+      "trabajador": 133,
+      "nombre": "Inspeccion Tecnica de Vehiculos",
+      "descripcion": "Revision tecnica de unidades de transporte.",
+      "fecha_emision": "2026-03-22",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 186,
+    "fields": {
+      "trabajador": 134,
+      "nombre": "Certificado de Salud Ocupacional",
+      "descripcion": "Evaluacion medica anual de aptitud para trabajo en planta.",
+      "fecha_emision": "2025-09-09",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 187,
+    "fields": {
+      "trabajador": 134,
+      "nombre": "Certificado de Operacion de Grua",
+      "descripcion": "Habilitacion para operar grua de carga.",
+      "fecha_emision": "2025-07-07",
+      "fecha_vencimiento": "2026-08-31",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 188,
+    "fields": {
+      "trabajador": 134,
+      "nombre": "Curso Basico de Seguridad y Salud",
+      "descripcion": "Entrenamiento en normas de seguridad ocupacional.",
+      "fecha_emision": "2026-02-27",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 189,
+    "fields": {
+      "trabajador": 135,
+      "nombre": "Curso de Primeros Auxilios",
+      "descripcion": "Capacitacion en primeros auxilios y rescate basico.",
+      "fecha_emision": "2024-08-11",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 190,
+    "fields": {
+      "trabajador": 137,
+      "nombre": "Curso de Manejo Defensivo",
+      "descripcion": "Curso de conduccion segura de vehiculos de la empresa.",
+      "fecha_emision": "2024-02-25",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 191,
+    "fields": {
+      "trabajador": 138,
+      "nombre": "Curso Basico de Seguridad y Salud",
+      "descripcion": "Entrenamiento en normas de seguridad ocupacional.",
+      "fecha_emision": "2026-03-24",
+      "fecha_vencimiento": "2028-11-16",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 192,
+    "fields": {
+      "trabajador": 138,
+      "nombre": "Certificado de Manipulacion de Alimentos",
+      "descripcion": "Aprobacion de higiene y manipulacion de alimentos.",
+      "fecha_emision": "2024-02-07",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 193,
+    "fields": {
+      "trabajador": 139,
+      "nombre": "Certificado de Soldadura y Corte",
+      "descripcion": "Habilitacion certificada para tareas de soldadura.",
+      "fecha_emision": "2025-11-23",
+      "fecha_vencimiento": "2028-02-17",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 194,
+    "fields": {
+      "trabajador": 139,
+      "nombre": "Curso de Primeros Auxilios",
+      "descripcion": "Capacitacion en primeros auxilios y rescate basico.",
+      "fecha_emision": "2024-02-22",
+      "fecha_vencimiento": "2025-07-24",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 195,
+    "fields": {
+      "trabajador": 139,
+      "nombre": "Certificado de Operacion de Grua",
+      "descripcion": "Habilitacion para operar grua de carga.",
+      "fecha_emision": "2025-10-16",
+      "fecha_vencimiento": "2028-04-17",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 196,
+    "fields": {
+      "trabajador": 140,
+      "nombre": "Curso de Proteccion Contra Incendios",
+      "descripcion": "Entrenamiento en prevencion y evacuacion ante incendios.",
+      "fecha_emision": "2025-08-10",
+      "fecha_vencimiento": "2027-12-12",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 197,
+    "fields": {
+      "trabajador": 142,
+      "nombre": "Certificado de Soldadura y Corte",
+      "descripcion": "Habilitacion certificada para tareas de soldadura.",
+      "fecha_emision": "2025-09-28",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 198,
+    "fields": {
+      "trabajador": 143,
+      "nombre": "Curso de Primeros Auxilios",
+      "descripcion": "Capacitacion en primeros auxilios y rescate basico.",
+      "fecha_emision": "2025-04-22",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 199,
+    "fields": {
+      "trabajador": 143,
+      "nombre": "Inspeccion Tecnica de Vehiculos",
+      "descripcion": "Revision tecnica de unidades de transporte.",
+      "fecha_emision": "2025-02-04",
+      "fecha_vencimiento": "2026-02-14",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 200,
+    "fields": {
+      "trabajador": 144,
+      "nombre": "Curso de Primeros Auxilios",
+      "descripcion": "Capacitacion en primeros auxilios y rescate basico.",
+      "fecha_emision": "2024-07-18",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 201,
+    "fields": {
+      "trabajador": 144,
+      "nombre": "Curso Basico de Seguridad y Salud",
+      "descripcion": "Entrenamiento en normas de seguridad ocupacional.",
+      "fecha_emision": "2024-11-06",
+      "fecha_vencimiento": "2026-02-27",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 202,
+    "fields": {
+      "trabajador": 144,
+      "nombre": "Certificado de Soldadura y Corte",
+      "descripcion": "Habilitacion certificada para tareas de soldadura.",
+      "fecha_emision": "2024-03-15",
+      "fecha_vencimiento": "2026-07-03",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 203,
+    "fields": {
+      "trabajador": 145,
+      "nombre": "Curso de Primeros Auxilios",
+      "descripcion": "Capacitacion en primeros auxilios y rescate basico.",
+      "fecha_emision": "2025-07-19",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 204,
+    "fields": {
+      "trabajador": 147,
+      "nombre": "Curso de Proteccion Contra Incendios",
+      "descripcion": "Entrenamiento en prevencion y evacuacion ante incendios.",
+      "fecha_emision": "2024-03-07",
+      "fecha_vencimiento": "2026-11-06",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 205,
+    "fields": {
+      "trabajador": 148,
+      "nombre": "Certificado de Soldadura y Corte",
+      "descripcion": "Habilitacion certificada para tareas de soldadura.",
+      "fecha_emision": "2024-12-19",
+      "fecha_vencimiento": "2026-08-07",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 206,
+    "fields": {
+      "trabajador": 148,
+      "nombre": "Certificado de Operacion de Grua",
+      "descripcion": "Habilitacion para operar grua de carga.",
+      "fecha_emision": "2025-04-30",
+      "fecha_vencimiento": "2026-06-03",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 207,
+    "fields": {
+      "trabajador": 149,
+      "nombre": "Curso Basico de Seguridad y Salud",
+      "descripcion": "Entrenamiento en normas de seguridad ocupacional.",
+      "fecha_emision": "2024-07-31",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 208,
+    "fields": {
+      "trabajador": 149,
+      "nombre": "Certificado de Operacion de Grua",
+      "descripcion": "Habilitacion para operar grua de carga.",
+      "fecha_emision": "2025-11-25",
+      "fecha_vencimiento": "2027-02-06",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 209,
+    "fields": {
+      "trabajador": 149,
+      "nombre": "Curso de Proteccion Contra Incendios",
+      "descripcion": "Entrenamiento en prevencion y evacuacion ante incendios.",
+      "fecha_emision": "2024-11-19",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 210,
+    "fields": {
+      "trabajador": 150,
+      "nombre": "Curso Basico de Seguridad y Salud",
+      "descripcion": "Entrenamiento en normas de seguridad ocupacional.",
+      "fecha_emision": "2026-06-16",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 211,
+    "fields": {
+      "trabajador": 152,
+      "nombre": "Curso de Proteccion Contra Incendios",
+      "descripcion": "Entrenamiento en prevencion y evacuacion ante incendios.",
+      "fecha_emision": "2025-06-17",
+      "fecha_vencimiento": "2028-05-16",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 212,
+    "fields": {
+      "trabajador": 153,
+      "nombre": "Inspeccion Tecnica de Vehiculos",
+      "descripcion": "Revision tecnica de unidades de transporte.",
+      "fecha_emision": "2026-05-12",
+      "fecha_vencimiento": "2028-09-27",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 213,
+    "fields": {
+      "trabajador": 153,
+      "nombre": "Curso de Proteccion Contra Incendios",
+      "descripcion": "Entrenamiento en prevencion y evacuacion ante incendios.",
+      "fecha_emision": "2025-12-07",
+      "fecha_vencimiento": "2028-09-07",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 214,
+    "fields": {
+      "trabajador": 154,
+      "nombre": "Certificado de Soldadura y Corte",
+      "descripcion": "Habilitacion certificada para tareas de soldadura.",
+      "fecha_emision": "2025-10-11",
+      "fecha_vencimiento": "2027-11-27",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 215,
+    "fields": {
+      "trabajador": 154,
+      "nombre": "Certificado de Soldadura y Corte",
+      "descripcion": "Habilitacion certificada para tareas de soldadura.",
+      "fecha_emision": "2026-05-30",
+      "fecha_vencimiento": "2029-03-11",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 216,
+    "fields": {
+      "trabajador": 154,
+      "nombre": "Certificado de Salud Ocupacional",
+      "descripcion": "Evaluacion medica anual de aptitud para trabajo en planta.",
+      "fecha_emision": "2025-03-19",
+      "fecha_vencimiento": "2028-02-15",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 217,
+    "fields": {
+      "trabajador": 155,
+      "nombre": "Curso de Proteccion Contra Incendios",
+      "descripcion": "Entrenamiento en prevencion y evacuacion ante incendios.",
+      "fecha_emision": "2025-02-17",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 218,
+    "fields": {
+      "trabajador": 157,
+      "nombre": "Curso de Proteccion Contra Incendios",
+      "descripcion": "Entrenamiento en prevencion y evacuacion ante incendios.",
+      "fecha_emision": "2025-12-02",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 219,
+    "fields": {
+      "trabajador": 158,
+      "nombre": "Certificado de Manipulacion de Alimentos",
+      "descripcion": "Aprobacion de higiene y manipulacion de alimentos.",
+      "fecha_emision": "2026-07-12",
+      "fecha_vencimiento": "2029-04-30",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 220,
+    "fields": {
+      "trabajador": 158,
+      "nombre": "Certificado de Trabajo en Altura",
+      "descripcion": "Aprobacion de habilidades para trabajo en altura.",
+      "fecha_emision": "2026-04-14",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 221,
+    "fields": {
+      "trabajador": 159,
+      "nombre": "Certificado de Operacion de Grua",
+      "descripcion": "Habilitacion para operar grua de carga.",
+      "fecha_emision": "2025-03-08",
+      "fecha_vencimiento": "2027-09-28",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 222,
+    "fields": {
+      "trabajador": 159,
+      "nombre": "Certificado de Manipulacion de Alimentos",
+      "descripcion": "Aprobacion de higiene y manipulacion de alimentos.",
+      "fecha_emision": "2024-07-24",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 223,
+    "fields": {
+      "trabajador": 159,
+      "nombre": "Certificado de Manipulacion de Alimentos",
+      "descripcion": "Aprobacion de higiene y manipulacion de alimentos.",
+      "fecha_emision": "2026-05-19",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 224,
+    "fields": {
+      "trabajador": 160,
+      "nombre": "Certificado de Operacion de Grua",
+      "descripcion": "Habilitacion para operar grua de carga.",
+      "fecha_emision": "2026-03-01",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 225,
+    "fields": {
+      "trabajador": 162,
+      "nombre": "Curso de Primeros Auxilios",
+      "descripcion": "Capacitacion en primeros auxilios y rescate basico.",
+      "fecha_emision": "2026-01-09",
+      "fecha_vencimiento": "2027-11-21",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 226,
+    "fields": {
+      "trabajador": 163,
+      "nombre": "Certificado de Operacion de Grua",
+      "descripcion": "Habilitacion para operar grua de carga.",
+      "fecha_emision": "2026-05-24",
+      "fecha_vencimiento": "2028-03-16",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 227,
+    "fields": {
+      "trabajador": 163,
+      "nombre": "Curso Basico de Seguridad y Salud",
+      "descripcion": "Entrenamiento en normas de seguridad ocupacional.",
+      "fecha_emision": "2025-10-07",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 228,
+    "fields": {
+      "trabajador": 164,
+      "nombre": "Certificado de Soldadura y Corte",
+      "descripcion": "Habilitacion certificada para tareas de soldadura.",
+      "fecha_emision": "2025-03-17",
+      "fecha_vencimiento": "2027-05-19",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 229,
+    "fields": {
+      "trabajador": 164,
+      "nombre": "Curso Basico de Seguridad y Salud",
+      "descripcion": "Entrenamiento en normas de seguridad ocupacional.",
+      "fecha_emision": "2024-05-02",
+      "fecha_vencimiento": "2026-02-12",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 230,
+    "fields": {
+      "trabajador": 164,
+      "nombre": "Curso Basico de Seguridad y Salud",
+      "descripcion": "Entrenamiento en normas de seguridad ocupacional.",
+      "fecha_emision": "2025-12-23",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 231,
+    "fields": {
+      "trabajador": 165,
+      "nombre": "Curso de Primeros Auxilios",
+      "descripcion": "Capacitacion en primeros auxilios y rescate basico.",
+      "fecha_emision": "2024-09-28",
+      "fecha_vencimiento": "2026-07-01",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 232,
+    "fields": {
+      "trabajador": 167,
+      "nombre": "Certificado de Soldadura y Corte",
+      "descripcion": "Habilitacion certificada para tareas de soldadura.",
+      "fecha_emision": "2024-05-11",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 233,
+    "fields": {
+      "trabajador": 168,
+      "nombre": "Curso Basico de Seguridad y Salud",
+      "descripcion": "Entrenamiento en normas de seguridad ocupacional.",
+      "fecha_emision": "2025-09-24",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 234,
+    "fields": {
+      "trabajador": 168,
+      "nombre": "Certificado de Soldadura y Corte",
+      "descripcion": "Habilitacion certificada para tareas de soldadura.",
+      "fecha_emision": "2025-12-07",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 235,
+    "fields": {
+      "trabajador": 169,
+      "nombre": "Certificado de Salud Ocupacional",
+      "descripcion": "Evaluacion medica anual de aptitud para trabajo en planta.",
+      "fecha_emision": "2025-10-03",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 236,
+    "fields": {
+      "trabajador": 169,
+      "nombre": "Certificado de Trabajo en Altura",
+      "descripcion": "Aprobacion de habilidades para trabajo en altura.",
+      "fecha_emision": "2024-01-20",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 237,
+    "fields": {
+      "trabajador": 169,
+      "nombre": "Certificado de Salud Ocupacional",
+      "descripcion": "Evaluacion medica anual de aptitud para trabajo en planta.",
+      "fecha_emision": "2026-02-26",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 238,
+    "fields": {
+      "trabajador": 170,
+      "nombre": "Curso de Proteccion Contra Incendios",
+      "descripcion": "Entrenamiento en prevencion y evacuacion ante incendios.",
+      "fecha_emision": "2024-07-24",
+      "fecha_vencimiento": "2025-09-01",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 239,
+    "fields": {
+      "trabajador": 172,
+      "nombre": "Certificado de Soldadura y Corte",
+      "descripcion": "Habilitacion certificada para tareas de soldadura.",
+      "fecha_emision": "2025-12-12",
+      "fecha_vencimiento": "2028-02-15",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 240,
+    "fields": {
+      "trabajador": 173,
+      "nombre": "Curso de Primeros Auxilios",
+      "descripcion": "Capacitacion en primeros auxilios y rescate basico.",
+      "fecha_emision": "2024-12-30",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 241,
+    "fields": {
+      "trabajador": 173,
+      "nombre": "Certificado de Salud Ocupacional",
+      "descripcion": "Evaluacion medica anual de aptitud para trabajo en planta.",
+      "fecha_emision": "2024-07-09",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 242,
+    "fields": {
+      "trabajador": 174,
+      "nombre": "Certificado de Salud Ocupacional",
+      "descripcion": "Evaluacion medica anual de aptitud para trabajo en planta.",
+      "fecha_emision": "2025-10-06",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 243,
+    "fields": {
+      "trabajador": 174,
+      "nombre": "Certificado de Salud Ocupacional",
+      "descripcion": "Evaluacion medica anual de aptitud para trabajo en planta.",
+      "fecha_emision": "2024-11-12",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 244,
+    "fields": {
+      "trabajador": 174,
+      "nombre": "Curso de Primeros Auxilios",
+      "descripcion": "Capacitacion en primeros auxilios y rescate basico.",
+      "fecha_emision": "2026-02-12",
+      "fecha_vencimiento": "2027-05-11",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 245,
+    "fields": {
+      "trabajador": 175,
+      "nombre": "Certificado de Trabajo en Altura",
+      "descripcion": "Aprobacion de habilidades para trabajo en altura.",
+      "fecha_emision": "2026-04-13",
+      "fecha_vencimiento": "2027-05-28",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 246,
+    "fields": {
+      "trabajador": 177,
+      "nombre": "Curso de Proteccion Contra Incendios",
+      "descripcion": "Entrenamiento en prevencion y evacuacion ante incendios.",
+      "fecha_emision": "2024-01-21",
+      "fecha_vencimiento": "2026-06-14",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 247,
+    "fields": {
+      "trabajador": 178,
+      "nombre": "Curso de Primeros Auxilios",
+      "descripcion": "Capacitacion en primeros auxilios y rescate basico.",
+      "fecha_emision": "2025-08-31",
+      "fecha_vencimiento": "2026-11-08",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 248,
+    "fields": {
+      "trabajador": 178,
+      "nombre": "Curso de Primeros Auxilios",
+      "descripcion": "Capacitacion en primeros auxilios y rescate basico.",
+      "fecha_emision": "2024-07-20",
+      "fecha_vencimiento": "2025-11-28",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 249,
+    "fields": {
+      "trabajador": 179,
+      "nombre": "Inspeccion Tecnica de Vehiculos",
+      "descripcion": "Revision tecnica de unidades de transporte.",
+      "fecha_emision": "2025-07-25",
+      "fecha_vencimiento": "2026-12-10",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 250,
+    "fields": {
+      "trabajador": 179,
+      "nombre": "Curso de Manejo Defensivo",
+      "descripcion": "Curso de conduccion segura de vehiculos de la empresa.",
+      "fecha_emision": "2026-05-30",
+      "fecha_vencimiento": "2029-02-01",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 251,
+    "fields": {
+      "trabajador": 179,
+      "nombre": "Curso Basico de Seguridad y Salud",
+      "descripcion": "Entrenamiento en normas de seguridad ocupacional.",
+      "fecha_emision": "2026-07-25",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 252,
+    "fields": {
+      "trabajador": 180,
+      "nombre": "Inspeccion Tecnica de Vehiculos",
+      "descripcion": "Revision tecnica de unidades de transporte.",
+      "fecha_emision": "2024-09-23",
+      "fecha_vencimiento": "2026-08-10",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 253,
+    "fields": {
+      "trabajador": 182,
+      "nombre": "Certificado de Trabajo en Altura",
+      "descripcion": "Aprobacion de habilidades para trabajo en altura.",
+      "fecha_emision": "2026-07-14",
+      "fecha_vencimiento": "2029-02-28",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 254,
+    "fields": {
+      "trabajador": 183,
+      "nombre": "Certificado de Trabajo en Altura",
+      "descripcion": "Aprobacion de habilidades para trabajo en altura.",
+      "fecha_emision": "2024-09-29",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 255,
+    "fields": {
+      "trabajador": 183,
+      "nombre": "Certificado de Trabajo en Altura",
+      "descripcion": "Aprobacion de habilidades para trabajo en altura.",
+      "fecha_emision": "2025-01-20",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 256,
+    "fields": {
+      "trabajador": 184,
+      "nombre": "Curso de Manejo Defensivo",
+      "descripcion": "Curso de conduccion segura de vehiculos de la empresa.",
+      "fecha_emision": "2024-01-26",
+      "fecha_vencimiento": "2026-10-13",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 257,
+    "fields": {
+      "trabajador": 184,
+      "nombre": "Certificado de Trabajo en Altura",
+      "descripcion": "Aprobacion de habilidades para trabajo en altura.",
+      "fecha_emision": "2024-01-16",
+      "fecha_vencimiento": "2025-06-01",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 258,
+    "fields": {
+      "trabajador": 184,
+      "nombre": "Certificado de Operacion de Grua",
+      "descripcion": "Habilitacion para operar grua de carga.",
+      "fecha_emision": "2024-06-07",
+      "fecha_vencimiento": "2025-07-04",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 259,
+    "fields": {
+      "trabajador": 185,
+      "nombre": "Curso de Primeros Auxilios",
+      "descripcion": "Capacitacion en primeros auxilios y rescate basico.",
+      "fecha_emision": "2025-04-23",
+      "fecha_vencimiento": "2026-05-18",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 260,
+    "fields": {
+      "trabajador": 187,
+      "nombre": "Curso de Proteccion Contra Incendios",
+      "descripcion": "Entrenamiento en prevencion y evacuacion ante incendios.",
+      "fecha_emision": "2024-01-12",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 261,
+    "fields": {
+      "trabajador": 188,
+      "nombre": "Curso Basico de Seguridad y Salud",
+      "descripcion": "Entrenamiento en normas de seguridad ocupacional.",
+      "fecha_emision": "2024-08-26",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 262,
+    "fields": {
+      "trabajador": 188,
+      "nombre": "Certificado de Trabajo en Altura",
+      "descripcion": "Aprobacion de habilidades para trabajo en altura.",
+      "fecha_emision": "2024-12-17",
+      "fecha_vencimiento": "2027-01-14",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 263,
+    "fields": {
+      "trabajador": 189,
+      "nombre": "Certificado de Soldadura y Corte",
+      "descripcion": "Habilitacion certificada para tareas de soldadura.",
+      "fecha_emision": "2026-04-24",
+      "fecha_vencimiento": "2028-08-15",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 264,
+    "fields": {
+      "trabajador": 189,
+      "nombre": "Certificado de Manipulacion de Alimentos",
+      "descripcion": "Aprobacion de higiene y manipulacion de alimentos.",
+      "fecha_emision": "2025-12-12",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 265,
+    "fields": {
+      "trabajador": 189,
+      "nombre": "Certificado de Soldadura y Corte",
+      "descripcion": "Habilitacion certificada para tareas de soldadura.",
+      "fecha_emision": "2024-05-16",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 266,
+    "fields": {
+      "trabajador": 190,
+      "nombre": "Curso de Primeros Auxilios",
+      "descripcion": "Capacitacion en primeros auxilios y rescate basico.",
+      "fecha_emision": "2025-06-25",
+      "fecha_vencimiento": "2027-08-10",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 267,
+    "fields": {
+      "trabajador": 192,
+      "nombre": "Curso de Manejo Defensivo",
+      "descripcion": "Curso de conduccion segura de vehiculos de la empresa.",
+      "fecha_emision": "2026-07-11",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 268,
+    "fields": {
+      "trabajador": 193,
+      "nombre": "Certificado de Manipulacion de Alimentos",
+      "descripcion": "Aprobacion de higiene y manipulacion de alimentos.",
+      "fecha_emision": "2026-06-10",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 269,
+    "fields": {
+      "trabajador": 193,
+      "nombre": "Inspeccion Tecnica de Vehiculos",
+      "descripcion": "Revision tecnica de unidades de transporte.",
+      "fecha_emision": "2024-02-04",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 270,
+    "fields": {
+      "trabajador": 194,
+      "nombre": "Curso de Primeros Auxilios",
+      "descripcion": "Capacitacion en primeros auxilios y rescate basico.",
+      "fecha_emision": "2026-06-17",
+      "fecha_vencimiento": "2028-10-25",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 271,
+    "fields": {
+      "trabajador": 194,
+      "nombre": "Curso Basico de Seguridad y Salud",
+      "descripcion": "Entrenamiento en normas de seguridad ocupacional.",
+      "fecha_emision": "2026-01-12",
+      "fecha_vencimiento": "2028-05-11",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 272,
+    "fields": {
+      "trabajador": 194,
+      "nombre": "Curso Basico de Seguridad y Salud",
+      "descripcion": "Entrenamiento en normas de seguridad ocupacional.",
+      "fecha_emision": "2025-10-22",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 273,
+    "fields": {
+      "trabajador": 195,
+      "nombre": "Certificado de Manipulacion de Alimentos",
+      "descripcion": "Aprobacion de higiene y manipulacion de alimentos.",
+      "fecha_emision": "2024-12-12",
+      "fecha_vencimiento": "2026-01-17",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 274,
+    "fields": {
+      "trabajador": 197,
+      "nombre": "Certificado de Manipulacion de Alimentos",
+      "descripcion": "Aprobacion de higiene y manipulacion de alimentos.",
+      "fecha_emision": "2024-03-19",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 275,
+    "fields": {
+      "trabajador": 198,
+      "nombre": "Certificado de Trabajo en Altura",
+      "descripcion": "Aprobacion de habilidades para trabajo en altura.",
+      "fecha_emision": "2024-04-21",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 276,
+    "fields": {
+      "trabajador": 198,
+      "nombre": "Certificado de Trabajo en Altura",
+      "descripcion": "Aprobacion de habilidades para trabajo en altura.",
+      "fecha_emision": "2024-01-02",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 277,
+    "fields": {
+      "trabajador": 199,
+      "nombre": "Curso de Manejo Defensivo",
+      "descripcion": "Curso de conduccion segura de vehiculos de la empresa.",
+      "fecha_emision": "2025-10-29",
+      "fecha_vencimiento": null,
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 278,
+    "fields": {
+      "trabajador": 199,
+      "nombre": "Curso Basico de Seguridad y Salud",
+      "descripcion": "Entrenamiento en normas de seguridad ocupacional.",
+      "fecha_emision": "2026-04-07",
+      "fecha_vencimiento": "2027-11-09",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 279,
+    "fields": {
+      "trabajador": 199,
+      "nombre": "Certificado de Operacion de Grua",
+      "descripcion": "Habilitacion para operar grua de carga.",
+      "fecha_emision": "2024-04-28",
+      "fecha_vencimiento": "2026-10-21",
+      "archivo": null
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 280,
+    "fields": {
+      "trabajador": 200,
+      "nombre": "Curso de Primeros Auxilios",
+      "descripcion": "Capacitacion en primeros auxilios y rescate basico.",
+      "fecha_emision": "2025-01-18",
+      "fecha_vencimiento": "2026-05-14",
+      "archivo": null
+    }
+  }
+]

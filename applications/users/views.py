@@ -1,13 +1,22 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import HttpResponseRedirect
-from django.shortcuts import render
+from django.db.models import Q
+from django.http import HttpResponseRedirect, JsonResponse
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
-from django.views.generic import View
+from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView, View
 from django.views.generic.edit import FormView
 
-from .forms import LoginForm, UpdatePasswordForm, UserRegisterForm
-from .mixins import AdministradorPermisoMixin
+from .forms import (
+    LoginForm,
+    PerfilForm,
+    ResetPasswordForm,
+    UpdatePasswordForm,
+    UserRegisterForm,
+    UsuarioGestionForm,
+)
+from .mixins import GestionUsuariosPermisoMixin
+from .models import User
 from . import services
 
 
@@ -75,15 +84,185 @@ class UpdatePasswordView(LoginRequiredMixin, FormView):
 
 
 class DashboardView(LoginRequiredMixin, View):
-    template_name = 'users/dashboard.html'
-
     def get(self, request):
-        return render(request, self.template_name, {'user': request.user})
+        return HttpResponseRedirect(reverse('app_control:dashboard'))
 
 
-class ListaUsuariosView(AdministradorPermisoMixin, View):
-    template_name = 'users/lista_usuarios.html'
+class MiPerfilView(LoginRequiredMixin, UpdateView):
+    model = User
+    form_class = PerfilForm
+    template_name = 'users/perfil.html'
+    success_url = reverse_lazy('app_users:mi_perfil')
+    login_url = reverse_lazy('app_users:login')
 
-    def get(self, request):
-        usuarios = services.get_all_users()
-        return render(request, self.template_name, {'usuarios': usuarios})
+    def get_object(self):
+        return self.request.user
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Perfil actualizado correctamente.')
+        return super().form_valid(form)
+
+
+class UsuarioListView(GestionUsuariosPermisoMixin, ListView):
+    model = User
+    template_name = 'users/usuarios/lista.html'
+    context_object_name = 'usuarios'
+    paginate_by = 20
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.role == User.BECA_AZUL:
+            queryset = User.objects.filter(role=User.USUARIO_EMPRESA).order_by('first_name', 'last_name')
+        else:
+            queryset = User.objects.filter(
+                role__in=[User.BECA_AZUL, User.PLANTA, User.GARITA]
+            ).order_by('role', 'first_name', 'last_name')
+        q = self.request.GET.get('q', '').strip()
+        if q:
+            queryset = queryset.filter(
+                Q(first_name__icontains=q)
+                | Q(last_name__icontains=q)
+                | Q(email__icontains=q)
+            )
+        rol = self.request.GET.get('rol', '').strip()
+        if rol:
+            queryset = queryset.filter(role=rol)
+        estado = self.request.GET.get('estado', '').strip()
+        if estado in ('0', '1'):
+            queryset = queryset.filter(is_active=estado == '1')
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        user = self.request.user
+        kwargs.setdefault('q', self.request.GET.get('q', ''))
+        kwargs.setdefault('rol', self.request.GET.get('rol', ''))
+        kwargs.setdefault('estado', self.request.GET.get('estado', ''))
+        if user.role == User.BECA_AZUL:
+            kwargs.setdefault('roles', [(User.USUARIO_EMPRESA, 'Usuario Empresa')])
+        else:
+            kwargs.setdefault(
+                'roles',
+                [(v, l) for v, l in User.ROLE_CHOICES if v in (User.BECA_AZUL, User.PLANTA, User.GARITA)],
+            )
+        return super().get_context_data(**kwargs)
+
+
+class UsuarioDetailView(GestionUsuariosPermisoMixin, DetailView):
+    model = User
+    template_name = 'users/usuarios/detalle.html'
+    context_object_name = 'usuario'
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.role == User.BECA_AZUL:
+            return User.objects.filter(role=User.USUARIO_EMPRESA)
+        return User.objects.filter(role__in=[User.BECA_AZUL, User.PLANTA, User.GARITA])
+
+
+class UsuarioCreateView(GestionUsuariosPermisoMixin, CreateView):
+    model = User
+    form_class = UsuarioGestionForm
+    template_name = 'users/usuarios/form.html'
+    success_url = reverse_lazy('app_users:usuario_lista')
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['current_user'] = self.request.user
+        return kwargs
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Usuario creado correctamente.')
+        return super().form_valid(form)
+
+
+class UsuarioUpdateView(GestionUsuariosPermisoMixin, UpdateView):
+    model = User
+    form_class = UsuarioGestionForm
+    template_name = 'users/usuarios/form.html'
+    success_url = reverse_lazy('app_users:usuario_lista')
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['current_user'] = self.request.user
+        return kwargs
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.role == User.BECA_AZUL:
+            return User.objects.filter(role=User.USUARIO_EMPRESA)
+        return User.objects.filter(role__in=[User.BECA_AZUL, User.PLANTA, User.GARITA])
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Usuario actualizado correctamente.')
+        return super().form_valid(form)
+
+
+class UsuarioToggleView(GestionUsuariosPermisoMixin, View):
+    def post(self, request, pk):
+        user = request.user
+        if user.role == User.BECA_AZUL:
+            usuario = get_object_or_404(User, pk=pk, role=User.USUARIO_EMPRESA)
+        else:
+            usuario = get_object_or_404(User, pk=pk, role__in=[User.BECA_AZUL, User.PLANTA, User.GARITA])
+        if usuario.pk == request.user.pk:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'error': 'No puedes desactivar tu propia cuenta.'}, status=400)
+            messages.error(request, 'No puedes desactivar tu propia cuenta.')
+            return redirect('app_users:usuario_lista')
+        usuario.is_active = not usuario.is_active
+        usuario.save(update_fields=['is_active'])
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({'is_active': usuario.is_active, 'email': usuario.email})
+        estado = 'activado' if usuario.is_active else 'desactivado'
+        messages.success(request, f'El usuario "{usuario.email}" fue {estado}.')
+        return redirect('app_users:usuario_lista')
+
+
+class UsuarioDeleteView(GestionUsuariosPermisoMixin, DeleteView):
+    model = User
+    template_name = 'users/usuarios/confirm_delete.html'
+    context_object_name = 'usuario'
+    success_url = reverse_lazy('app_users:usuario_lista')
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.role == User.BECA_AZUL:
+            return User.objects.filter(role=User.USUARIO_EMPRESA)
+        return User.objects.filter(role__in=[User.BECA_AZUL, User.PLANTA, User.GARITA])
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if self.object.pk == self.request.user.pk:
+            messages.error(self.request, 'No puedes eliminar tu propia cuenta.')
+            return HttpResponseRedirect(self.get_success_url())
+        email = self.object.email
+        self.object.delete()
+        messages.success(self.request, f'El usuario "{email}" fue eliminado.')
+        return HttpResponseRedirect(self.get_success_url())
+
+
+class UsuarioPasswordResetView(GestionUsuariosPermisoMixin, FormView):
+    template_name = 'users/usuarios/reset_password.html'
+    form_class = ResetPasswordForm
+    success_url = reverse_lazy('app_users:usuario_lista')
+
+    def get_object(self):
+        user = self.request.user
+        if user.role == User.BECA_AZUL:
+            return get_object_or_404(User, pk=self.kwargs['pk'], role=User.USUARIO_EMPRESA)
+        return get_object_or_404(
+            User,
+            pk=self.kwargs['pk'],
+            role__in=[User.BECA_AZUL, User.PLANTA, User.GARITA],
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['usuario'] = self.get_object()
+        return context
+
+    def form_valid(self, form):
+        usuario = self.get_object()
+        services.change_password(usuario, form.cleaned_data['password1'])
+        messages.success(self.request, f'Contraseña de "{usuario.email}" restablecida correctamente.')
+        return super().form_valid(form)

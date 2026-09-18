@@ -1,0 +1,59 @@
+{% if messages %}
+<style>
+    #message-dialog::backdrop {
+        background: rgb(15 23 42 / 60%);
+    }
+</style>
+<dialog id="message-dialog" class="fixed inset-0 m-auto w-[min(90vw,28rem)] rounded-xl border-0 bg-white p-4 shadow-2xl">
+    <div class="flex items-start justify-between gap-3">
+        <div class="flex items-center gap-2.5">
+            <span class="flex h-9 w-9 items-center justify-center rounded-full {% if messages.0.tags == 'success' %}bg-green-100 text-green-600{% elif messages.0.tags == 'error' %}bg-red-100 text-red-600{% elif messages.0.tags == 'warning' %}bg-yellow-100 text-yellow-600{% else %}bg-blue-100 text-blue-600{% endif %}">
+                {% if messages.0.tags == 'success' %}
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                {% elif messages.0.tags == 'error' %}
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                {% elif messages.0.tags == 'warning' %}
+                    <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                {% else %}
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                {% endif %}
+            </span>
+            <h2 class="text-base font-semibold text-[#0f172a]">Notificación</h2>
+        </div>
+        <button type="button" id="message-dialog-close" aria-label="Cerrar" class="rounded-md p-1 text-[#A5A5A5] hover:bg-gray-100 hover:text-[#0f172a]">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+    </div>
+    <div class="mt-2 space-y-1 text-sm text-[#0f172a]">
+        {% for message in messages %}
+            <p>{{ message }}</p>
+        {% endfor %}
+    </div>
+</dialog>
+<script>
+    (function () {
+        var dialog = document.getElementById('message-dialog');
+        if (!dialog) return;
+
+        function closeDialog() {
+            if (dialog.open) dialog.close();
+        }
+
+        dialog.showModal();
+
+        var closeBtn = document.getElementById('message-dialog-close');
+        if (closeBtn) closeBtn.addEventListener('click', closeDialog);
+
+        dialog.addEventListener('click', function (e) {
+            var rect = dialog.getBoundingClientRect();
+            var inside = e.clientX >= rect.left && e.clientX <= rect.right &&
+                         e.clientY >= rect.top && e.clientY <= rect.bottom;
+            if (!inside) closeDialog();
+        });
+
+        {% if messages.0.tags == 'success' %}
+        setTimeout(closeDialog, 4000);
+        {% endif %}
+    })();
+</script>
+{% endif %}

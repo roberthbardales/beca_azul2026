@@ -1,0 +1,25 @@
+<header class="sticky top-0 z-20 flex h-14 shrink-0 items-center justify-between border-b border-gray-200 bg-white px-4 lg:px-6">
+    <div class="flex items-center gap-2">
+        <button id="sidebar-toggle" type="button" class="rounded-md p-1.5 text-[#0f172a] hover:bg-gray-100 lg:hidden" aria-label="Abrir menú">
+            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+        </button>
+        <span class="text-sm font-semibold text-[#A5A5A5]">{{ request.user.get_role_display }}</span>
+    </div>
+    <div class="relative">
+        <details class="group">
+            <summary class="flex cursor-pointer list-none items-center gap-2 rounded-md p-0.5 hover:bg-gray-100 [&::-webkit-details-marker]:hidden">
+                <span class="hidden text-sm font-medium text-[#0f172a] sm:block">{{ request.user.get_full_name|default:request.user.email }}</span>
+                <span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#0f172a] text-sm font-bold text-white">{{ request.user.first_name|slice:":1"|default:"U" }}.{{ request.user.last_name|slice:":1"|default:"" }}</span>
+                <svg class="h-4 w-4 text-[#A5A5A5] transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </summary>
+            <div class="absolute right-0 z-30 mt-2 w-48 rounded-lg border border-gray-100 bg-white py-1 shadow-lg">
+                <a class="block px-4 py-2 text-sm text-[#0f172a] hover:bg-gray-50" href="{% url 'app_users:mi_perfil' %}">Mi perfil</a>
+                <a class="block px-4 py-2 text-sm text-[#0f172a] hover:bg-gray-50" href="{% url 'app_users:logout' %}">Cerrar sesión</a>
+            </div>
+        </details>
+    </div>
+</header>

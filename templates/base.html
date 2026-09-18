@@ -7,11 +7,11 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root {
-            --web-primary: #2563eb;
-            --web-primary-dark: #1d4ed8;
-            --web-accent: #eaf2ff;
+            --web-primary: #0F6FC6;
+            --web-primary-dark: #0A5CA3;
+            --web-accent: #00B0F0;
             --web-ink: #0f172a;
-            --web-muted: #64748b;
+            --web-muted: #A5A5A5;
         }
 
         body {
@@ -24,9 +24,7 @@
         }
 
         .hero-card {
-            background:
-                radial-gradient(circle at top left, rgba(255, 255, 255, 0.18), transparent 30%),
-                linear-gradient(135deg, #0f172a 0%, #1e3a8a 55%, #2563eb 100%);
+            background: #0F6FC6;
         }
 
         .brand-mark {
@@ -36,33 +34,74 @@
             width: 2rem;
             height: 2rem;
             border-radius: 0.75rem;
-            background: var(--web-accent);
-            color: var(--web-primary);
+            background: var(--web-primary);
+            color: #ffffff;
+            font-weight: 800;
+        }
+
+        .brand-mark-sidebar {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2rem;
+            height: 2rem;
+            border-radius: 0.75rem;
+            background: var(--web-primary);
+            color: white;
             font-weight: 800;
         }
     </style>
     {% block extra_css %}{% endblock %}
 </head>
 <body class="flex min-h-screen flex-col bg-[#f8fafc] text-[#0f172a] antialiased">
-    {% include 'include/header.html' %}
 
-    <main class="flex-1 py-8">
-        <div class="mx-auto w-full max-w-6xl px-4">
-            {% if messages %}
-                <div class="mb-4 space-y-2">
-                    {% for message in messages %}
-                        <div class="rounded-lg border px-4 py-3 text-sm {% if message.tags == 'error' %}border-red-200 bg-red-50 text-red-700{% elif message.tags == 'success' %}border-green-200 bg-green-50 text-green-700{% elif message.tags == 'warning' %}border-yellow-200 bg-yellow-50 text-yellow-700{% else %}border-blue-200 bg-blue-50 text-blue-700{% endif %}" role="alert">
-                            {{ message }}
-                        </div>
-                    {% endfor %}
-                </div>
-            {% endif %}
+    {% include 'include/sidebar.html' %}
 
-            {% block content %}{% endblock %}
-        </div>
-    </main>
+    <div class="flex min-h-screen flex-col {% if request.user.is_authenticated %}lg:ml-64{% endif %}">
+        {% if request.user.is_authenticated %}
+            {% include 'include/topbar.html' %}
+        {% else %}
+            {% include 'include/header.html' %}
+        {% endif %}
 
-    {% include 'include/footer.html' %}
+        <main class="flex-1 py-4">
+            <div class="mx-auto w-full max-w-6xl px-4">
+                {% include 'include/messages.html' %}
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+
+        {% include 'include/footer.html' %}
+    </div>
+
+    <script>
+        (function () {
+            var toggle = document.getElementById('sidebar-toggle');
+            var sidebar = document.getElementById('sidebar');
+            var backdrop = document.getElementById('sidebar-backdrop');
+
+            function openSidebar() {
+                if (!sidebar) return;
+                sidebar.classList.remove('-translate-x-full');
+                if (backdrop) backdrop.classList.remove('hidden');
+            }
+
+            function closeSidebar() {
+                if (!sidebar) return;
+                sidebar.classList.add('-translate-x-full');
+                if (backdrop) backdrop.classList.add('hidden');
+            }
+
+            if (toggle) toggle.addEventListener('click', openSidebar);
+            if (backdrop) backdrop.addEventListener('click', closeSidebar);
+            if (sidebar) {
+                sidebar.querySelectorAll('a').forEach(function (link) {
+                    link.addEventListener('click', closeSidebar);
+                });
+            }
+        })();
+    </script>
+
     {% block extra_js %}{% endblock %}
 </body>
 </html>

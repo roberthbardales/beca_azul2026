@@ -9,7 +9,7 @@ from .models import User
 class CustomUserCreationForm(UserCreationForm):
     class Meta:
         model = User
-        fields = ('email',)
+        fields = ('email', 'first_name', 'last_name', 'role', 'empresa')
 
 
 class CustomUserChangeForm(UserChangeForm):
@@ -23,14 +23,15 @@ class UserAdminCustom(UserAdmin):
     form = CustomUserChangeForm
     model = User
 
-    list_display = ('email', 'first_name', 'last_name', 'occupation', 'is_staff', 'is_active')
-    list_filter = ('is_staff', 'is_active', 'occupation', 'gender')
+    list_display = ('email', 'first_name', 'last_name', 'role', 'empresa', 'is_staff', 'is_active')
+    list_filter = ('is_staff', 'is_active', 'role', 'gender')
     search_fields = ('email', 'first_name', 'last_name')
     ordering = ('email',)
 
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
-        (_('Datos personales'), {'fields': ('first_name', 'last_name', 'occupation', 'gender', 'date_birth', 'phone')}),
+        (_('Datos personales'), {'fields': ('first_name', 'last_name', 'role', 'gender', 'date_birth', 'phone')}),
+        (_('Empresa'), {'fields': ('empresa',)}),
         (_('Permisos'), {
             'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions'),
         }),
@@ -40,7 +41,7 @@ class UserAdminCustom(UserAdmin):
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('email', 'first_name', 'last_name', 'password1', 'password2'),
+            'fields': ('email', 'first_name', 'last_name', 'role', 'empresa', 'password1', 'password2'),
         }),
     )
 

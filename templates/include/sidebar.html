@@ -1,0 +1,45 @@
+{% if request.user.is_authenticated %}
+<button id="sidebar-backdrop" type="button" aria-label="Cerrar menú" class="fixed inset-0 z-30 hidden bg-black/50 lg:hidden"></button>
+
+<aside id="sidebar" class="fixed inset-y-0 left-0 z-40 flex w-64 -translate-x-full flex-col bg-[#0f172a] text-white transition-transform duration-200 lg:translate-x-0">
+    <div class="flex h-14 items-center gap-2 border-b border-white/10 px-4">
+        <span class="brand-mark-sidebar">RB</span>
+        <div class="leading-tight">
+            <div class="font-bold">Sistema de Control</div>
+
+        </div>
+    </div>
+
+    <nav class="flex-1 space-y-1 overflow-y-auto px-3 py-3">
+        {% with url_name=request.resolver_match.url_name|default:'' %}
+
+        <a href="{% url 'app_control:dashboard' %}" class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium {% if url_name == 'dashboard' %}bg-[#0F6FC6] text-white{% else %}text-slate-300 hover:bg-white/10 hover:text-white{% endif %}">
+            Panel
+        </a>
+
+        <a href="{% url 'app_control:trabajador_buscar' %}" class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium {% if url_name == 'trabajador_buscar' %}bg-[#0F6FC6] text-white{% else %}text-slate-300 hover:bg-white/10 hover:text-white{% endif %}">
+            Buscar trabajador
+        </a>
+
+        {% if request.user.is_superuser or request.user.role == '0' or request.user.role == '1' %}
+        <div class="px-3 pt-3 pb-1 text-xs font-semibold uppercase tracking-wide text-slate-500">Administración</div>
+        <a href="{% url 'app_users:usuario_lista' %}" class="flex items-center gap-3 rounded-md px-3 py-1.5 text-sm font-medium {% if url_name in 'usuario_lista usuario_crear usuario_detalle usuario_editar usuario_toggle usuario_password usuario_eliminar' %}bg-[#0F6FC6] text-white{% else %}text-slate-300 hover:bg-white/10 hover:text-white{% endif %}">Usuarios</a>
+        <a href="{% url 'app_control:empresa_lista' %}" class="flex items-center gap-3 rounded-md px-3 py-1.5 text-sm font-medium {% if url_name in 'empresa_lista empresa_crear empresa_detalle empresa_editar empresa_toggle empresa_eliminar' %}bg-[#0F6FC6] text-white{% else %}text-slate-300 hover:bg-white/10 hover:text-white{% endif %}">Empresas</a>
+        <a href="{% url 'app_control:trabajador_lista' %}" class="flex items-center gap-3 rounded-md px-3 py-1.5 text-sm font-medium {% if url_name in 'trabajador_lista trabajador_crear trabajador_editar trabajador_detalle trabajador_estado trabajador_toggle trabajador_eliminar' %}bg-[#0F6FC6] text-white{% else %}text-slate-300 hover:bg-white/10 hover:text-white{% endif %}">Trabajadores</a>
+        {% elif request.user.role == '3' %}
+        <div class="px-3 pt-3 pb-1 text-xs font-semibold uppercase tracking-wide text-slate-500">Empresa</div>
+        <a href="{% url 'app_control:trabajador_empresa_lista' %}" class="flex items-center gap-3 rounded-md px-3 py-1.5 text-sm font-medium {% if url_name in 'trabajador_empresa_lista' %}bg-[#0F6FC6] text-white{% else %}text-slate-300 hover:bg-white/10 hover:text-white{% endif %}">Trabajadores</a>
+        {% endif %}
+
+        {% endwith %}
+    </nav>
+
+    <div class="border-t border-white/10 px-3 py-3">
+        <div class="mb-2 px-3">
+            <div class="truncate text-sm font-semibold">{{ request.user.get_full_name|default:request.user.email }}</div>
+            <div class="truncate text-xs text-slate-400">{{ request.user.get_role_display }}</div>
+        </div>
+        <a href="{% url 'app_users:logout' %}" class="block rounded-md px-3 py-1.5 text-sm font-medium text-red-300 hover:bg-red-500/10 hover:text-white">Cerrar sesión</a>
+    </div>
+</aside>
+{% endif %}

@@ -9,10 +9,11 @@ def create_user(form_data):
         form_data['password1'],
         first_name=form_data['first_name'],
         last_name=form_data['last_name'],
-        occupation=form_data['occupation'],
+        role=form_data['role'],
         gender=form_data['gender'],
         date_birth=form_data['date_birth'],
         phone=form_data.get('phone', ''),
+        empresa=form_data.get('empresa'),
     )
 
 
@@ -21,10 +22,6 @@ def authenticate_user(request, email, password):
     if user is not None:
         login(request, user)
     return user
-
-
-def get_all_users():
-    return User.objects.all().order_by('first_name', 'last_name')
 
 
 def change_password(user, new_password):

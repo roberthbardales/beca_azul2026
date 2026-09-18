@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block title %}Empresas | Control{% endblock %}
+{% block content %}
+<div class="mb-2 flex items-center justify-between">
+    <h1 class="text-xl font-bold text-[#0f172a]">Empresas</h1>
+    {% if request.user.role == '1' %}
+    <a class="inline-block rounded-md bg-[#0F6FC6] px-3 py-1.5 text-sm font-medium text-white hover:bg-[#0A5CA3]" href="{% url 'app_control:empresa_crear' %}">Nueva empresa</a>
+    {% endif %}
+</div>
+<form method="get" action="{% url 'app_control:empresa_lista' %}" class="mb-2 flex flex-wrap items-center gap-2">
+    <input type="search" name="q" value="{{ q }}" placeholder="Buscar por nombre, RUC o email..." class="w-full max-w-sm rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#0F6FC6] focus:outline-none">
+    <select name="estado" class="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#0F6FC6] focus:outline-none">
+        <option value="">Todos los estados</option>
+        <option value="1" {% if estado == '1' %}selected{% endif %}>Activas</option>
+        <option value="0" {% if estado == '0' %}selected{% endif %}>Inactivas</option>
+    </select>
+    <button type="submit" class="rounded-md bg-[#0F6FC6] px-3 py-1 text-sm font-medium text-white hover:bg-[#0A5CA3]">Buscar</button>
+    <a class="rounded-md bg-slate-200 px-3 py-1 text-sm font-medium text-[#0f172a] hover:bg-slate-300" href="{% url 'app_control:empresa_lista' %}">Limpiar</a>
+</form>
+<div class="overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm">
+    <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+            <tr>
+                <th class="px-3 py-1 text-left text-xs font-semibold text-[#A5A5A5]">Nombre</th>
+                <th class="px-3 py-1 text-left text-xs font-semibold text-[#A5A5A5]">RUC</th>
+                <th class="px-3 py-1 text-left text-xs font-semibold text-[#A5A5A5]">Estado</th>
+                <th class="px-3 py-1 text-right text-xs font-semibold text-[#A5A5A5]">Acciones</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+            {% for empresa in empresas %}
+            <tr>
+                <td class="px-3 py-1 text-sm font-medium">{{ empresa.nombre }}</td>
+                <td class="px-3 py-1 text-sm">{{ empresa.ruc }}</td>
+                <td class="px-3 py-1 text-sm">
+                    {% if empresa.activo %}
+                    <span class="inline-block rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">Activa</span>
+                    {% else %}
+                    <span class="inline-block rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">Inactiva</span>
+                    {% endif %}
+                    <span class="ml-1 inline-block rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700">{{ empresa.total_trabajadores }} trabajadores</span>
+                </td>
+                <td class="px-3 py-1 text-right text-sm">
+                    <a class="rounded-md border border-[#0F6FC6] px-3 py-1 text-xs font-medium text-[#0F6FC6] hover:bg-[#0F6FC6]/10" href="{% url 'app_control:empresa_detalle' empresa.pk %}">Ver</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" class="px-4 py-6 text-center text-sm text-[#A5A5A5]">No hay empresas registradas.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+

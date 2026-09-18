@@ -1,23 +1,27 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from .managers import UserManager
+from model_utils.models import TimeStampedModel
 
 
-class User(AbstractBaseUser, PermissionsMixin):
+class User(AbstractBaseUser, PermissionsMixin,TimeStampedModel):
+
     ADMINISTRADOR = '0'
-    USUARIO = '1'
-    EMPLEADO = '2'
-    OTRO = '3'
+    BECA_AZUL = '1'
+    PLANTA = '2'
+    USUARIO_EMPRESA = '3'
+    GARITA = '4'
 
     VARON = 'M'
     MUJER = 'F'
     OTROS = 'O'
 
-    OCCUPATION_CHOICES = (
+    ROLE_CHOICES = (
         (ADMINISTRADOR, 'Administrador'),
-        (USUARIO, 'Usuario'),
-        (EMPLEADO, 'Empleado'),
-        (OTRO, 'Otro'),
+        (BECA_AZUL, 'Beca Azul'),
+        (PLANTA, 'Usuario Planta'),
+        (USUARIO_EMPRESA, 'Usuario Empresa'),
+        (GARITA, 'Usuario Garita'),
     )
 
     GENDER_CHOICES = (
@@ -29,12 +33,20 @@ class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
-    occupation = models.CharField(max_length=3, choices=OCCUPATION_CHOICES, blank=True)
+    role = models.CharField(max_length=2, choices=ROLE_CHOICES)
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES, blank=True)
     date_birth = models.DateField(null=True, blank=True)
     phone = models.CharField(max_length=15, blank=True)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
+
+    empresa = models.ForeignKey(
+        'control.Empresa',
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name='usuarios',
+    )
 
     objects = UserManager()
 
