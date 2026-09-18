@@ -1,12 +1,15 @@
-<header class="border-b border-gray-200 bg-white shadow-sm">
-    <nav class="mx-auto w-full max-w-6xl px-4">
-        <div class="flex h-12 items-center justify-between">
-            <a class="flex items-center gap-2 font-bold text-[#0f172a]" href="{% url 'app_home:index' %}">
-                <span class="brand-mark">RB</span>
-                <span>Sistema de Control</span>
+<header class="public-header border-b">
+    <nav aria-label="Navegación principal" class="mx-auto w-full max-w-6xl px-4 sm:px-6">
+        <div class="flex min-h-16 items-center justify-between gap-4">
+            <a class="group flex min-w-0 items-center gap-3 rounded-lg py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F6FC6] focus-visible:ring-offset-2" href="{% url 'app_home:index' %}">
+                <span class="brand-mark shrink-0 text-sm font-extrabold tracking-tight">BA</span>
+                <span class="min-w-0 leading-tight">
+                    <span class="brand-name block text-base tracking-tight">Beca Azul</span>
+                    <span class="brand-subtitle block truncate font-medium">Sistema de control</span>
+                </span>
             </a>
 
-            <a class="inline-block rounded-md border border-[#0F6FC6] px-3 py-1 text-sm font-medium text-[#0F6FC6] hover:bg-[#0F6FC6] hover:text-white" href="{% url 'app_users:login' %}">Ingresar</a>
+            <a class="inline-flex min-h-11 shrink-0 items-center justify-center rounded-lg bg-[var(--primary-600)] px-4 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[var(--primary-700)]" href="{% url 'app_users:login' %}">Ingresar</a>
         </div>
     </nav>
 </header>

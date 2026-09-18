@@ -3,40 +3,49 @@
 {% block title %}Trabajadores | Control{% endblock %}
 
 {% block content %}
-<div class="mb-2 flex items-center justify-between">
-    <h1 class="text-xl font-bold text-[#0f172a]">Trabajadores</h1>
+<div class="control-page-header mb-6 flex flex-col gap-4 border-b border-gray-200 pb-5 sm:flex-row sm:items-end sm:justify-between">
+    <h1 class="text-2xl font-bold text-[#0f172a]">Trabajadores</h1>
     {% if request.user.role == '1' %}
-    <a class="inline-block rounded-md bg-[#0F6FC6] px-3 py-1.5 text-sm font-medium text-white hover:bg-[#0A5CA3]" href="{% url 'app_control:trabajador_crear' %}">Nuevo trabajador</a>
+    <a class="inline-flex items-center gap-2 rounded-md bg-[#0F6FC6] px-3 py-1.5 text-sm font-medium text-white hover:bg-[#0A5CA3]" href="{% url 'app_control:trabajador_crear' %}"><svg class="h-4 w-4" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M12 5v14M5 12h14"/></svg>Nuevo trabajador</a>
     {% endif %}
 </div>
 
-<form method="get" action="{% url 'app_control:trabajador_lista' %}" class="mb-2 grid gap-2 rounded-xl border border-gray-100 bg-white p-3 shadow-sm sm:grid-cols-2 lg:grid-cols-4">
-    <input type="search" name="q" value="{{ q }}" placeholder="Buscar por DNI, nombre, cargo, área o empresa..." class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#0F6FC6] focus:outline-none">
-    <select name="estado" class="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#0F6FC6] focus:outline-none">
+<form method="get" action="{% url 'app_control:trabajador_lista' %}" class="control-filter trabajador-filter mb-5 grid gap-3 rounded-xl border border-gray-100 bg-white p-4 shadow-sm sm:grid-cols-2 lg:grid-cols-4" role="search">
+    <div class="sm:col-span-2">
+        <label class="sr-only" for="trabajadores-q">Buscar trabajadores</label>
+        <input id="trabajadores-q" type="search" name="q" value="{{ q }}" placeholder="Buscar por DNI, nombre, cargo, área o empresa..." class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#0F6FC6] focus:outline-none">
+    </div>
+    <div>
+        <label class="sr-only" for="trabajadores-estado">Estado</label>
+        <select id="trabajadores-estado" name="estado" class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#0F6FC6] focus:outline-none">
         <option value="">Todos los estados</option>
         {% for value, label in estado_choices %}
             <option value="{{ value }}" {% if estado == value %}selected{% endif %}>{{ label }}</option>
         {% endfor %}
-    </select>
-    <select name="empresa" class="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#0F6FC6] focus:outline-none">
+        </select>
+    </div>
+    <div>
+        <label class="sr-only" for="trabajadores-empresa">Empresa</label>
+        <select id="trabajadores-empresa" name="empresa" class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#0F6FC6] focus:outline-none">
         <option value="">Todas las empresas</option>
         {% for empresa in empresas %}
             <option value="{{ empresa.pk }}" {% if empresa_id == empresa.pk|stringformat:"s" %}selected{% endif %}>{{ empresa.nombre }}</option>
         {% endfor %}
-    </select>
-    <div class="flex items-center gap-2">
-        <button type="submit" class="rounded-md bg-[#0F6FC6] px-3 py-1 text-sm font-medium text-white hover:bg-[#0A5CA3]">Buscar</button>
-        <a class="rounded-md bg-slate-200 px-3 py-1 text-sm font-medium text-[#0f172a] hover:bg-slate-300" href="{% url 'app_control:trabajador_lista' %}">Limpiar</a>
+        </select>
+    </div>
+    <div class="flex items-center gap-2 sm:col-span-2 lg:col-span-4">
+        <button type="submit" class="rounded-md bg-[#0F6FC6] px-4 py-2 text-sm font-medium text-white hover:bg-[#0A5CA3]">Buscar</button>
+        <a class="rounded-md bg-slate-200 px-4 py-2 text-sm font-medium text-[#0f172a] hover:bg-slate-300" href="{% url 'app_control:trabajador_lista' %}">Limpiar</a>
     </div>
 </form>
 
-<div class="overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm">
-    <table class="min-w-full divide-y divide-gray-200">
+<div class="responsive-table overflow-x-auto rounded-xl border border-gray-100 bg-white shadow-sm">
+    <table class="responsive-table min-w-full divide-y divide-gray-200" aria-label="Trabajadores registrados">
         <thead class="bg-gray-50">
             <tr>
                 {% for key, label in sortable_columns.items %}
                 {% with current=sort current_dir=dir %}
-                <th class="px-3 py-1 text-left text-xs font-semibold text-[#A5A5A5]">
+                <th class="px-5 py-3 text-left text-xs font-semibold text-[#A5A5A5]">
                     <a class="inline-flex items-center gap-1 hover:text-[#0F6FC6]" href="?{% if query_string %}{{ query_string }}&{% endif %}sort={{ key }}&dir={% if current == key and current_dir == 'asc' %}desc{% else %}asc{% endif %}">
                         <span>{{ label }}</span>
                         {% if current == key %}
@@ -55,38 +64,36 @@
         <tbody class="divide-y divide-gray-100">
             {% for trabajador in trabajadores %}
             <tr>
-                <td class="px-3 py-1 text-sm font-medium">{{ trabajador.dni }}</td>
-                <td class="px-3 py-1 text-sm">{{ trabajador.apellidos }}, {{ trabajador.nombres }}</td>
-                <td class="px-3 py-1 text-sm">{{ trabajador.empresa.nombre }}</td>
-                <td class="px-3 py-1 text-sm">
+                <td data-label="DNI" class="px-5 py-3 text-sm font-medium">{{ trabajador.dni }}</td>
+                <td data-label="Nombre" class="px-5 py-3 text-sm">{{ trabajador.apellidos }}, {{ trabajador.nombres }}</td>
+                <td data-label="Empresa" class="px-5 py-3 text-sm">{{ trabajador.empresa.nombre }}</td>
+                <td data-label="Cargo" class="px-5 py-3 text-sm">
                     {{ trabajador.cargo|default:'-' }}
                     {% if trabajador.area %}<div class="text-xs text-[#A5A5A5]">{{ trabajador.area }}</div>{% endif %}
                 </td>
-                <td class="px-3 py-1 text-sm">{{ trabajador.certificados_count }}</td>
-                <td class="px-3 py-1 text-sm">
+                <td data-label="Certificados" class="px-5 py-3 text-sm">{{ trabajador.certificados_count }}</td>
+                <td data-label="Estado del trabajador" class="px-5 py-3 text-sm">
                     {% if trabajador.estado == 'HABILITADO' %}
                     <span class="inline-block rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">Habilitado</span>
-                    {% elif trabajador.estado == 'RECHAZADO' %}
-                    <span class="inline-block rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">Rechazado</span>
                     {% else %}
-                    <span class="inline-block rounded-full bg-yellow-100 px-2 py-0.5 text-xs font-medium text-yellow-700">Pendiente</span>
+                    <span class="inline-block rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">Deshabilitado</span>
                     {% endif %}
                 </td>
-                <td class="px-3 py-1 text-right text-sm">
-                    <a class="rounded-md border border-[#0F6FC6] px-3 py-1 text-xs font-medium text-[#0F6FC6] hover:bg-[#0F6FC6]/10" href="{% url 'app_control:trabajador_detalle' trabajador.pk %}">Ver</a>
+                <td data-label="Acciones" class="px-5 py-3 text-right text-sm">
+                    <a class="inline-flex min-h-8 min-w-8 items-center justify-center rounded-md bg-[#0F6FC6] px-2 py-1 text-white hover:bg-[#0A5CA3]" href="{% url 'app_control:trabajador_detalle' trabajador.pk %}" aria-label="Ver detalles de {{ trabajador.nombres }} {{ trabajador.apellidos }}"><svg class="h-4 w-4" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="2.5"/></svg><span class="sr-only">Ver detalles</span></a>
                 </td>
             </tr>
             {% empty %}
-            <tr><td colspan="7" class="px-4 py-6 text-center text-sm text-[#A5A5A5]">{% if q %}No se encontraron trabajadores para "{{ q }}".{% else %}No hay trabajadores registrados.{% endif %}</td></tr>
+            <tr class="list-empty-row"><td colspan="7" class="list-empty-state px-4 py-10 text-center text-sm text-[#A5A5A5]">{% if q %}No se encontraron trabajadores para "{{ q }}".{% else %}No hay trabajadores registrados.{% endif %}</td></tr>
             {% endfor %}
         </tbody>
     </table>
     {% if is_paginated %}
-    <div class="flex items-center justify-between border-t border-gray-100 px-4 py-3">
+    <div class="pagination flex flex-col gap-3 border-t border-gray-100 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
         <p class="text-sm text-[#A5A5A5]">
             Mostrando {{ page_obj.start_index }}-{{ page_obj.end_index }} de {{ paginator.count }}
         </p>
-        <div class="flex items-center gap-1">
+        <div class="pagination-links flex flex-wrap items-center gap-1">
             {% if page_obj.has_previous %}
             <a class="rounded-md border border-gray-200 px-3 py-1.5 text-xs font-medium text-[#0F6FC6] hover:bg-gray-50" href="?{% if query_string %}{{ query_string }}&{% endif %}{% if sort %}sort={{ sort }}&dir={{ dir }}&{% endif %}page={{ page_obj.previous_page_number }}">Anterior</a>
             {% else %}

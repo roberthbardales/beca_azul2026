@@ -1,17 +1,19 @@
 {% extends 'base.html' %}
 
-{% block title %}Usuario | Reserva{% endblock %}
+{% block title %}Usuario | Sistema de Control{% endblock %}
 
 {% block content %}
-<div class="flex justify-center">
+<div class="flex justify-center py-2">
     <div class="w-full max-w-4xl">
         <div class="rounded-xl border border-gray-100 bg-white p-5 shadow-sm sm:p-6">
-            <div class="mb-5 flex items-center justify-between">
-                <h1 class="text-xl font-bold text-[#0f172a]">
-                    {% if object %}Editar usuario{% else %}Nuevo usuario{% endif %}
-                </h1>
+            <header class="control-page-header mb-6 flex flex-col gap-3 border-b border-gray-100 pb-5 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                    <h1 class="text-xl font-bold text-[#0f172a]">
+                        {% if object %}Editar usuario{% else %}Nuevo usuario{% endif %}
+                    </h1>
+                </div>
                 <a class="text-sm font-medium text-[#0F6FC6] hover:underline" href="{% url 'app_users:usuario_lista' %}">Volver</a>
-            </div>
+            </header>
             <form method="post" novalidate class="space-y-3">
                 {% csrf_token %}
 
@@ -23,7 +25,7 @@
                     </div>
                 {% endif %}
 
-                <div class="grid gap-3 sm:grid-cols-2">
+                <fieldset class="control-form-section space-y-3"><legend class="text-sm font-semibold text-[#0f172a]">Acceso y asignación</legend><div class="grid gap-3 sm:grid-cols-2">
                     <div>
                         <label for="{{ form.role.id_for_label }}" class="mb-1 block text-xs font-medium text-[#0f172a]">Tipo de usuario</label>
                         <select name="{{ form.role.html_name }}" id="{{ form.role.id_for_label }}" data-rol-select
@@ -58,9 +60,9 @@
                     {% for error in form.empresa.errors %}
                         <div class="mt-1 text-xs text-red-600">{{ error }}</div>
                     {% endfor %}
-                </div>
+                </div></fieldset>
 
-                <div class="grid gap-3 sm:grid-cols-2">
+                <fieldset class="control-form-section space-y-3 border-t border-gray-100 pt-5"><legend class="text-sm font-semibold text-[#0f172a]">Datos personales</legend><div class="grid gap-3 sm:grid-cols-2">
                     <div>
                         <label for="{{ form.first_name.id_for_label }}" class="mb-1 block text-xs font-medium text-[#0f172a]">Nombres</label>
                         <input type="text" name="{{ form.first_name.html_name }}" id="{{ form.first_name.id_for_label }}" value="{{ form.first_name.value|default:'' }}"
@@ -108,10 +110,10 @@
                             <div class="mt-1 text-xs text-red-600">{{ error }}</div>
                         {% endfor %}
                     </div>
-                </div>
+                </div></fieldset>
 
                 {% if not object %}
-                <div class="grid gap-3 sm:grid-cols-2">
+                <fieldset class="control-form-section space-y-3 border-t border-gray-100 pt-5"><legend class="text-sm font-semibold text-[#0f172a]">Contraseña</legend><div class="grid gap-3 sm:grid-cols-2">
                     <div>
                         <label for="{{ form.password1.id_for_label }}" class="mb-1 block text-xs font-medium text-[#0f172a]">Contraseña</label>
                         <input type="password" name="{{ form.password1.html_name }}" id="{{ form.password1.id_for_label }}"
@@ -128,15 +130,15 @@
                             <div class="mt-1 text-xs text-red-600">{{ error }}</div>
                         {% endfor %}
                     </div>
-                </div>
+                </div></fieldset>
                 {% endif %}
 
-                <div class="flex items-center gap-3 pt-1">
+                <footer class="control-action-bar flex flex-col-reverse gap-3 border-t border-gray-100 pt-5 sm:flex-row sm:items-center">
                     <button class="rounded-lg bg-[#0F6FC6] px-4 py-2 text-sm font-semibold text-white hover:bg-[#0A5CA3]" type="submit">
                         {% if object %}Actualizar{% else %}Crear usuario{% endif %}
                     </button>
                     <a class="text-sm font-medium text-[#A5A5A5] hover:underline" href="{% url 'app_users:usuario_lista' %}">Cancelar</a>
-                </div>
+                </footer>
             </form>
         </div>
     </div>

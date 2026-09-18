@@ -1,10 +1,10 @@
-from django.db.models.signals import post_save
+from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 
-from .models import Certificado
+from .models import Trabajador
 
 
-@receiver(post_save, sender=Certificado)
-def actualizar_estado_trabajador(sender, instance, **kwargs):
-    if instance.trabajador_id:
-        instance.trabajador.actualizar_estado()
+@receiver([post_save, post_delete], sender=Trabajador)
+def actualizar_habilitado_empresa(sender, instance, **kwargs):
+    if instance.empresa_id:
+        instance.empresa.actualizar_habilitado()

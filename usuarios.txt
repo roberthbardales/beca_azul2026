@@ -1,0 +1,10 @@
+LISTA DE USUARIOS DEL SISTEMA
+==========================================================
+
+ID   NOMBRE                   EMAIL                         ROL
+1    Admin Principal          administrador@gmail.com       Administrador
+21   ejemplo jimenez          ejemplo@gmail.com             Usuario Empresa
+5    Garita Acceso            garita@gmail.com              Usuario Garita
+6    pepe ramos               pepito@gmail.com              Usuario Planta
+2    ReBeca Azul Sanchez      beca_azul@gmail.com           Beca Azul
+20   russell bardales         roberthbardales@gmail.com     Superusuario

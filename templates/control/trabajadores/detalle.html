@@ -3,18 +3,18 @@
 {% block title %}Trabajador | Control{% endblock %}
 
 {% block content %}
-<div class="flex justify-center">
+<div class="control-detail-page flex justify-center">
     <div class="w-full max-w-3xl">
         <div class="rounded-xl border border-gray-100 bg-white p-6 shadow-sm sm:p-8">
-            <div class="mb-6 flex items-center justify-between">
+            <header class="control-page-header mb-6 flex flex-col gap-4 border-b border-gray-100 pb-5 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                     <h1 class="text-2xl font-bold text-[#0f172a]">{{ trabajador.nombres }} {{ trabajador.apellidos }}</h1>
                     <p class="text-sm text-[#A5A5A5]">{{ trabajador.empresa }}</p>
                 </div>
-                <div class="flex items-center gap-2">
+                <div class="flex flex-wrap items-center gap-2">
                     {% if es_empresa %}
                     <a class="text-sm font-medium text-[#0F6FC6] hover:underline" href="{% url 'app_control:trabajador_empresa_lista' %}">Volver</a>
-                    <a class="rounded-md border border-[#0F6FC6] px-3 py-1.5 text-xs font-medium text-[#0F6FC6] hover:bg-[#0F6FC6]/10" href="{% url 'app_control:trabajador_empresa_editar' trabajador.pk %}">Editar</a>
+                    <a class="rounded-md bg-[#0F6FC6] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#0A5CA3]" href="{% url 'app_control:trabajador_empresa_editar' trabajador.pk %}">Editar</a>
                     <form method="post" action="{% url 'app_control:trabajador_empresa_toggle' trabajador.pk %}" class="inline">
                         {% csrf_token %}
                         <button type="submit" class="rounded-md px-3 py-1.5 text-xs font-medium text-white {% if trabajador.activo %}bg-red-600 hover:bg-red-700{% else %}bg-[#0F6FC6] hover:bg-[#0A5CA3]{% endif %}">
@@ -25,7 +25,7 @@
                     {% else %}
                     <a class="text-sm font-medium text-[#0F6FC6] hover:underline" href="{% url 'app_control:trabajador_lista' %}">Volver</a>
                     {% if request.user.role == '1' %}
-                    <a class="rounded-md border border-[#0F6FC6] px-3 py-1.5 text-xs font-medium text-[#0F6FC6] hover:bg-[#0F6FC6]/10" href="{% url 'app_control:trabajador_editar' trabajador.pk %}">Editar</a>
+                    <a class="rounded-md bg-[#0F6FC6] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#0A5CA3]" href="{% url 'app_control:trabajador_editar' trabajador.pk %}">Editar</a>
                     <form method="post" action="{% url 'app_control:trabajador_toggle' trabajador.pk %}" class="inline">
                         {% csrf_token %}
                         <button type="submit" class="rounded-md px-3 py-1.5 text-xs font-medium text-white {% if trabajador.activo %}bg-red-600 hover:bg-red-700{% else %}bg-[#0F6FC6] hover:bg-[#0A5CA3]{% endif %}">
@@ -36,10 +36,16 @@
                     {% endif %}
                     {% endif %}
                 </div>
-            </div>
+            </header>
+
+            <section aria-label="Resumen del trabajador" class="control-summary-grid mb-6 grid gap-3 sm:grid-cols-3">
+                <div class="rounded-lg bg-slate-50 px-4 py-3"><p class="text-xs font-semibold uppercase tracking-wide text-[#A5A5A5]">Documento</p><p class="mt-1 font-semibold text-[#0f172a]">{{ trabajador.dni }}</p></div>
+                <div class="rounded-lg bg-slate-50 px-4 py-3"><p class="text-xs font-semibold uppercase tracking-wide text-[#A5A5A5]">Estado documental</p><p class="mt-1 text-sm font-semibold {% if trabajador.estado == 'HABILITADO' %}text-green-700{% else %}text-red-700{% endif %}">{{ trabajador.get_estado_display }}</p></div>
+                <div class="rounded-lg bg-slate-50 px-4 py-3"><p class="text-xs font-semibold uppercase tracking-wide text-[#A5A5A5]">Empresa</p><p class="mt-1 truncate text-sm font-semibold text-[#0f172a]">{{ trabajador.empresa }}</p></div>
+            </section>
 
             <div class="space-y-4">
-                <h2 class="text-xs font-semibold uppercase tracking-wide text-[#A5A5A5]">Datos personales</h2>
+                <section class="control-detail-section"><h2 class="text-xs font-semibold uppercase tracking-wide text-[#A5A5A5]">Datos personales</h2>
                 <div class="rounded-xl border border-gray-100 bg-white">
                     <table class="w-full text-sm">
                         <tbody class="divide-y divide-gray-100">
@@ -80,10 +86,8 @@
                                 <td class="px-4 py-2">
                                     {% if trabajador.estado == 'HABILITADO' %}
                                     <span class="inline-block rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">Habilitado</span>
-                                    {% elif trabajador.estado == 'RECHAZADO' %}
-                                    <span class="inline-block rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">Rechazado</span>
                                     {% else %}
-                                    <span class="inline-block rounded-full bg-yellow-100 px-2 py-0.5 text-xs font-medium text-yellow-700">Pendiente</span>
+                                    <span class="inline-block rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">Deshabilitado</span>
                                     {% endif %}
                                 </td>
                             </tr>
@@ -93,11 +97,11 @@
                             </tr>
                         </tbody>
                     </table>
-                </div>
+                </div></section>
 
-                {% if es_empresa or request.user.role == '1' %}
-                <h2 class="text-xs font-semibold uppercase tracking-wide text-[#A5A5A5]">Cambiar estado</h2>
-                <form method="post" action="{% if es_empresa %}{% url 'app_control:trabajador_empresa_estado' trabajador.pk %}{% else %}{% url 'app_control:trabajador_estado' trabajador.pk %}{% endif %}" class="flex items-end gap-2 rounded-xl border border-gray-100 bg-white p-4">
+                {% if request.user.role == '1' and not es_empresa %}
+                <section class="control-detail-section"><h2 class="text-xs font-semibold uppercase tracking-wide text-[#A5A5A5]">Cambiar estado</h2>
+                <form method="post" action="{% url 'app_control:trabajador_estado' trabajador.pk %}" class="mt-2 flex flex-col gap-3 rounded-xl border border-gray-100 bg-white p-4 sm:flex-row sm:items-end">
                     {% csrf_token %}
                     <div class="flex-1">
                         <label for="id_estado" class="mb-1 block text-sm font-medium text-[#0f172a]">Estado</label>
@@ -108,16 +112,16 @@
                         </select>
                     </div>
                     <button class="rounded-lg bg-[#0F6FC6] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#0A5CA3]" type="submit">Actualizar</button>
-                </form>
+                </form></section>
                 {% endif %}
 
-                <div class="flex items-center justify-between">
+                <section class="control-detail-section"><div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <h2 class="text-xs font-semibold uppercase tracking-wide text-[#A5A5A5]">Certificados</h2>
                     {% if es_empresa or request.user.role == '1' %}
                     <a class="rounded-md bg-[#0F6FC6] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#0A5CA3]" href="{% if es_empresa %}{% url 'app_control:certificado_empresa_crear' trabajador.pk %}{% else %}{% url 'app_control:certificado_crear' trabajador.pk %}{% endif %}">Nuevo certificado</a>
                     {% endif %}
                 </div>
-                <div class="overflow-hidden rounded-xl border border-gray-100 bg-white">
+                <div class="control-table overflow-x-auto rounded-xl border border-gray-100 bg-white">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
@@ -148,19 +152,57 @@
                                 </td>
                                 <td class="px-4 py-2 text-right text-sm">
                                     {% if es_empresa or request.user.role == '1' %}
-                                    <a class="rounded-md border border-[#0F6FC6] px-3 py-1 text-xs font-medium text-[#0F6FC6] hover:bg-[#0F6FC6]/10" href="{% if es_empresa %}{% url 'app_control:certificado_empresa_editar' certificado.pk %}{% else %}{% url 'app_control:certificado_editar' certificado.pk %}{% endif %}">Editar</a>
+                                    <a class="rounded-md bg-[#0F6FC6] px-3 py-1 text-xs font-medium text-white hover:bg-[#0A5CA3]" href="{% if es_empresa %}{% url 'app_control:certificado_empresa_editar' certificado.pk %}{% else %}{% url 'app_control:certificado_editar' certificado.pk %}{% endif %}">Editar</a>
                                     <a class="rounded-md border border-red-200 px-3 py-1 text-xs font-medium text-red-600 hover:bg-red-50" href="{% if es_empresa %}{% url 'app_control:certificado_empresa_eliminar' certificado.pk %}{% else %}{% url 'app_control:certificado_eliminar' certificado.pk %}{% endif %}">Eliminar</a>
                                     {% endif %}
                                 </td>
                             </tr>
                             {% empty %}
                             <tr>
-                                <td colspan="5" class="px-4 py-6 text-center text-sm text-[#A5A5A5]">No hay certificados registrados.</td>
+                                <td colspan="5" class="control-empty-state px-4 py-8 text-center"><p class="font-medium text-[#0f172a]">No hay certificados registrados.</p></td>
                             </tr>
                             {% endfor %}
                         </tbody>
                     </table>
+                </div></section>
+
+                <section class="control-detail-section"><div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <h2 class="text-xs font-semibold uppercase tracking-wide text-[#A5A5A5]">Incidencias</h2>
+                    {% if request.user.role == '1' or request.user.role == '2' %}
+                    <a class="rounded-md bg-[#0F6FC6] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#0A5CA3]" href="{% url 'app_control:incidencia_crear' trabajador.pk %}">Nueva incidencia</a>
+                    {% endif %}
                 </div>
+                <div class="control-table overflow-x-auto rounded-xl border border-gray-100 bg-white">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-2 text-left text-xs font-semibold text-[#A5A5A5]">Descripción</th>
+                                <th class="px-4 py-2 text-left text-xs font-semibold text-[#A5A5A5]">Registrada por</th>
+                                <th class="px-4 py-2 text-left text-xs font-semibold text-[#A5A5A5]">Fecha</th>
+                                <th class="px-4 py-2 text-right text-xs font-semibold text-[#A5A5A5]">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            {% for incidencia in incidencias %}
+                            <tr>
+                                <td class="px-4 py-2 text-sm font-medium">{{ incidencia.descripcion|default:'-' }}</td>
+                                <td class="px-4 py-2 text-sm">{{ incidencia.registrado_por.get_full_name|default:incidencia.registrado_por.email|default:'-' }}</td>
+                                <td class="px-4 py-2 text-sm">{{ incidencia.created|date:'d/m/Y H:i' }}</td>
+                                <td class="px-4 py-2 text-right text-sm">
+                                    {% if request.user.role == '1' or request.user.role == '2' %}
+                                    <a class="rounded-md bg-[#0F6FC6] px-3 py-1 text-xs font-medium text-white hover:bg-[#0A5CA3]" href="{% url 'app_control:incidencia_editar' incidencia.pk %}">Editar</a>
+                                    <a class="rounded-md border border-red-200 px-3 py-1 text-xs font-medium text-red-600 hover:bg-red-50" href="{% url 'app_control:incidencia_eliminar' incidencia.pk %}">Eliminar</a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="control-empty-state px-4 py-8 text-center"><p class="font-medium text-[#0f172a]">No hay incidencias registradas.</p></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div></section>
             </div>
         </div>
     </div>

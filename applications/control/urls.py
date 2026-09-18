@@ -6,6 +6,7 @@ app_name = 'app_control'
 
 urlpatterns = [
     path('panel/', views.DashboardView.as_view(), name='dashboard'),
+    path('empresas/buscar/', views.EmpresaBuscarView.as_view(), name='empresa_buscar'),
     path('empresas/', views.EmpresaListView.as_view(), name='empresa_lista'),
     path('empresas/crear/', views.EmpresaCreateView.as_view(), name='empresa_crear'),
     path('empresas/<int:pk>/', views.EmpresaDetailView.as_view(), name='empresa_detalle'),
@@ -18,7 +19,6 @@ urlpatterns = [
     path('trabajadores/empresa/crear/', views.TrabajadorEmpresaCreateView.as_view(), name='trabajador_empresa_crear'),
     path('trabajadores/empresa/<int:pk>/', views.TrabajadorEmpresaDetailView.as_view(), name='trabajador_empresa_detalle'),
     path('trabajadores/empresa/<int:pk>/editar/', views.TrabajadorEmpresaUpdateView.as_view(), name='trabajador_empresa_editar'),
-    path('trabajadores/empresa/<int:pk>/estado/', views.TrabajadorEmpresaEstadoView.as_view(), name='trabajador_empresa_estado'),
     path('trabajadores/empresa/<int:pk>/toggle/', views.TrabajadorEmpresaToggleView.as_view(), name='trabajador_empresa_toggle'),
     path('trabajadores/empresa/<int:pk>/eliminar/', views.TrabajadorEmpresaDeleteView.as_view(), name='trabajador_empresa_eliminar'),
     path('trabajadores/empresa/<int:trabajador_pk>/certificados/crear/', views.CertificadoEmpresaCreateView.as_view(), name='certificado_empresa_crear'),
@@ -33,5 +33,7 @@ urlpatterns = [
     path('trabajadores/<int:trabajador_pk>/certificados/crear/', views.CertificadoCreateView.as_view(), name='certificado_crear'),
     path('certificados/<int:pk>/editar/', views.CertificadoUpdateView.as_view(), name='certificado_editar'),
     path('certificados/<int:pk>/eliminar/', views.CertificadoDeleteView.as_view(), name='certificado_eliminar'),
+    path('trabajadores/<int:trabajador_pk>/incidencias/crear/', views.IncidenciaCreateView.as_view(), name='incidencia_crear'),
+    path('incidencias/<int:pk>/editar/', views.IncidenciaUpdateView.as_view(), name='incidencia_editar'),
+    path('incidencias/<int:pk>/eliminar/', views.IncidenciaDeleteView.as_view(), name='incidencia_eliminar'),
 ]
-

@@ -1,13 +1,15 @@
 {% extends 'base.html' %}
 
-{% block title %}Login | Reserva{% endblock %}
+{% block title %}Login | Sistema de Control{% endblock %}
 
 {% block content %}
-<div class="flex justify-center">
-    <div class="w-full max-w-md">
-        <div class="rounded-xl border border-gray-100 bg-white p-6 shadow-sm sm:p-8">
-            <h1 class="mb-6 text-center text-2xl font-bold text-[#0f172a]">Ingresar</h1>
-            <form method="post" novalidate class="space-y-4">
+<div class="auth-page py-6 sm:py-10">
+    <div class="auth-composition mx-auto flex w-full max-w-md flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+        <section class="auth-composition__form p-6 sm:p-8 lg:p-10" aria-labelledby="login-title">
+            <div class="mb-8">
+                <h1 id="login-title" class="text-2xl font-bold text-[#0f172a]">Ingresar</h1>
+            </div>
+            <form method="post" novalidate class="space-y-5">
                 {% csrf_token %}
 
                 {% if form.non_field_errors %}
@@ -19,26 +21,26 @@
                 {% endif %}
 
                 <div>
-                    <label for="{{ form.email.id_for_label }}" class="mb-1 block text-sm font-medium text-[#0f172a]">Correo electrónico</label>
-                    <input type="email" name="{{ form.email.html_name }}" id="{{ form.email.id_for_label }}" value="{{ form.email.value|default:'' }}"
+                    <label for="{{ form.email.id_for_label }}" class="mb-1.5 block text-sm font-medium text-[#0f172a]">Correo electrónico</label>
+                    <input type="email" name="{{ form.email.html_name }}" id="{{ form.email.id_for_label }}" value="{{ form.email.value|default:'' }}"{% if form.email.errors %} aria-invalid="true" aria-describedby="{{ form.email.id_for_label }}-errors"{% endif %}
                            class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#00B0F0] focus:outline-none focus:ring-2 focus:ring-[#00B0F0]/30" required>
                     {% for error in form.email.errors %}
-                        <div class="mt-1 text-sm text-red-600">{{ error }}</div>
+                        <div id="{{ form.email.id_for_label }}-errors" class="mt-1 text-sm text-red-600">{{ error }}</div>
                     {% endfor %}
                 </div>
 
                 <div>
-                    <label for="{{ form.password.id_for_label }}" class="mb-1 block text-sm font-medium text-[#0f172a]">Contraseña</label>
-                    <input type="password" name="{{ form.password.html_name }}" id="{{ form.password.id_for_label }}"
+                    <label for="{{ form.password.id_for_label }}" class="mb-1.5 block text-sm font-medium text-[#0f172a]">Contraseña</label>
+                    <input type="password" name="{{ form.password.html_name }}" id="{{ form.password.id_for_label }}"{% if form.password.errors %} aria-invalid="true" aria-describedby="{{ form.password.id_for_label }}-errors"{% endif %}
                            class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#00B0F0] focus:outline-none focus:ring-2 focus:ring-[#00B0F0]/30" required>
                     {% for error in form.password.errors %}
-                        <div class="mt-1 text-sm text-red-600">{{ error }}</div>
+                        <div id="{{ form.password.id_for_label }}-errors" class="mt-1 text-sm text-red-600">{{ error }}</div>
                     {% endfor %}
                 </div>
 
                 <button class="w-full rounded-lg bg-[#0F6FC6] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#0A5CA3]" type="submit">Entrar</button>
             </form>
-        </div>
+        </section>
     </div>
 </div>
 {% endblock %}

@@ -1,26 +1,27 @@
 {% extends 'base.html' %}{% block title %}Buscar trabajador | Control{% endblock %}{% block content %}
-<div class="flex justify-center"><div class="w-full max-w-2xl space-y-6">
-<div class="rounded-xl border border-gray-100 bg-white p-6 shadow-sm sm:p-8">
-<h1 class="mb-6 text-2xl font-bold text-[#0f172a]">Buscar trabajador</h1>
-<form method="get" class="flex gap-2">
-<input type="text" name="q" value="{{ q }}" placeholder="N° de documento (DNI)..." autofocus
+<div class="control-search-page flex justify-center"><div class="w-full max-w-2xl space-y-6">
+<section class="search-panel rounded-xl border border-gray-100 bg-white p-6 shadow-sm sm:p-8" aria-labelledby="buscar-trabajador-title">
+<div class="mb-4 border-b border-gray-100 pb-3"><h1 id="buscar-trabajador-title" class="text-2xl font-bold text-[#0f172a]">Buscar trabajador</h1></div>
+<form method="get" class="flex flex-col gap-3 sm:flex-row" role="search">
+<label class="sr-only" for="buscar-trabajador-q">N° de documento</label>
+<input id="buscar-trabajador-q" type="text" name="q" value="{{ q }}" placeholder="N° de documento (DNI)..." autofocus
        class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#00B0F0] focus:outline-none focus:ring-2 focus:ring-[#00B0F0]/30">
 <button class="shrink-0 rounded-lg bg-[#0F6FC6] px-4 py-2 text-sm font-semibold text-white hover:bg-[#0A5CA3]" type="submit">Buscar</button>
 </form>
-</div>
+</section>
 
 {% if q %}
 {% if trabajador %}
-<div class="rounded-xl border border-gray-100 bg-white p-6 shadow-sm sm:p-8">
+<section class="search-result rounded-xl border border-gray-100 bg-white p-6 shadow-sm sm:p-8" aria-labelledby="resultado-trabajador-title">
 <div class="mb-4 flex items-center justify-between">
 <div>
-<h2 class="text-xl font-bold text-[#0f172a]">{{ trabajador.nombres }} {{ trabajador.apellidos }}</h2>
+<h2 id="resultado-trabajador-title" class="text-xl font-bold text-[#0f172a]">{{ trabajador.nombres }} {{ trabajador.apellidos }}</h2>
 <p class="text-sm text-[#A5A5A5]">{{ trabajador.empresa }}</p>
 </div>
-<span class="inline-block rounded-full px-2 py-0.5 text-xs font-medium {% if trabajador.estado == 'HABILITADO' %}bg-green-100 text-green-700{% elif trabajador.estado == 'RECHAZADO' %}bg-red-100 text-red-700{% else %}bg-yellow-100 text-yellow-700{% endif %}">{{ trabajador.get_estado_display }}</span>
+<span class="inline-block rounded-full px-2 py-0.5 text-xs font-medium {% if trabajador.estado == 'HABILITADO' %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">{{ trabajador.get_estado_display }}</span>
 </div>
-<div class="rounded-xl border border-gray-100 bg-white">
-<table class="w-full text-sm">
+<div class="overflow-x-auto rounded-xl border border-gray-100 bg-white">
+<table class="min-w-full text-sm" aria-label="Datos del trabajador">
 <tbody class="divide-y divide-gray-100">
 <tr class="bg-white"><th class="w-1/3 px-4 py-2 text-left text-xs font-semibold text-[#A5A5A5]">Tipo de documento</th><td class="px-4 py-2 font-medium">{{ trabajador.get_tipo_documento_display }}</td></tr>
 <tr class="bg-gray-50"><th class="px-4 py-2 text-left text-xs font-semibold text-[#A5A5A5]">N° de documento</th><td class="px-4 py-2 font-medium">{{ trabajador.dni }}</td></tr>
@@ -33,17 +34,17 @@
 </table>
 </div>
 {% if puede_ver_detalle %}
-<div class="mt-4"><a class="rounded-md border border-[#0F6FC6] px-3 py-1.5 text-xs font-medium text-[#0F6FC6] hover:bg-[#0F6FC6]/10" href="{% if es_empresa %}{% url 'app_control:trabajador_empresa_detalle' trabajador.pk %}{% else %}{% url 'app_control:trabajador_detalle' trabajador.pk %}{% endif %}">Ver detalle completo</a></div>
+<div class="mt-4"><a class="inline-flex items-center gap-2 rounded-md border border-[#0F6FC6] px-3 py-1.5 text-xs font-medium text-[#0F6FC6] hover:bg-[#0F6FC6]/10" href="{% if es_empresa %}{% url 'app_control:trabajador_empresa_detalle' trabajador.pk %}{% else %}{% url 'app_control:trabajador_detalle' trabajador.pk %}{% endif %}"><svg class="h-4 w-4" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="2.5"/></svg>Ver detalle completo</a></div>
 {% endif %}
-</div>
+</section>
 {% elif resultados > 1 %}
-<div class="rounded-xl border border-gray-100 bg-white p-6 text-sm text-[#A5A5A5] shadow-sm">
+<section class="search-empty-state rounded-xl border border-gray-100 bg-white p-6 text-center text-sm text-[#A5A5A5] shadow-sm" aria-live="polite">
 Hay {{ resultados }} coincidencias. Refina la búsqueda con más datos del trabajador.
-</div>
+</section>
 {% else %}
-<div class="rounded-xl border border-gray-100 bg-white p-6 text-sm text-[#A5A5A5] shadow-sm">
+<section class="search-empty-state rounded-xl border border-gray-100 bg-white p-6 text-center text-sm text-[#A5A5A5] shadow-sm" aria-live="polite">
 No se encontró ningún trabajador con "{{ q }}".
-</div>
+</section>
 {% endif %}
 {% endif %}
 </div></div>

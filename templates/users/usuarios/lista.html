@@ -1,75 +1,89 @@
 {% extends 'base.html' %}
 
-{% block title %}Usuarios | Reserva{% endblock %}
+{% block title %}Usuarios | Sistema de Control{% endblock %}
 
 {% block content %}
-<div class="mb-4 flex items-center justify-between">
+<div class="mb-4 flex flex-col gap-2 border-b border-gray-200 pb-3 sm:flex-row sm:items-end sm:justify-between">
     <h1 class="text-2xl font-bold text-[#0f172a]">Usuarios</h1>
-    <a class="inline-block rounded-md bg-[#0F6FC6] px-4 py-2 text-sm font-medium text-white hover:bg-[#0A5CA3]" href="{% url 'app_users:usuario_crear' %}">Nuevo usuario</a>
+    <a class="inline-flex items-center gap-2 rounded-lg bg-[#0F6FC6] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#0A5CA3]" href="{% url 'app_users:usuario_crear' %}"><svg class="h-4 w-4" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M12 5v14M5 12h14"/></svg>Nuevo usuario</a>
 </div>
 
-<form method="get" action="{% url 'app_users:usuario_lista' %}" class="mb-4 flex flex-wrap items-center gap-2">
-    <input type="search" name="q" value="{{ q }}" placeholder="Buscar por nombre o email..." class="w-full max-w-sm rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#0F6FC6] focus:outline-none">
-    <select name="rol" class="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#0F6FC6] focus:outline-none">
+<form method="get" action="{% url 'app_users:usuario_lista' %}" class="user-filter mb-5 grid gap-3 rounded-xl border border-gray-100 bg-white p-4 shadow-sm sm:grid-cols-2 lg:grid-cols-5" role="search">
+    <div class="sm:col-span-2">
+        <label class="sr-only" for="usuarios-q">Buscar usuarios</label>
+        <input id="usuarios-q" type="search" name="q" value="{{ q }}" placeholder="Buscar por nombre o email..." class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#0F6FC6] focus:outline-none">
+    </div>
+    <div>
+        <label class="sr-only" for="usuarios-rol">Tipo de usuario</label>
+        <select id="usuarios-rol" name="rol" class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#0F6FC6] focus:outline-none">
         <option value="">Todos los tipos</option>
         {% for value, label in roles %}
         <option value="{{ value }}" {% if rol == value %}selected{% endif %}>{{ label }}</option>
         {% endfor %}
-    </select>
-    <select name="estado" class="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#0F6FC6] focus:outline-none">
+        </select>
+    </div>
+    <div>
+        <label class="sr-only" for="usuarios-estado">Estado</label>
+        <select id="usuarios-estado" name="estado" class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#0F6FC6] focus:outline-none">
         <option value="">Todos los estados</option>
         <option value="1" {% if estado == '1' %}selected{% endif %}>Activos</option>
         <option value="0" {% if estado == '0' %}selected{% endif %}>Inactivos</option>
-    </select>
-    <button type="submit" class="rounded-md bg-[#0F6FC6] px-4 py-2 text-sm font-medium text-white hover:bg-[#0A5CA3]">Buscar</button>
-    <a class="rounded-md bg-slate-200 px-4 py-2 text-sm font-medium text-[#0f172a] hover:bg-slate-300" href="{% url 'app_users:usuario_lista' %}">Limpiar</a>
+        </select>
+    </div>
+    <div class="flex gap-2 sm:col-span-2 lg:col-span-1">
+        <button type="submit" class="flex-1 rounded-lg bg-[#0F6FC6] px-4 py-2 text-sm font-medium text-white hover:bg-[#0A5CA3]">Buscar</button>
+        <a class="flex-1 rounded-lg bg-slate-200 px-4 py-2 text-center text-sm font-medium text-[#0f172a] hover:bg-slate-300" href="{% url 'app_users:usuario_lista' %}">Limpiar</a>
+    </div>
 </form>
 
-<div class="overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm">
-    <table class="min-w-full divide-y divide-gray-200">
+<div class="responsive-table overflow-x-auto rounded-xl border border-gray-100 bg-white shadow-sm">
+    <table class="responsive-table min-w-full divide-y divide-gray-200" aria-label="Usuarios registrados">
         <thead class="bg-gray-50">
             <tr>
-                <th class="px-4 py-2 text-left text-xs font-semibold text-[#A5A5A5]">Nombre</th>
-                <th class="px-4 py-2 text-left text-xs font-semibold text-[#A5A5A5]">Email</th>
-                <th class="px-4 py-2 text-left text-xs font-semibold text-[#A5A5A5]">Tipo de usuario</th>
-                <th class="px-4 py-2 text-left text-xs font-semibold text-[#A5A5A5]">Empresa</th>
-                <th class="px-4 py-2 text-left text-xs font-semibold text-[#A5A5A5]">Estado</th>
-                <th class="px-4 py-2 text-left text-xs font-semibold text-[#A5A5A5]">Último acceso</th>
-                <th class="px-4 py-2 text-right text-xs font-semibold text-[#A5A5A5]">Acciones</th>
+                <th class="px-5 py-3 text-left text-xs font-semibold text-[#A5A5A5]">Nombre</th>
+                <th class="px-5 py-3 text-left text-xs font-semibold text-[#A5A5A5]">Email</th>
+                <th class="px-5 py-3 text-left text-xs font-semibold text-[#A5A5A5]">Tipo de usuario</th>
+                <th class="px-5 py-3 text-left text-xs font-semibold text-[#A5A5A5]">Empresa</th>
+                <th class="px-5 py-3 text-left text-xs font-semibold text-[#A5A5A5]">Estado</th>
+                <th class="px-5 py-3 text-left text-xs font-semibold text-[#A5A5A5]">Último acceso</th>
+                <th class="px-5 py-3 text-right text-xs font-semibold text-[#A5A5A5]">Acciones</th>
             </tr>
         </thead>
         <tbody class="divide-y divide-gray-100">
             {% for usuario in usuarios %}
             <tr>
-                <td class="px-4 py-2 text-sm font-medium">{{ usuario.first_name }} {{ usuario.last_name }}</td>
-                <td class="px-4 py-2 text-sm">{{ usuario.email }}</td>
-                <td class="px-4 py-2 text-sm">
+                <td data-label="Nombre" class="px-5 py-3 text-sm font-medium">{{ usuario.first_name }} {{ usuario.last_name }}</td>
+                <td data-label="Email" class="px-5 py-3 text-sm">{{ usuario.email }}</td>
+                <td data-label="Tipo de usuario" class="px-5 py-3 text-sm">
                     <span class="inline-block rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">{{ usuario.get_role_display }}</span>
                 </td>
-                <td class="px-4 py-2 text-sm">{{ usuario.empresa.nombre|default:'-' }}</td>
-                <td class="px-4 py-2 text-sm">
+                <td data-label="Empresa" class="px-5 py-3 text-sm">{{ usuario.empresa.nombre|default:'-' }}</td>
+                <td data-label="Estado" class="px-5 py-3 text-sm">
                     {% if usuario.is_active %}
                     <span class="inline-block rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">Activo</span>
                     {% else %}
                     <span class="inline-block rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">Inactivo</span>
                     {% endif %}
                 </td>
-                <td class="px-4 py-2 text-sm">{{ usuario.last_login|date:'d/m/Y H:i'|default:'Nunca' }}</td>
-                <td class="px-4 py-2 text-right text-sm">
-                    <a class="rounded-md border border-[#0F6FC6] px-3 py-1 text-xs font-medium text-[#0F6FC6] hover:bg-[#0F6FC6]/10" href="{% url 'app_users:usuario_detalle' usuario.pk %}">Ver</a>
+                <td data-label="Último acceso" class="px-5 py-3 text-sm">{{ usuario.last_login|date:'d/m/Y H:i'|default:'Nunca' }}</td>
+                <td data-label="Acciones" class="px-5 py-3 text-right text-sm">
+                    <a class="inline-flex min-h-8 min-w-8 items-center justify-center rounded-md bg-[#0F6FC6] px-2 py-1 text-white hover:bg-[#0A5CA3]" href="{% url 'app_users:usuario_detalle' usuario.pk %}" aria-label="Ver detalles de {{ usuario.first_name }} {{ usuario.last_name }}">
+                        <svg class="h-4 w-4" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="2.5"/></svg>
+                        <span class="sr-only">Ver detalles</span>
+                    </a>
                 </td>
             </tr>
             {% empty %}
-            <tr><td colspan="7" class="px-4 py-6 text-center text-sm text-[#A5A5A5]">{% if q %}No se encontraron usuarios para "{{ q }}".{% else %}No hay usuarios registrados.{% endif %}</td></tr>
+            <tr class="list-empty-row"><td colspan="7" class="list-empty-state px-4 py-10 text-center text-sm text-[#A5A5A5]">{% if q %}No se encontraron usuarios para "{{ q }}".{% else %}No hay usuarios registrados.{% endif %}</td></tr>
             {% endfor %}
         </tbody>
     </table>
     {% if is_paginated %}
-    <div class="flex items-center justify-between border-t border-gray-100 px-4 py-3">
+        <div class="pagination flex items-center justify-between border-t border-gray-100 px-4 py-3">
         <p class="text-sm text-[#A5A5A5]">
             Mostrando {{ page_obj.start_index }}–{{ page_obj.end_index }} de {{ paginator.count }}
         </p>
-        <div class="flex items-center gap-1">
+            <div class="pagination-links flex items-center gap-1">
             {% if page_obj.has_previous %}
             <a class="rounded-md border border-gray-200 px-3 py-1.5 text-xs font-medium text-[#0F6FC6] hover:bg-gray-50" href="?page={{ page_obj.previous_page_number }}{% if q %}&q={{ q }}{% endif %}{% if rol %}&rol={{ rol }}{% endif %}{% if estado %}&estado={{ estado }}{% endif %}">Anterior</a>
             {% else %}

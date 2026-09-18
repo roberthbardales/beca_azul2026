@@ -1,23 +1,23 @@
 {% extends 'base.html' %}
 
-{% block title %}Eliminar usuario | Reserva{% endblock %}
+{% block title %}Eliminar usuario | Sistema de Control{% endblock %}
 
 {% block content %}
-<div class="flex justify-center">
+<div class="flex justify-center py-6">
     <div class="w-full max-w-md">
-        <div class="rounded-xl border border-gray-100 bg-white p-6 shadow-sm sm:p-8">
-            <div class="mb-6 flex items-center justify-between">
-                <h1 class="text-2xl font-bold text-[#0f172a]">Eliminar usuario</h1>
+        <div class="control-confirmation rounded-xl border border-red-200 bg-white p-6 shadow-sm sm:p-8">
+            <header class="control-confirmation-header mb-5 flex items-center justify-between border-b border-red-100 pb-5">
+                <div>
+                    <h1 class="text-2xl font-bold text-[#0f172a]">Eliminar usuario</h1>
+                    <p class="mt-1 text-sm text-[#616161]">Esta acción es permanente y no se puede deshacer.</p>
+                </div>
                 <a class="text-sm font-medium text-[#0F6FC6] hover:underline" href="{% url 'app_users:usuario_detalle' usuario.pk %}">Volver</a>
-            </div>
+            </header>
 
-            <p class="mb-6 text-sm text-[#616161]">
-                ¿Seguro que deseas eliminar al usuario
-                <strong>{{ usuario.get_full_name|default:usuario.email }}</strong> ({{ usuario.email }})?
-                Esta acción no se puede deshacer.
-            </p>
+            <section aria-label="Usuario a eliminar" class="mb-6 rounded-lg border border-red-100 bg-red-50 px-4 py-3"><p class="text-xs font-semibold uppercase tracking-wide text-red-700">Usuario seleccionado</p><p class="mt-1 font-semibold text-[#0f172a]">{{ usuario.get_full_name|default:usuario.email }}</p><p class="text-sm text-[#616161]">{{ usuario.email }}</p></section>
+            <p class="mb-6 text-sm text-[#616161]">Confirma únicamente si ya no se necesita conservar el acceso ni el registro de esta cuenta.</p>
 
-            <form method="post" class="flex items-center gap-3">
+            <form method="post" class="control-action-bar flex flex-col-reverse gap-3 border-t border-red-100 pt-5 sm:flex-row sm:items-center">
                 {% csrf_token %}
                 <button class="rounded-lg bg-red-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-red-800" type="submit">Eliminar</button>
                 <a class="text-sm font-medium text-[#A5A5A5] hover:underline" href="{% url 'app_users:usuario_detalle' usuario.pk %}">Cancelar</a>

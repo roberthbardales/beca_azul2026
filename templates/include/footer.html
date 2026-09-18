@@ -1,10 +1,13 @@
-<footer class="mt-auto border-t border-gray-200 bg-white py-1">
-    <div class="mx-auto w-full max-w-6xl px-4">
-        <div class="flex flex-col items-center justify-between gap-1 md:flex-row">
-            <div class="font-semibold text-[#0f172a]">Sistema Basico</div>
-            <div class="text-center md:text-right">
-                <div class="text-sm text-[#A5A5A5]">roberthbardales@gmail.com</div>
-                <div class="text-sm text-[#A5A5A5]">(c) {% now "Y" %} Russell Bardales</div>
+<footer class="public-footer mt-auto border-t">
+    <div class="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6">
+        <div class="flex flex-col items-center justify-between gap-4 text-center sm:flex-row sm:text-left">
+            <div class="flex items-center gap-2.5">
+                <span class="brand-mark h-8 w-8 text-xs font-extrabold tracking-tight">BA</span>
+                <span class="text-sm font-bold tracking-tight text-[var(--ink-900)]">Beca Azul</span>
+            </div>
+            <div class="flex flex-col items-center gap-1 text-xs leading-relaxed sm:items-end">
+                <a class="rounded-sm transition-colors hover:text-[var(--primary-700)]" href="mailto:roberthbardales@gmail.com">roberthbardales@gmail.com</a>
+                <span>&copy; {% now "Y" %} Beca Azul</span>
             </div>
         </div>
     </div>

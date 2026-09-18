@@ -1,0 +1,39 @@
+export function Tabs({
+  tabs,
+  active,
+  onChange,
+}: {
+  tabs: { id: string; label: string; count?: number }[];
+  active: string;
+  onChange: (id: string) => void;
+}) {
+  return (
+    <div className="flex gap-1 border-b border-ink-200">
+      {tabs.map((tab) => (
+        <button
+          key={tab.id}
+          onClick={() => onChange(tab.id)}
+          className={`relative px-4 py-2.5 text-sm font-medium transition-colors ${
+            active === tab.id
+              ? 'text-primary-700'
+              : 'text-ink-500 hover:text-ink-800'
+          }`}
+        >
+          {tab.label}
+          {tab.count !== undefined && (
+            <span
+              className={`ml-2 rounded-full px-2 py-0.5 text-xs font-semibold ${
+                active === tab.id ? 'bg-primary-100 text-primary-700' : 'bg-ink-100 text-ink-500'
+              }`}
+            >
+              {tab.count}
+            </span>
+          )}
+          {active === tab.id && (
+            <span className="absolute inset-x-0 -bottom-px h-0.5 rounded-full bg-primary-600" />
+          )}
+        </button>
+      ))}
+    </div>
+  );
+}

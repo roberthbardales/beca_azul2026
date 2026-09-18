@@ -23,6 +23,7 @@ class Empresa(TimeStampedModel):
     telefono = models.CharField(max_length=20, blank=True)
     email = models.EmailField(blank=True)
     activo = models.BooleanField(default=True)
+    habilitado = models.BooleanField(default=True)
 
     class Meta:
         ordering = ('nombre',)
@@ -32,16 +33,21 @@ class Empresa(TimeStampedModel):
     def __str__(self):
         return self.nombre
 
+    def actualizar_habilitado(self):
+        tiene_deshabilitado = self.trabajadores.filter(estado=Trabajador.DESHABILITADO).exists()
+        nuevo_valor = not tiene_deshabilitado
+        if self.habilitado != nuevo_valor:
+            self.habilitado = nuevo_valor
+            self.save(update_fields=['habilitado'])
+
 
 class Trabajador(TimeStampedModel):
-    PENDIENTE = 'PENDIENTE'
     HABILITADO = 'HABILITADO'
-    RECHAZADO = 'RECHAZADO'
+    DESHABILITADO = 'DESHABILITADO'
 
     ESTADO_CHOICES = (
-        (PENDIENTE, 'Pendiente'),
         (HABILITADO, 'Habilitado'),
-        (RECHAZADO, 'Rechazado'),
+        (DESHABILITADO, 'Deshabilitado'),
     )
 
     DNI = 'DNI'
@@ -63,7 +69,7 @@ class Trabajador(TimeStampedModel):
     cargo = models.CharField(max_length=150, blank=True)
     area = models.CharField(max_length=150, blank=True)
 
-    estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default=PENDIENTE, db_index=True)
+    estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default=HABILITADO, db_index=True)
     activo = models.BooleanField(default=True)
 
     class Meta:
@@ -81,13 +87,22 @@ class Trabajador(TimeStampedModel):
     def __str__(self):
         return f'{self.nombres} {self.apellidos}'
 
-    def actualizar_estado(self):
-        certificados = self.certificados.all()
-        if certificados.count() >= 2 and all(c.aprobado for c in certificados):
-            self.estado = self.HABILITADO
-        else:
-            self.estado = self.PENDIENTE
-        self.save(update_fields=['estado'])
+
+class Incidencia(TimeStampedModel):
+
+    trabajador = models.ForeignKey(Trabajador, on_delete=models.CASCADE, related_name='incidencias')
+    descripcion = models.TextField()
+    registrado_por = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True
+    )
+
+    class Meta:
+        ordering = ('-created',)
+        verbose_name = 'Incidencia'
+        verbose_name_plural = 'Incidencias'
+
+    def __str__(self):
+        return f'Incidencia - {self.trabajador}'
 
 
 class Certificado(TimeStampedModel):

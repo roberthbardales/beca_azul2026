@@ -2,7 +2,7 @@ from datetime import date
 
 from django import forms
 
-from .models import Certificado, Empresa, Trabajador
+from .models import Certificado, Empresa, Incidencia, Trabajador
 
 
 class EmpresaForm(forms.ModelForm):
@@ -97,6 +97,21 @@ class TrabajadorEmpresaForm(forms.ModelForm):
         if commit:
             trabajador.save()
         return trabajador
+
+
+class IncidenciaForm(forms.ModelForm):
+    class Meta:
+        model = Incidencia
+        fields = ('descripcion',)
+        widgets = {
+            'descripcion': forms.Textarea(attrs={'rows': 4}),
+        }
+
+    def clean_descripcion(self):
+        descripcion = self.cleaned_data.get('descripcion', '').strip()
+        if not descripcion:
+            raise forms.ValidationError('La descripción es obligatoria.')
+        return descripcion
 
 
 class CertificadoForm(forms.ModelForm):

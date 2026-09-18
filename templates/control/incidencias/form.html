@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="control-form-page flex justify-center"><div class="w-full max-w-2xl">
+    <form method="post" class="control-form rounded-xl border border-gray-100 bg-white p-5 shadow-sm sm:p-6">
+        {% csrf_token %}
+        <header class="mb-6 flex flex-col gap-3 border-b border-gray-100 pb-5 sm:flex-row sm:items-start sm:justify-between"><div><h1 class="text-2xl font-bold text-[#0f172a]">{% if object %}Editar incidencia{% else %}Nueva incidencia{% endif %}</h1><p class="mt-1 text-sm text-[#A5A5A5]">{{ trabajador.nombres }} {{ trabajador.apellidos }}</p></div><a class="text-sm font-medium text-[#0F6FC6] hover:underline" href="{% url 'app_control:trabajador_detalle' trabajador.pk %}">Volver</a></header>
+        {% if form.non_field_errors %}<div class="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{% for error in form.non_field_errors %}{{ error }}{% endfor %}</div>{% endif %}
+        <fieldset class="control-form-section space-y-4"><legend class="text-sm font-semibold text-[#0f172a]">Información de la incidencia</legend><div><label for="{{ form.descripcion.id_for_label }}" class="mb-1 block text-xs font-medium text-[#0f172a]">Descripción</label>{{ form.descripcion }}{% for error in form.descripcion.errors %}<div class="mt-1 text-xs text-red-600">{{ error }}</div>{% endfor %}</div></fieldset>
+        <footer class="control-action-bar mt-6 flex flex-col-reverse gap-3 border-t border-gray-100 pt-5 sm:flex-row sm:items-center"><button type="submit" class="rounded-lg bg-[#0F6FC6] px-4 py-2 text-sm font-semibold text-white hover:bg-[#0A5CA3]">{% if object %}Actualizar incidencia{% else %}Guardar incidencia{% endif %}</button><a class="text-sm font-medium text-[#A5A5A5] hover:underline" href="{% url 'app_control:trabajador_detalle' trabajador.pk %}">Cancelar</a></footer>
+    </form>
+</div></div>
+{% endblock %}
