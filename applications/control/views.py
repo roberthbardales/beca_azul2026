@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.db.models import Count, Q
+from django.db.models.functions import TruncDate
 from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
@@ -43,10 +44,11 @@ class DashboardView(LoginRequiredMixin, View):
         empresas_habilitadas = Empresa.objects.filter(habilitado=True).count()
 
         total_trabajadores = Trabajador.objects.count()
-        trabajadores_habilitados = Trabajador.objects.filter(estado=Trabajador.HABILITADO).count()
-        trabajadores_deshabilitados = Trabajador.objects.filter(estado=Trabajador.DESHABILITADO).count()
+        trabajadores_habilitados = Trabajador.objects.filter(habilitado=True).count()
+        trabajadores_deshabilitados = Trabajador.objects.filter(habilitado=False).count()
 
         total_certificados = Certificado.objects.count()
+        certificados_sin_vencimiento = Certificado.objects.filter(fecha_vencimiento__isnull=True).count()
         certificados_vencidos = Certificado.objects.filter(fecha_vencimiento__lt=hoy).count()
         certificados_proximos_30 = Certificado.objects.filter(
             fecha_vencimiento__gte=hoy, fecha_vencimiento__lte=limite_30
@@ -56,8 +58,33 @@ class DashboardView(LoginRequiredMixin, View):
         ).count()
 
         trabajadores_por_empresa = list(
-            Empresa.objects.annotate(total=Count('trabajadores', distinct=True)).order_by('nombre')
+            Empresa.objects.annotate(total=Count('trabajadores', distinct=True))
+            .order_by('-total', 'nombre')
         )
+        empresas_grafica = trabajadores_por_empresa[:10]
+        otros_trabajadores = sum(empresa.total for empresa in trabajadores_por_empresa[10:])
+
+        inicio_semana = hoy - timedelta(days=6)
+        altas_por_dia = {
+            item['dia']: item['total']
+            for item in (
+                Trabajador.objects.filter(created__date__gte=inicio_semana)
+                .annotate(dia=TruncDate('created'))
+                .values('dia')
+                .annotate(total=Count('id'))
+                .order_by('dia')
+            )
+        }
+        dias_semana = [inicio_semana + timedelta(days=offset) for offset in range(7)]
+        certificados_vigentes = Certificado.objects.filter(
+            fecha_vencimiento__gt=limite_30
+        ).count()
+
+        empresas_labels = [empresa.nombre for empresa in empresas_grafica]
+        empresas_data = [empresa.total for empresa in empresas_grafica]
+        if otros_trabajadores:
+            empresas_labels.append('Otros')
+            empresas_data.append(otros_trabajadores)
 
         context = {
             'total_empresas': total_empresas,
@@ -70,11 +97,25 @@ class DashboardView(LoginRequiredMixin, View):
             'trabajadores_deshabilitados': trabajadores_deshabilitados,
             'total_certificados': total_certificados,
             'certificados_vencidos': certificados_vencidos,
+            'certificados_sin_vencimiento': certificados_sin_vencimiento,
             'certificados_proximos_30': certificados_proximos_30,
             'certificados_proximos_60': certificados_proximos_60,
             'trabajadores_por_empresa': trabajadores_por_empresa,
-            'grafica_empresas_labels': [empresa.nombre for empresa in trabajadores_por_empresa],
-            'grafica_empresas_datos': [empresa.total for empresa in trabajadores_por_empresa],
+            'dashboard_charts': {
+                'empresas': {
+                    'labels': empresas_labels,
+                    'data': empresas_data,
+                },
+                'cumplimiento': [
+                    certificados_vigentes,
+                    certificados_proximos_30,
+                    certificados_vencidos,
+                ],
+                'altas': {
+                    'labels': [dia.strftime('%d/%m') for dia in dias_semana],
+                    'data': [altas_por_dia.get(dia, 0) for dia in dias_semana],
+                },
+            },
             'trabajadores_recientes': (
                 Trabajador.objects.select_related('empresa').order_by('-created')[:5]
             ),
@@ -95,6 +136,15 @@ class EmpresaListView(VerEmpresasMixin, ListView):
     paginate_by = 20
 
     def get_queryset(self):
+        if self.request.user.role == User.PLANTA:
+            queryset = Trabajador.objects.select_related('empresa').filter(empresa__activo=True).order_by('empresa__nombre', 'apellidos', 'nombres')
+            q = self.request.GET.get('q', '').strip()
+            if q:
+                queryset = queryset.filter(Q(nombres__icontains=q) | Q(apellidos__icontains=q) | Q(dni__icontains=q))
+            empresa_id = self.request.GET.get('empresa', '').strip()
+            if empresa_id.isdigit():
+                queryset = queryset.filter(empresa_id=empresa_id)
+            return queryset
         queryset = Empresa.objects.annotate(
             total_trabajadores=Count('trabajadores', distinct=True),
             total_usuarios=Count('usuarios', distinct=True),
@@ -104,8 +154,6 @@ class EmpresaListView(VerEmpresasMixin, ListView):
             queryset = queryset.filter(
                 Q(nombre__icontains=q)
                 | Q(ruc__icontains=q)
-                | Q(email__icontains=q)
-                | Q(direccion__icontains=q)
             )
         estado = self.request.GET.get('estado', '').strip()
         if estado in ('0', '1'):
@@ -113,6 +161,12 @@ class EmpresaListView(VerEmpresasMixin, ListView):
         return queryset
 
     def get_context_data(self, **kwargs):
+        if self.request.user.role == User.PLANTA:
+            kwargs['trabajadores'] = self.object_list
+            kwargs['empresas_filtro'] = Empresa.objects.filter(activo=True, trabajadores__isnull=False).distinct().order_by('nombre')
+            kwargs['empresa_seleccionada'] = self.request.GET.get('empresa', '')
+            kwargs['q'] = self.request.GET.get('q', '')
+            return super().get_context_data(**kwargs)
         kwargs.setdefault('q', self.request.GET.get('q', ''))
         kwargs.setdefault('estado', self.request.GET.get('estado', ''))
         return super().get_context_data(**kwargs)
@@ -134,7 +188,6 @@ class EmpresaBuscarView(LoginRequiredMixin, ListView):
             queryset = queryset.filter(
                 Q(nombre__icontains=q)
                 | Q(ruc__icontains=q)
-                | Q(email__icontains=q)
             )
         estado = self.request.GET.get('estado', '').strip()
         if estado in ('0', '1'):
@@ -200,14 +253,13 @@ class EmpresaDetailView(VerEmpresasMixin, DetailView):
             'trabajadores_por_estado',
             [
                 {
-                    'estado': grupo['estado'],
+                    'habilitado': grupo['habilitado'],
                     'total': grupo['total'],
-                    'label': dict(Trabajador.ESTADO_CHOICES).get(grupo['estado'], grupo['estado']),
+                    'label': 'Habilitado' if grupo['habilitado'] else 'Deshabilitado',
                 }
-                for grupo in trabajadores.values('estado').annotate(total=Count('estado')).order_by('estado')
+                for grupo in trabajadores.values('habilitado').annotate(total=Count('habilitado')).order_by('habilitado')
             ],
         )
-        kwargs.setdefault('estado_choices', dict(Trabajador.ESTADO_CHOICES))
         return super().get_context_data(**kwargs)
 
 
@@ -242,13 +294,13 @@ class TrabajadorListView(VerTrabajadoresMixin, ListView):
         'empresa': ('empresa__nombre', 'apellidos', 'nombres'),
         'cargo': ('cargo', 'apellidos', 'nombres'),
         'certificados': ('certificados_count', 'apellidos', 'nombres'),
-        'estado': ('estado', 'apellidos', 'nombres'),
+        'estado': ('habilitado', 'apellidos', 'nombres'),
     }
 
     def get_queryset(self):
         queryset = Trabajador.objects.select_related('empresa').prefetch_related('certificados').annotate(
             certificados_count=Count('certificados', distinct=True)
-        ).order_by('estado', 'apellidos', 'nombres')
+        ).order_by('habilitado', 'apellidos', 'nombres')
         q = self.request.GET.get('q', '').strip()
         if q:
             queryset = queryset.filter(
@@ -256,12 +308,11 @@ class TrabajadorListView(VerTrabajadoresMixin, ListView):
                 | Q(nombres__icontains=q)
                 | Q(apellidos__icontains=q)
                 | Q(cargo__icontains=q)
-                | Q(area__icontains=q)
                 | Q(empresa__nombre__icontains=q)
             )
         estado = self.request.GET.get('estado', '').strip()
-        if estado in dict(Trabajador.ESTADO_CHOICES):
-            queryset = queryset.filter(estado=estado)
+        if estado in ('0', '1'):
+            queryset = queryset.filter(habilitado=(estado == '1'))
         empresa_id = self.request.GET.get('empresa', '').strip()
         if empresa_id.isdigit():
             queryset = queryset.filter(empresa_id=empresa_id)
@@ -288,7 +339,7 @@ class TrabajadorListView(VerTrabajadoresMixin, ListView):
         kwargs.setdefault('dir', self.request.GET.get('dir', 'asc'))
         kwargs.setdefault('query_string', query_params.urlencode())
         kwargs.setdefault('empresas', Empresa.objects.order_by('nombre'))
-        kwargs.setdefault('estado_choices', Trabajador.ESTADO_CHOICES)
+        kwargs.setdefault('estado_choices', ((1, 'Habilitado'), (0, 'Deshabilitado')))
         kwargs.setdefault('sortable_columns', {
             'dni': 'DNI',
             'nombre': 'Nombre completo',
@@ -373,11 +424,11 @@ class TrabajadorEstadoView(AdministrarTrabajadoresMixin, View):
     def post(self, request, pk):
         trabajador = get_object_or_404(Trabajador, pk=pk)
         estado = request.POST.get('estado')
-        if estado not in dict(Trabajador.ESTADO_CHOICES):
+        if estado not in ('0', '1'):
             messages.error(self.request, 'Estado no válido.')
             return redirect('app_control:trabajador_detalle', pk=trabajador.pk)
-        trabajador.estado = estado
-        trabajador.save(update_fields=['estado'])
+        trabajador.habilitado = estado == '1'
+        trabajador.save(update_fields=['habilitado'])
         messages.success(self.request, f'El estado del trabajador "{trabajador}" fue actualizado.')
         return redirect('app_control:trabajador_detalle', pk=trabajador.pk)
 
@@ -538,7 +589,7 @@ class TrabajadorEmpresaListView(TrabajadorEmpresaPermisoMixin, ListView):
             'empresa'
         ).prefetch_related('certificados').annotate(
             certificados_count=Count('certificados', distinct=True)
-        ).order_by('estado', 'apellidos', 'nombres')
+        ).order_by('habilitado', 'apellidos', 'nombres')
         q = self.request.GET.get('q', '').strip()
         if q:
             queryset = queryset.filter(
@@ -546,11 +597,10 @@ class TrabajadorEmpresaListView(TrabajadorEmpresaPermisoMixin, ListView):
                 | Q(nombres__icontains=q)
                 | Q(apellidos__icontains=q)
                 | Q(cargo__icontains=q)
-                | Q(area__icontains=q)
             )
         estado = self.request.GET.get('estado', '').strip()
-        if estado in dict(Trabajador.ESTADO_CHOICES):
-            queryset = queryset.filter(estado=estado)
+        if estado in ('0', '1'):
+            queryset = queryset.filter(habilitado=(estado == '1'))
         sort = self.request.GET.get('sort', '').strip()
         direction = self.request.GET.get('dir', 'asc').strip().lower()
         if direction not in ('asc', 'desc'):
@@ -560,7 +610,7 @@ class TrabajadorEmpresaListView(TrabajadorEmpresaPermisoMixin, ListView):
             'nombre': ('apellidos', 'nombres'),
             'cargo': ('cargo', 'apellidos', 'nombres'),
             'certificados': ('certificados_count', 'apellidos', 'nombres'),
-            'estado': ('estado', 'apellidos', 'nombres'),
+            'estado': ('habilitado', 'apellidos', 'nombres'),
         }
         order_fields = sortable_columns.get(sort)
         if order_fields:
@@ -579,7 +629,7 @@ class TrabajadorEmpresaListView(TrabajadorEmpresaPermisoMixin, ListView):
         kwargs.setdefault('sort', self.request.GET.get('sort', ''))
         kwargs.setdefault('dir', self.request.GET.get('dir', 'asc'))
         kwargs.setdefault('query_string', query_params.urlencode())
-        kwargs.setdefault('estado_choices', Trabajador.ESTADO_CHOICES)
+        kwargs.setdefault('estado_choices', ((1, 'Habilitado'), (0, 'Deshabilitado')))
         kwargs.setdefault('sortable_columns', {
             'dni': 'DNI',
             'nombre': 'Nombre completo',
@@ -691,7 +741,7 @@ class CertificadoEmpresaCreateView(TrabajadorEmpresaBaseMixin, CreateView):
             return redirect('app_control:trabajador_empresa_detalle', pk=self.trabajador.pk)
         form.instance.trabajador = self.trabajador
         messages.success(self.request, 'Certificado registrado correctamente.')
-        return HttpResponseRedirect(self.get_success_url())
+        return super().form_valid(form)
 
     def get_success_url(self):
         return reverse('app_control:trabajador_empresa_detalle', args=[self.trabajador.pk])

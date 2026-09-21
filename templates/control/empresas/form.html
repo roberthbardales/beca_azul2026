@@ -43,36 +43,6 @@
                             <div class="mt-1 text-xs text-red-600">{{ error }}</div>
                         {% endfor %}
                     </div>
-                    <div>
-                        <label for="{{ form.telefono.id_for_label }}" class="mb-1 block text-xs font-medium text-[#0f172a]">Teléfono</label>
-                        <input type="text" name="{{ form.telefono.html_name }}" id="{{ form.telefono.id_for_label }}" value="{{ form.telefono.value|default:'' }}"
-                               class="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-[#00B0F0] focus:outline-none focus:ring-2 focus:ring-[#00B0F0]/30">
-                        {% for error in form.telefono.errors %}
-                            <div class="mt-1 text-xs text-red-600">{{ error }}</div>
-                        {% endfor %}
-                    </div>
-                </div>
-                </fieldset>
-
-                <fieldset class="control-form-section space-y-3 border-t border-gray-100 pt-5">
-                    <legend class="text-sm font-semibold text-[#0f172a]">Contacto</legend>
-                <div class="grid gap-3 sm:grid-cols-2">
-                    <div>
-                        <label for="{{ form.direccion.id_for_label }}" class="mb-1 block text-xs font-medium text-[#0f172a]">Dirección</label>
-                        <input type="text" name="{{ form.direccion.html_name }}" id="{{ form.direccion.id_for_label }}" value="{{ form.direccion.value|default:'' }}"
-                               class="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-[#00B0F0] focus:outline-none focus:ring-2 focus:ring-[#00B0F0]/30">
-                        {% for error in form.direccion.errors %}
-                            <div class="mt-1 text-xs text-red-600">{{ error }}</div>
-                        {% endfor %}
-                    </div>
-                    <div>
-                        <label for="{{ form.email.id_for_label }}" class="mb-1 block text-xs font-medium text-[#0f172a]">Correo electrónico</label>
-                        <input type="email" name="{{ form.email.html_name }}" id="{{ form.email.id_for_label }}" value="{{ form.email.value|default:'' }}"
-                               class="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-[#00B0F0] focus:outline-none focus:ring-2 focus:ring-[#00B0F0]/30">
-                        {% for error in form.email.errors %}
-                            <div class="mt-1 text-xs text-red-600">{{ error }}</div>
-                        {% endfor %}
-                    </div>
                 </div>
                 </fieldset>
 
@@ -90,7 +60,7 @@
                 </fieldset>
 
                 <footer class="control-action-bar flex flex-col-reverse gap-3 border-t border-gray-100 pt-5 sm:flex-row sm:items-center">
-                    <button class="rounded-lg bg-[#0F6FC6] px-4 py-2 text-sm font-semibold text-white hover:bg-[#0A5CA3]" type="submit">
+                    <button class="btn btn-primary" type="submit">
                         {% if object %}Actualizar{% else %}Crear empresa{% endif %}
                     </button>
                     <a class="text-sm font-medium text-[#A5A5A5] hover:underline" href="{% url 'app_control:empresa_lista' %}">Cancelar</a>

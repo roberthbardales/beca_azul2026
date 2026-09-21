@@ -1,5 +1,3 @@
-from datetime import date
-
 from django import forms
 
 from .models import Certificado, Empresa, Incidencia, Trabajador
@@ -8,7 +6,7 @@ from .models import Certificado, Empresa, Incidencia, Trabajador
 class EmpresaForm(forms.ModelForm):
     class Meta:
         model = Empresa
-        fields = ('nombre', 'ruc', 'direccion', 'telefono', 'email', 'activo')
+        fields = ('nombre', 'ruc', 'activo')
 
     def clean_ruc(self):
         ruc = self.cleaned_data.get('ruc')
@@ -28,11 +26,8 @@ class TrabajadorForm(forms.ModelForm):
         model = Trabajador
         fields = (
             'empresa', 'tipo_documento', 'dni', 'nombres', 'apellidos',
-            'fecha_nacimiento', 'telefono', 'cargo', 'area',
+            'cargo', 'sctr', 'induccion', 'cursos', 'aptitud_medica',
         )
-        widgets = {
-            'fecha_nacimiento': forms.DateInput(attrs={'type': 'date'}),
-        }
 
     def clean_dni(self):
         dni = self.cleaned_data.get('dni', '').strip()
@@ -48,23 +43,13 @@ class TrabajadorForm(forms.ModelForm):
                 raise forms.ValidationError('Ya existe un trabajador con este documento en la empresa seleccionada.')
         return dni
 
-    def clean_fecha_nacimiento(self):
-        fecha = self.cleaned_data.get('fecha_nacimiento')
-        if fecha and fecha > date.today():
-            raise forms.ValidationError('La fecha de nacimiento no puede estar en el futuro.')
-        return fecha
-
-
 class TrabajadorEmpresaForm(forms.ModelForm):
     class Meta:
         model = Trabajador
         fields = (
             'tipo_documento', 'dni', 'nombres', 'apellidos',
-            'fecha_nacimiento', 'telefono', 'cargo', 'area',
+            'cargo', 'sctr', 'induccion', 'cursos', 'aptitud_medica',
         )
-        widgets = {
-            'fecha_nacimiento': forms.DateInput(attrs={'type': 'date'}),
-        }
 
     def __init__(self, *args, **kwargs):
         self.empresa = kwargs.pop('empresa', None)
@@ -83,12 +68,6 @@ class TrabajadorEmpresaForm(forms.ModelForm):
             if qs.exists():
                 raise forms.ValidationError('Ya existe un trabajador con este documento en la empresa seleccionada.')
         return dni
-
-    def clean_fecha_nacimiento(self):
-        fecha = self.cleaned_data.get('fecha_nacimiento')
-        if fecha and fecha > date.today():
-            raise forms.ValidationError('La fecha de nacimiento no puede estar en el futuro.')
-        return fecha
 
     def save(self, commit=True):
         trabajador = super().save(commit=False)

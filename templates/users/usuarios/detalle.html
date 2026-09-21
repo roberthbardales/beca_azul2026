@@ -3,156 +3,55 @@
 {% block title %}Usuario | Sistema de Control{% endblock %}
 
 {% block content %}
-<div class="flex justify-center py-2">
-        <div class="w-full max-w-3xl">
-        <div class="rounded-xl border border-gray-100 bg-white p-6 shadow-sm sm:p-8">
-            <header class="control-page-header mb-6 flex flex-col gap-4 border-b border-gray-100 pb-5 lg:flex-row lg:items-start lg:justify-between">
-                <div>
-                    <h1 class="text-2xl font-bold text-[#0f172a]">{{ usuario.get_full_name|default:usuario.email }}</h1>
-                </div>
-                <div class="flex flex-wrap items-center gap-2">
-                    <a class="text-sm font-medium text-[#0F6FC6] hover:underline" href="{% url 'app_users:usuario_lista' %}">Volver</a>
-                    <a class="rounded-md border border-[#0F6FC6] px-3 py-1.5 text-xs font-medium text-[#0F6FC6] hover:bg-[#0F6FC6]/10" href="{% url 'app_users:usuario_editar' usuario.pk %}">Editar</a>
-                    {% if request.user.is_superuser or request.user.role == '0' or request.user.role == '1' %}
-                    <a class="rounded-md border border-[#D97706] px-3 py-1.5 text-xs font-medium text-[#D97706] hover:bg-[#D97706]/10" href="{% url 'app_users:usuario_password' usuario.pk %}">Restablecer contraseña</a>
-                    {% endif %}
-                    <form method="post" action="{% url 'app_users:usuario_toggle' usuario.pk %}" class="inline" id="usuario-toggle-form">
-                        {% csrf_token %}
-                        <button type="submit" id="usuario-toggle-btn" class="rounded-md px-3 py-1.5 text-xs font-medium text-white {% if usuario.is_active %}bg-red-600 hover:bg-red-700{% else %}bg-[#0F6FC6] hover:bg-[#0A5CA3]{% endif %}">
-                            {% if usuario.is_active %}Desactivar{% else %}Activar{% endif %}
-                        </button>
-                    </form>
-                    <a class="rounded-md bg-red-700 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-800" href="{% url 'app_users:usuario_eliminar' usuario.pk %}">Eliminar</a>
-                </div>
-            </header>
-
-            <section aria-label="Resumen de la cuenta" class="control-summary-grid mb-6 grid gap-3 sm:grid-cols-3">
-                <div class="rounded-lg bg-slate-50 px-4 py-3"><p class="text-xs font-semibold uppercase tracking-wide text-[#A5A5A5]">Tipo de usuario</p><p class="mt-1 text-sm font-semibold text-[#0f172a]">{{ usuario.get_role_display }}</p></div>
-                <div class="rounded-lg bg-slate-50 px-4 py-3"><p class="text-xs font-semibold uppercase tracking-wide text-[#A5A5A5]">Estado</p><p class="mt-1 text-sm font-semibold {% if usuario.is_active %}text-green-700{% else %}text-red-700{% endif %}">{% if usuario.is_active %}Activo{% else %}Inactivo{% endif %}</p></div>
-                <div class="rounded-lg bg-slate-50 px-4 py-3"><p class="text-xs font-semibold uppercase tracking-wide text-[#A5A5A5]">Empresa</p><p class="mt-1 truncate text-sm font-semibold text-[#0f172a]">{{ usuario.empresa.nombre|default:'Sin empresa' }}</p></div>
-            </section>
-
-            <div class="space-y-6">
-                <section class="control-detail-section"><h2 class="text-xs font-semibold uppercase tracking-wide text-[#A5A5A5]">Datos</h2>
-                <div class="overflow-hidden rounded-xl border border-gray-100 bg-white">
-                    <table class="w-full text-sm">
-                        <tbody class="divide-y divide-gray-100">
-                            <tr class="bg-white">
-                                <th class="w-1/3 px-4 py-2 text-left text-xs font-semibold text-[#A5A5A5]">Tipo de usuario</th>
-                                <td class="px-4 py-2 font-medium"><span class="inline-block rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">{{ usuario.get_role_display }}</span></td>
-                            </tr>
-                            <tr class="bg-gray-50">
-                                <th class="px-4 py-2 text-left text-xs font-semibold text-[#A5A5A5]">Nombres</th>
-                                <td class="px-4 py-2 font-medium">{{ usuario.first_name|default:'-' }}</td>
-                            </tr>
-                            <tr class="bg-white">
-                                <th class="px-4 py-2 text-left text-xs font-semibold text-[#A5A5A5]">Apellidos</th>
-                                <td class="px-4 py-2 font-medium">{{ usuario.last_name|default:'-' }}</td>
-                            </tr>
-                            <tr class="bg-gray-50">
-                                <th class="px-4 py-2 text-left text-xs font-semibold text-[#A5A5A5]">Correo</th>
-                                <td class="px-4 py-2 font-medium">{{ usuario.email }}</td>
-                            </tr>
-                            <tr class="bg-white">
-                                <th class="px-4 py-2 text-left text-xs font-semibold text-[#A5A5A5]">Género</th>
-                                <td class="px-4 py-2 font-medium">{{ usuario.get_gender_display|default:'—' }}</td>
-                            </tr>
-                            <tr class="bg-gray-50">
-                                <th class="px-4 py-2 text-left text-xs font-semibold text-[#A5A5A5]">Celular</th>
-                                <td class="px-4 py-2 font-medium">{{ usuario.phone|default:'-' }}</td>
-                            </tr>
-                            <tr class="bg-white">
-                                <th class="px-4 py-2 text-left text-xs font-semibold text-[#A5A5A5]">Nacimiento</th>
-                                <td class="px-4 py-2 font-medium">{{ usuario.date_birth|date:'d/m/Y'|default:'-' }}</td>
-                            </tr>
-                            <tr class="bg-gray-50">
-                                <th class="px-4 py-2 text-left text-xs font-semibold text-[#A5A5A5]">Estado</th>
-                                <td class="px-4 py-2"><span id="usuario-estado-badge" class="inline-block rounded-full px-2 py-0.5 text-xs font-medium {% if usuario.is_active %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">{% if usuario.is_active %}Activo{% else %}Inactivo{% endif %}</span></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div></section>
-
-                <section class="control-detail-section"><h2 class="text-xs font-semibold uppercase tracking-wide text-[#A5A5A5]">Empresa</h2>
-                <div class="overflow-hidden rounded-xl border border-gray-100 bg-white">
-                    <table class="w-full text-sm">
-                        <tbody class="divide-y divide-gray-100">
-                            <tr class="bg-white">
-                                <th class="w-1/3 px-4 py-2 text-left text-xs font-semibold text-[#A5A5A5]">Nombre</th>
-                                <td class="px-4 py-2 font-medium">{{ usuario.empresa.nombre|default:'-' }}</td>
-                            </tr>
-                            <tr class="bg-gray-50">
-                                <th class="px-4 py-2 text-left text-xs font-semibold text-[#A5A5A5]">RUC</th>
-                                <td class="px-4 py-2 font-medium">{{ usuario.empresa.ruc|default:'-' }}</td>
-                            </tr>
-                            <tr class="bg-white">
-                                <th class="px-4 py-2 text-left text-xs font-semibold text-[#A5A5A5]">Estado</th>
-                                <td class="px-4 py-2 font-medium">
-                                    {% if usuario.empresa %}
-                                    <span class="inline-block rounded-full px-2 py-0.5 text-xs font-medium {% if usuario.empresa.activo %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">{% if usuario.empresa.activo %}Activa{% else %}Inactiva{% endif %}</span>
-                                    {% else %}-{% endif %}
-                                </td>
-                            </tr>
-                            <tr class="bg-gray-50">
-                                <th class="px-4 py-2 text-left text-xs font-semibold text-[#A5A5A5]">Trabajadores</th>
-                                <td class="px-4 py-2 font-medium">{{ usuario.empresa.trabajadores.count|default:'-' }}</td>
-                            </tr>
-                            {% if usuario.empresa %}
-                            <tr class="bg-white">
-                                <th class="px-4 py-2 text-left text-xs font-semibold text-[#A5A5A5]"></th>
-                                <td class="px-4 py-2"><a class="text-xs font-medium text-[#0F6FC6] hover:underline" href="{% url 'app_control:empresa_detalle' usuario.empresa.pk %}">Ver detalles →</a></td>
-                            </tr>
-                            {% endif %}
-                        </tbody>
-                    </table>
-                </div></section>
+<main class="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6">
+    <div class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+        <header class="flex flex-col gap-3 border-b border-gray-200 p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <h1 class="text-xl font-bold text-[#0f172a]">{{ usuario.get_full_name|default:usuario.email }}</h1>
+                <p class="mt-1 text-sm text-gray-500">Detalle de usuario</p>
             </div>
+            <div class="flex flex-wrap gap-2">
+                <a class="btn btn-secondary btn-sm" href="{% url 'app_users:usuario_lista' %}">Volver</a>
+                {% if request.user.role != '2' %}<a class="btn btn-primary btn-sm" href="{% url 'app_users:usuario_editar' usuario.pk %}">Editar</a>{% endif %}
+                {% if request.user.is_superuser or request.user.role == '0' or request.user.role == '1' %}<a class="btn btn-quaternary btn-sm" href="{% url 'app_users:usuario_password' usuario.pk %}">Restablecer contraseña</a>{% endif %}
+                {% if request.user.role != '2' %}<form method="post" action="{% url 'app_users:usuario_toggle' usuario.pk %}" class="inline">{% csrf_token %}<button class="btn btn-quinary btn-sm" type="submit">{% if usuario.is_active %}Desactivar{% else %}Activar{% endif %}</button></form><a class="btn btn-quinary btn-sm" href="{% url 'app_users:usuario_eliminar' usuario.pk %}">Eliminar</a>{% endif %}
+            </div>
+        </header>
+
+        <div class="app-table-wrap responsive-table">
+            <table class="app-table w-full" aria-label="Datos del usuario">
+                <thead>
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs text-gray-500">Nombre</th>
+                        <th class="px-4 py-3 text-left text-xs text-gray-500">Email</th>
+                        <th class="px-4 py-3 text-left text-xs text-gray-500">Rol</th>
+                        <th class="px-4 py-3 text-left text-xs text-gray-500">Empresa</th>
+                        <th class="px-4 py-3 text-left text-xs text-gray-500">Estado</th>
+                        <th class="px-4 py-3 text-left text-xs text-gray-500">Último acceso</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="px-4 py-3 text-sm font-medium">{{ usuario.get_full_name|default:'-' }}</td>
+                        <td class="px-4 py-3 text-sm">{{ usuario.email }}</td>
+                        <td class="px-4 py-3 text-sm">{{ usuario.get_role_display }}</td>
+                        <td class="px-4 py-3 text-sm">{{ usuario.empresa.nombre|default:'Sin empresa' }}</td>
+                        <td class="px-4 py-3 text-sm">{% if usuario.is_active %}<span class="rounded-full bg-green-100 px-2 py-1 text-xs text-green-700">Activo</span>{% else %}<span class="rounded-full bg-red-100 px-2 py-1 text-xs text-red-700">Inactivo</span>{% endif %}</td>
+                        <td class="px-4 py-3 text-sm">{{ usuario.last_login|date:'d/m/Y H:i'|default:'Nunca' }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="border-t border-gray-200 px-5 py-4 text-sm text-gray-600">
+            <span>Nombre: {{ usuario.first_name|default:'-' }} {{ usuario.last_name|default:'-' }}</span>
+            <span class="mx-2 text-gray-300">|</span>
+            <span>Teléfono: {{ usuario.phone|default:'-' }}</span>
+            <span class="mx-2 text-gray-300">|</span>
+            <span>Género: {{ usuario.get_gender_display|default:'-' }}</span>
+            <span class="mx-2 text-gray-300">|</span>
+            <span>Nacimiento: {{ usuario.date_birth|date:'d/m/Y'|default:'-' }}</span>
         </div>
     </div>
-</div>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-    (function () {
-        var form = document.getElementById('usuario-toggle-form');
-        if (!form) return;
-        var btn = document.getElementById('usuario-toggle-btn');
-        var badge = document.getElementById('usuario-estado-badge');
-
-        form.addEventListener('submit', function (e) {
-            e.preventDefault();
-            if (btn) btn.disabled = true;
-            fetch(form.action, {
-                method: 'POST',
-                headers: { 'X-Requested-With': 'XMLHttpRequest' },
-                body: new FormData(form)
-            })
-                .then(function (resp) {
-                    return resp.json().then(function (data) {
-                        if (!resp.ok) throw data;
-                        return data;
-                    });
-                })
-                .then(function (data) {
-                    var activo = data.is_active;
-                    if (btn) {
-                        btn.textContent = activo ? 'Desactivar' : 'Activar';
-                        btn.className = 'rounded-md px-3 py-1.5 text-xs font-medium text-white ' +
-                            (activo ? 'bg-red-600 hover:bg-red-700' : 'bg-[#0F6FC6] hover:bg-[#0A5CA3]');
-                        btn.disabled = false;
-                    }
-                    if (badge) {
-                        badge.textContent = activo ? 'Activo' : 'Inactivo';
-                        badge.className = 'inline-block rounded-full px-2 py-0.5 text-xs font-medium ' +
-                            (activo ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700');
-                    }
-                })
-                .catch(function (err) {
-                    if (btn) btn.disabled = false;
-                    if (err && err.error) alert(err.error);
-                });
-        });
-    })();
-</script>
+</main>
 {% endblock %}

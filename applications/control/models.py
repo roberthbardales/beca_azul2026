@@ -19,11 +19,9 @@ class Empresa(TimeStampedModel):
 
     nombre = models.CharField(max_length=150)
     ruc = models.CharField(max_length=11, unique=True)
-    direccion = models.CharField(max_length=255, blank=True)
-    telefono = models.CharField(max_length=20, blank=True)
-    email = models.EmailField(blank=True)
+
+    habilitado = models.BooleanField(default=True, db_index=True)
     activo = models.BooleanField(default=True)
-    habilitado = models.BooleanField(default=True)
 
     class Meta:
         ordering = ('nombre',)
@@ -34,7 +32,7 @@ class Empresa(TimeStampedModel):
         return self.nombre
 
     def actualizar_habilitado(self):
-        tiene_deshabilitado = self.trabajadores.filter(estado=Trabajador.DESHABILITADO).exists()
+        tiene_deshabilitado = self.trabajadores.filter(habilitado=False).exists()
         nuevo_valor = not tiene_deshabilitado
         if self.habilitado != nuevo_valor:
             self.habilitado = nuevo_valor
@@ -42,12 +40,14 @@ class Empresa(TimeStampedModel):
 
 
 class Trabajador(TimeStampedModel):
-    HABILITADO = 'HABILITADO'
-    DESHABILITADO = 'DESHABILITADO'
+    APROBADO = 'APROBADO'
+    DESAPROBADO = 'DESAPROBADO'
+    RECHAZADO = 'RECHAZADO'
 
-    ESTADO_CHOICES = (
-        (HABILITADO, 'Habilitado'),
-        (DESHABILITADO, 'Deshabilitado'),
+    ESTADO_DOCUMENTO_CHOICES = (
+        (APROBADO, 'Aprobado'),
+        (DESAPROBADO, 'Desaprobado'),
+        (RECHAZADO, 'Rechazado'),
     )
 
     DNI = 'DNI'
@@ -64,12 +64,13 @@ class Trabajador(TimeStampedModel):
     dni = models.CharField(max_length=20, db_index=True)
     nombres = models.CharField(max_length=150)
     apellidos = models.CharField(max_length=150)
-    fecha_nacimiento = models.DateField(null=True, blank=True)
-    telefono = models.CharField(max_length=20, blank=True)
     cargo = models.CharField(max_length=150, blank=True)
-    area = models.CharField(max_length=150, blank=True)
 
-    estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default=HABILITADO, db_index=True)
+    sctr = models.CharField(max_length=15, choices=ESTADO_DOCUMENTO_CHOICES, default=DESAPROBADO)
+    induccion = models.CharField(max_length=15, choices=ESTADO_DOCUMENTO_CHOICES, default=DESAPROBADO)
+    cursos = models.CharField(max_length=15, choices=ESTADO_DOCUMENTO_CHOICES, default=DESAPROBADO)
+    aptitud_medica = models.CharField(max_length=15, choices=ESTADO_DOCUMENTO_CHOICES, default=DESAPROBADO)
+    habilitado = models.BooleanField(default=True, db_index=True)
     activo = models.BooleanField(default=True)
 
     class Meta:

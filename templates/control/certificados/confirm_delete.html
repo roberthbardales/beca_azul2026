@@ -5,7 +5,7 @@
         {% csrf_token %}
         <header class="control-confirmation-header mb-5 border-b border-red-100 pb-5"><h1 class="text-2xl font-bold text-[#0f172a]">Eliminar certificado</h1><p class="mt-2 text-sm text-[#616161]">Esta acción es permanente y no se puede deshacer.</p></header>
         <section aria-label="Certificado a eliminar" class="mb-6 rounded-lg border border-red-100 bg-red-50 px-4 py-3"><p class="text-xs font-semibold uppercase tracking-wide text-red-700">Certificado seleccionado</p><p class="mt-1 font-semibold text-[#0f172a]">{{ certificado.nombre }}</p><p class="text-sm text-[#616161]">{{ certificado.trabajador }}</p></section>
-        <footer class="control-action-bar flex flex-col-reverse gap-3 border-t border-red-100 pt-5 sm:flex-row sm:items-center"><button type="submit" class="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700">Eliminar certificado</button><a class="text-sm font-medium text-[#0F6FC6] hover:underline" href="{% if request.user.role == '3' %}{% url 'app_control:trabajador_empresa_detalle' certificado.trabajador.pk %}{% else %}{% url 'app_control:trabajador_detalle' certificado.trabajador.pk %}{% endif %}">Cancelar y volver</a></footer>
+        <footer class="control-action-bar flex flex-col-reverse gap-3 border-t border-red-100 pt-5 sm:flex-row sm:items-center"><button type="submit" class="btn btn-quinary">Eliminar certificado</button><a class="btn btn-secondary" href="{% if request.user.role == '3' %}{% url 'app_control:trabajador_empresa_detalle' certificado.trabajador.pk %}{% else %}{% url 'app_control:trabajador_detalle' certificado.trabajador.pk %}{% endif %}">Cancelar y volver</a></footer>
     </form>
 </div></div>
 {% endblock %}

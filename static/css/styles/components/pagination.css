@@ -1,0 +1,1 @@
+.pagination { border-color: var(--ink-200) !important; gap: .75rem; flex-wrap: wrap; } .pagination-links a, .pagination-links span { border-radius: .5rem !important; } .pagination-links { flex-wrap: wrap; justify-content: flex-end; } .pagination a, .pagination span { min-height: 2.25rem; min-width: 2.25rem; display: inline-flex; align-items: center; justify-content: center; }

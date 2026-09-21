@@ -6,7 +6,7 @@ from .models import Certificado, Empresa, Incidencia, Trabajador
 @admin.register(Empresa)
 class EmpresaAdmin(admin.ModelAdmin):
     list_display = ('nombre', 'ruc', 'habilitado', 'activo')
-    search_fields = ('nombre', 'ruc', 'email', 'direccion')
+    search_fields = ('nombre', 'ruc')
     list_filter = ('habilitado', 'activo')
     readonly_fields = ('habilitado',)
     list_per_page = 20
@@ -14,9 +14,9 @@ class EmpresaAdmin(admin.ModelAdmin):
 
 @admin.register(Trabajador)
 class TrabajadorAdmin(admin.ModelAdmin):
-    list_display = ('dni', 'nombres', 'apellidos', 'empresa', 'estado', 'activo')
-    search_fields = ('dni', 'nombres', 'apellidos', 'cargo', 'area')
-    list_filter = ('estado', 'activo', 'empresa')
+    list_display = ('dni', 'nombres', 'apellidos', 'empresa', 'habilitado', 'activo')
+    search_fields = ('dni', 'nombres', 'apellidos', 'cargo')
+    list_filter = ('habilitado', 'activo', 'empresa')
     list_per_page = 20
     list_select_related = ('empresa',)
 

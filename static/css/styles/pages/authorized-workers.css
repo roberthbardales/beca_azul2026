@@ -1,0 +1,283 @@
+.authorized-workers-page {
+    width: 100%;
+    margin-inline: auto;
+    color: #1f2937;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.authorized-workers-heading {
+    margin-bottom: 1.35rem;
+}
+
+.authorized-workers-heading h1 {
+    margin: 0;
+    color: #111827 !important;
+    font-size: 1.55rem;
+    line-height: 1.25;
+    font-weight: 700;
+    letter-spacing: -.02em;
+}
+
+.authorized-workers-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 1.35rem;
+    margin-bottom: 1.25rem;
+}
+
+.authorized-workers-select-wrap,
+.authorized-workers-search {
+    position: relative;
+    flex: 0 1 18.5rem;
+    min-width: 0;
+}
+
+.authorized-workers-select,
+.authorized-workers-search input {
+    width: 100%;
+    height: 2.7rem;
+    padding: .55rem 2.35rem .55rem .85rem;
+    border: 1px solid #d1d5db;
+    border-radius: .45rem;
+    background: #fff;
+    color: #20242b;
+    font-size: .95rem;
+    font-weight: 400;
+    box-shadow: 0 1px 4px rgba(25, 35, 50, .08);
+    outline: 0;
+}
+
+.authorized-workers-select {
+    appearance: none;
+    cursor: pointer;
+}
+
+.authorized-workers-select-wrap svg,
+.authorized-workers-search svg {
+    position: absolute;
+    top: 50%;
+    right: .7rem;
+    width: 1.1rem;
+    height: 1.1rem;
+    transform: translateY(-50%);
+    fill: none;
+    stroke: #58616d;
+    stroke-width: 1.8;
+    pointer-events: none;
+}
+
+.authorized-workers-search input::placeholder {
+    color: #9299a1;
+}
+
+.authorized-workers-select:focus,
+.authorized-workers-search input:focus {
+    border-color: #9ca3af;
+    box-shadow: 0 0 0 2px rgba(31, 71, 219, .08);
+}
+
+.authorized-workers-table-wrap {
+    overflow: hidden;
+    border: 1px solid #dfe3e7;
+    border-radius: .45rem;
+    background: #fff;
+    box-shadow: 0 1px 4px rgba(25, 35, 50, .045);
+}
+
+.authorized-workers-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: auto;
+    font-size: .95rem;
+}
+
+.authorized-workers-table th {
+    height: 3.25rem;
+    padding: .65rem 1rem;
+    border-bottom: 1px solid #dfe3e7;
+    background: #f1f4f6;
+    color: #111827 !important;
+    font-size: .9rem !important;
+    font-weight: 700 !important;
+    text-align: left;
+}
+
+.authorized-workers-table th:not(:last-child),
+.authorized-workers-table td:not(:last-child) {
+    border-right: 1px solid #edf0f2;
+}
+
+.authorized-workers-table th:nth-child(4),
+.authorized-workers-table th:nth-child(5),
+.authorized-workers-table td:nth-child(4),
+.authorized-workers-table td:nth-child(5) {
+    text-align: center;
+}
+
+.authorized-workers-table td {
+    height: 3.2rem;
+    padding: .45rem 1rem;
+    border-bottom: 1px solid #edf0f2;
+    color: #252a32 !important;
+    vertical-align: middle;
+    font-size: .95rem;
+    font-weight: 400;
+}
+
+.authorized-workers-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.authorized-workers-table tbody tr:hover {
+    background: #fafcfe;
+}
+
+.authorized-workers-table td.authorized-workers-company {
+    vertical-align: middle;
+    font-weight: 700;
+    color: #20242b !important;
+}
+
+.authorized-workers-table td.authorized-workers-company-empty {
+    border-right-color: transparent;
+}
+
+.authorized-workers-table td:nth-child(2),
+.authorized-workers-table td:nth-child(3) {
+    font-weight: 500;
+}
+
+.authorized-workers-table td:nth-child(3) {
+    font-variant-numeric: tabular-nums;
+}
+
+.authorized-workers-status {
+    font-weight: 500;
+}
+
+.authorized-workers-status.is-authorized {
+    color: #3a9851;
+}
+
+.authorized-workers-status.is-pending {
+    color: #dca21a;
+}
+
+.authorized-workers-access {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.15rem;
+    height: 2.15rem;
+    border-radius: .45rem;
+    color: #fff !important;
+    transition: filter .15s ease, transform .15s ease;
+}
+
+.authorized-workers-access.is-authorized {
+    background: #4caf50;
+}
+
+.authorized-workers-access.is-pending {
+    background: #e8a817;
+}
+
+.authorized-workers-access:hover {
+    filter: brightness(.94);
+    transform: translateY(-1px);
+}
+
+.authorized-workers-access svg {
+    width: 1.35rem;
+    height: 1.35rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.authorized-workers-all {
+    display: block;
+    margin-top: .95rem;
+    color: #3561b9 !important;
+    font-size: .78rem;
+    font-weight: 700;
+    text-align: center;
+}
+
+.authorized-workers-empty {
+    padding: 2rem !important;
+    color: #7b8490 !important;
+    text-align: center !important;
+}
+
+@media (max-width: 640px) {
+    .authorized-workers-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: .7rem;
+    }
+
+    .authorized-workers-select-wrap,
+    .authorized-workers-search {
+        flex-basis: 100%;
+    }
+
+    .authorized-workers-table-wrap {
+        overflow-x: auto;
+    }
+}
+
+/* Keep the companies tables aligned with the shared workers table style. */
+.authorized-workers-page .app-table-wrap {
+    overflow: hidden;
+    border: 1px solid #d9dee5;
+    border-radius: .4rem !important;
+    box-shadow: 0 1px 4px rgba(25, 35, 50, .045);
+}
+
+.authorized-workers-page .app-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .95rem;
+}
+
+.authorized-workers-page .app-table th {
+    height: 3.25rem;
+    padding: .65rem 1rem !important;
+    border-bottom: 1px solid #d9dee5;
+    background: #f1f4f6 !important;
+    color: #111827 !important;
+    font-size: .9rem !important;
+    font-weight: 700 !important;
+}
+
+.authorized-workers-page .app-table td {
+    height: 3.2rem;
+    padding: .45rem 1rem !important;
+    border-bottom: 1px solid #d9dee5 !important;
+    color: #111827 !important;
+    font-size: .95rem;
+    font-weight: 400;
+    vertical-align: middle;
+}
+
+.authorized-workers-page .app-table th:not(:last-child),
+.authorized-workers-page .app-table td:not(:last-child) {
+    border-right: 1px solid #d9dee5;
+}
+
+.authorized-workers-page .app-table tbody tr:hover {
+    background: #fafcfe;
+}
+
+.authorized-workers-page .app-table tbody tr:last-child td {
+    border-bottom: 0 !important;
+}
+
+@media (max-width: 640px) {
+    .authorized-workers-page .app-table-wrap {
+        overflow-x: auto;
+    }
+}

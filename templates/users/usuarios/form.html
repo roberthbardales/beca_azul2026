@@ -134,7 +134,7 @@
                 {% endif %}
 
                 <footer class="control-action-bar flex flex-col-reverse gap-3 border-t border-gray-100 pt-5 sm:flex-row sm:items-center">
-                    <button class="rounded-lg bg-[#0F6FC6] px-4 py-2 text-sm font-semibold text-white hover:bg-[#0A5CA3]" type="submit">
+                    <button class="btn btn-primary" type="submit">
                         {% if object %}Actualizar{% else %}Crear usuario{% endif %}
                     </button>
                     <a class="text-sm font-medium text-[#A5A5A5] hover:underline" href="{% url 'app_users:usuario_lista' %}">Cancelar</a>

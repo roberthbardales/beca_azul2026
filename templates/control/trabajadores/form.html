@@ -5,12 +5,12 @@
 {% block content %}
 <div class="control-form-page flex justify-center">
     <div class="w-full max-w-4xl">
-        <div class="rounded-xl border border-gray-100 bg-white p-5 shadow-sm sm:p-6">
+        <div class="worker-form-card rounded-xl border border-gray-100 bg-white p-5 shadow-sm sm:p-6">
             <header class="control-page-header mb-6 flex flex-col gap-3 border-b border-gray-100 pb-5 sm:flex-row sm:items-center sm:justify-between">
-                <div><h1 class="text-xl font-bold text-[#0f172a]">
+                <div><h1 class="flex items-center gap-2 text-xl font-bold text-[#0f172a]">
+                    <svg class="h-5 w-5 text-[#1557C0]" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3.2"/><path stroke-linecap="round" stroke-linejoin="round" d="M5.5 20c.8-3.5 3-5.2 6.5-5.2s5.7 1.7 6.5 5.2M19 5v6m-3-3h6"/></svg>
                     {% if object %}Editar trabajador{% else %}Nuevo trabajador{% endif %}
                 </h1></div>
-                <a class="text-sm font-medium text-[#0F6FC6] hover:underline" href="{% if request.user.role == '3' %}{% url 'app_control:trabajador_empresa_lista' %}{% else %}{% url 'app_control:trabajador_lista' %}{% endif %}">Volver</a>
             </header>
 
             {% if request.user.role == '3' %}
@@ -28,10 +28,23 @@
                     </div>
                 {% endif %}
 
-                <fieldset class="control-form-section space-y-3"><legend class="text-sm font-semibold text-[#0f172a]">Documento y empresa</legend><div class="grid gap-3 sm:grid-cols-3">
+                <fieldset class="control-form-section space-y-3" aria-label="Datos personales"><div class="grid gap-3 sm:grid-cols-2">
+                    <div>
+                        <label for="{{ form.nombres.id_for_label }}" class="mb-1 block text-xs font-medium text-[#0f172a]">Nombres</label>
+                        <input type="text" name="{{ form.nombres.html_name }}" id="{{ form.nombres.id_for_label }}" value="{{ form.nombres.value|default:'' }}" class="form-control" required>
+                        {% for error in form.nombres.errors %}<div class="mt-1 text-xs text-red-600">{{ error }}</div>{% endfor %}
+                    </div>
+                    <div>
+                        <label for="{{ form.apellidos.id_for_label }}" class="mb-1 block text-xs font-medium text-[#0f172a]">Apellidos</label>
+                        <input type="text" name="{{ form.apellidos.html_name }}" id="{{ form.apellidos.id_for_label }}" value="{{ form.apellidos.value|default:'' }}" class="form-control" required>
+                        {% for error in form.apellidos.errors %}<div class="mt-1 text-xs text-red-600">{{ error }}</div>{% endfor %}
+                    </div>
+                </div></fieldset>
+
+                <fieldset class="control-form-section space-y-3" aria-label="Documento y empresa"><div class="grid gap-3 sm:grid-cols-3">
                     <div>
                         <label for="{{ form.empresa.id_for_label }}" class="mb-1 block text-xs font-medium text-[#0f172a]">Empresa</label>
-                        <select name="{{ form.empresa.html_name }}" id="{{ form.empresa.id_for_label }}" class="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-[#00B0F0] focus:outline-none focus:ring-2 focus:ring-[#00B0F0]/30" required>
+                        <select name="{{ form.empresa.html_name }}" id="{{ form.empresa.id_for_label }}" class="form-control" required>
                             {% for value, label in form.fields.empresa.choices %}
                                 <option value="{{ value }}" {% if form.empresa.value|stringformat:"s" == value|stringformat:"s" %}selected{% endif %}>{{ label }}</option>
                             {% endfor %}
@@ -40,7 +53,7 @@
                     </div>
                     <div>
                         <label for="{{ form.tipo_documento.id_for_label }}" class="mb-1 block text-xs font-medium text-[#0f172a]">Tipo de documento</label>
-                        <select name="{{ form.tipo_documento.html_name }}" id="{{ form.tipo_documento.id_for_label }}" class="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-[#00B0F0] focus:outline-none focus:ring-2 focus:ring-[#00B0F0]/30">
+                        <select name="{{ form.tipo_documento.html_name }}" id="{{ form.tipo_documento.id_for_label }}" class="form-control">
                             {% for value, label in form.fields.tipo_documento.choices %}
                                 <option value="{{ value }}" {% if form.tipo_documento.value|stringformat:"s" == value|stringformat:"s" %}selected{% endif %}>{{ label }}</option>
                             {% endfor %}
@@ -49,53 +62,38 @@
                     </div>
                     <div>
                         <label for="{{ form.dni.id_for_label }}" class="mb-1 block text-xs font-medium text-[#0f172a]">N° de documento</label>
-                        <input type="text" name="{{ form.dni.html_name }}" id="{{ form.dni.id_for_label }}" value="{{ form.dni.value|default:'' }}" class="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-[#00B0F0] focus:outline-none focus:ring-2 focus:ring-[#00B0F0]/30" required>
+                        <input type="text" name="{{ form.dni.html_name }}" id="{{ form.dni.id_for_label }}" value="{{ form.dni.value|default:'' }}" class="form-control" required>
                         {% for error in form.dni.errors %}<div class="mt-1 text-xs text-red-600">{{ error }}</div>{% endfor %}
                     </div>
                 </div></fieldset>
 
-                <fieldset class="control-form-section space-y-3 border-t border-gray-100 pt-5"><legend class="text-sm font-semibold text-[#0f172a]">Datos personales</legend><div class="grid gap-3 sm:grid-cols-2">
-                    <div>
-                        <label for="{{ form.nombres.id_for_label }}" class="mb-1 block text-xs font-medium text-[#0f172a]">Nombres</label>
-                        <input type="text" name="{{ form.nombres.html_name }}" id="{{ form.nombres.id_for_label }}" value="{{ form.nombres.value|default:'' }}" class="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-[#00B0F0] focus:outline-none focus:ring-2 focus:ring-[#00B0F0]/30" required>
-                        {% for error in form.nombres.errors %}<div class="mt-1 text-xs text-red-600">{{ error }}</div>{% endfor %}
-                    </div>
-                    <div>
-                        <label for="{{ form.apellidos.id_for_label }}" class="mb-1 block text-xs font-medium text-[#0f172a]">Apellidos</label>
-                        <input type="text" name="{{ form.apellidos.html_name }}" id="{{ form.apellidos.id_for_label }}" value="{{ form.apellidos.value|default:'' }}" class="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-[#00B0F0] focus:outline-none focus:ring-2 focus:ring-[#00B0F0]/30" required>
-                        {% for error in form.apellidos.errors %}<div class="mt-1 text-xs text-red-600">{{ error }}</div>{% endfor %}
-                    </div>
-                </div></fieldset>
-
-                <fieldset class="control-form-section space-y-3 border-t border-gray-100 pt-5"><legend class="text-sm font-semibold text-[#0f172a]">Datos laborales y contacto</legend><div class="grid gap-3 sm:grid-cols-3">
-                    <div>
-                        <label for="{{ form.fecha_nacimiento.id_for_label }}" class="mb-1 block text-xs font-medium text-[#0f172a]">Fecha de nacimiento</label>
-                        <input type="date" name="{{ form.fecha_nacimiento.html_name }}" id="{{ form.fecha_nacimiento.id_for_label }}" value="{% if form.fecha_nacimiento.value %}{{ form.fecha_nacimiento.value|date:'Y-m-d' }}{% endif %}" class="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-[#00B0F0] focus:outline-none focus:ring-2 focus:ring-[#00B0F0]/30">
-                        {% for error in form.fecha_nacimiento.errors %}<div class="mt-1 text-xs text-red-600">{{ error }}</div>{% endfor %}
-                    </div>
-                    <div>
-                        <label for="{{ form.telefono.id_for_label }}" class="mb-1 block text-xs font-medium text-[#0f172a]">Teléfono</label>
-                        <input type="text" name="{{ form.telefono.html_name }}" id="{{ form.telefono.id_for_label }}" value="{{ form.telefono.value|default:'' }}" class="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-[#00B0F0] focus:outline-none focus:ring-2 focus:ring-[#00B0F0]/30">
-                        {% for error in form.telefono.errors %}<div class="mt-1 text-xs text-red-600">{{ error }}</div>{% endfor %}
-                    </div>
+                <fieldset class="control-form-section space-y-3 border-t border-gray-100 pt-5" aria-label="Datos laborales y contacto"><div class="grid gap-3 sm:grid-cols-3">
                     <div>
                         <label for="{{ form.cargo.id_for_label }}" class="mb-1 block text-xs font-medium text-[#0f172a]">Cargo</label>
-                        <input type="text" name="{{ form.cargo.html_name }}" id="{{ form.cargo.id_for_label }}" value="{{ form.cargo.value|default:'' }}" class="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-[#00B0F0] focus:outline-none focus:ring-2 focus:ring-[#00B0F0]/30">
+                        <input type="text" name="{{ form.cargo.html_name }}" id="{{ form.cargo.id_for_label }}" value="{{ form.cargo.value|default:'' }}" class="form-control">
                         {% for error in form.cargo.errors %}<div class="mt-1 text-xs text-red-600">{{ error }}</div>{% endfor %}
                     </div>
+                    {% for field in form|slice:'6:' %}
+                    {% if field.name != 'empresa' and field.name != 'tipo_documento' and field.name != 'dni' and field.name != 'nombres' and field.name != 'apellidos' and field.name != 'cargo' %}
+                    <div>
+                        <label for="{{ field.id_for_label }}" class="mb-1 block text-xs font-medium text-[#0f172a]">{{ field.label }}</label>
+                        <select name="{{ field.html_name }}" id="{{ field.id_for_label }}" class="form-control">
+                            {% for value, label in field.field.choices %}<option value="{{ value }}" {% if field.value == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+                        </select>
+                        {% for error in field.errors %}<div class="mt-1 text-xs text-red-600">{{ error }}</div>{% endfor %}
+                    </div>
+                    {% endif %}
+                    {% endfor %}
                 </div>
 
-                <div>
-                    <label for="{{ form.area.id_for_label }}" class="mb-1 block text-xs font-medium text-[#0f172a]">Área</label>
-                    <input type="text" name="{{ form.area.html_name }}" id="{{ form.area.id_for_label }}" value="{{ form.area.value|default:'' }}" class="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-[#00B0F0] focus:outline-none focus:ring-2 focus:ring-[#00B0F0]/30">
-                    {% for error in form.area.errors %}<div class="mt-1 text-xs text-red-600">{{ error }}</div>{% endfor %}
-                </div></fieldset>
+                </fieldset>
 
                 <footer class="control-action-bar flex flex-col-reverse gap-3 border-t border-gray-100 pt-5 sm:flex-row sm:items-center">
-                    <button class="rounded-lg bg-[#0F6FC6] px-4 py-2 text-sm font-semibold text-white hover:bg-[#0A5CA3]" type="submit">
+                    <button class="btn btn-primary" type="submit">
+                        <svg class="h-4 w-4" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M5 4.5h11l3 3V19a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5.5a1 1 0 0 1 1-1Z"/><path stroke-linecap="round" d="M8 4.5v5h7v-5M8 20v-5h8v5"/></svg>
                         {% if object %}Actualizar{% else %}Registrar trabajador{% endif %}
                     </button>
-                    <a class="text-sm font-medium text-[#A5A5A5] hover:underline" href="{% if request.user.role == '3' %}{% url 'app_control:trabajador_empresa_lista' %}{% else %}{% url 'app_control:trabajador_lista' %}{% endif %}">Cancelar</a>
+                    <a class="btn btn-secondary" href="{% if request.user.role == '3' %}{% url 'app_control:trabajador_empresa_lista' %}{% else %}{% url 'app_control:trabajador_lista' %}{% endif %}">Cancelar</a>
                 </footer>
             </form>
         </div>

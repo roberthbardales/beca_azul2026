@@ -10,9 +10,9 @@
 <span class="inline-block rounded-full px-2 py-0.5 text-xs font-medium {% if empresa.activo %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">{% if empresa.activo %}Activa{% else %}Inactiva{% endif %}</span>
 <span class="inline-block rounded-full px-2 py-0.5 text-xs font-medium {% if empresa.habilitado %}bg-green-50 text-green-600{% else %}bg-red-50 text-red-600{% endif %}">{% if empresa.habilitado %}Habilitada{% else %}Deshabilitada{% endif %}</span>
 {% if request.user.role == '1' %}
-<a class="rounded-md border border-[#0F6FC6] px-3 py-1.5 text-xs font-medium text-[#0F6FC6] hover:bg-[#0F6FC6]/10" href="{% url 'app_control:empresa_editar' empresa.pk %}">Editar</a>
-<form method="post" action="{% url 'app_control:empresa_toggle' empresa.pk %}" class="inline">{% csrf_token %}<button type="submit" class="rounded-md px-3 py-1.5 text-xs font-medium text-white {% if empresa.activo %}bg-red-600 hover:bg-red-700{% else %}bg-[#0F6FC6] hover:bg-[#0A5CA3]{% endif %}">{% if empresa.activo %}Desactivar{% else %}Activar{% endif %}</button></form>
-<a class="rounded-md bg-red-700 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-800" href="{% url 'app_control:empresa_eliminar' empresa.pk %}">Eliminar</a>
+<a class="btn btn-tertiary btn-sm" href="{% url 'app_control:empresa_editar' empresa.pk %}">Editar</a>
+<form method="post" action="{% url 'app_control:empresa_toggle' empresa.pk %}" class="inline">{% csrf_token %}<button type="submit" class="btn btn-sm {% if empresa.activo %}btn-quinary{% else %}btn-primary{% endif %}">{% if empresa.activo %}Desactivar{% else %}Activar{% endif %}</button></form>
+<a class="btn btn-quinary btn-sm" href="{% url 'app_control:empresa_eliminar' empresa.pk %}">Eliminar</a>
 {% endif %}
 </div>
 </header>
@@ -24,13 +24,10 @@
 </section>
 
 <section class="control-detail-section"><h2 class="mb-2 text-xs font-semibold uppercase tracking-wide text-[#A5A5A5]">Datos de la empresa</h2>
-<div class="rounded-xl border border-gray-100 bg-white">
-<table class="w-full text-sm">
+<div class="app-table-wrap">
+<table class="app-table" aria-label="Datos de la empresa">
 <tbody class="divide-y divide-gray-100">
 <tr class="bg-white"><th class="w-1/3 px-4 py-2 text-left text-xs font-semibold text-[#A5A5A5]">RUC</th><td class="px-4 py-2 font-medium">{{ empresa.ruc }}</td></tr>
-<tr class="bg-gray-50"><th class="px-4 py-2 text-left text-xs font-semibold text-[#A5A5A5]">Dirección</th><td class="px-4 py-2 font-medium">{{ empresa.direccion|default:'-' }}</td></tr>
-<tr class="bg-white"><th class="px-4 py-2 text-left text-xs font-semibold text-[#A5A5A5]">Teléfono</th><td class="px-4 py-2 font-medium">{{ empresa.telefono|default:'-' }}</td></tr>
-<tr class="bg-gray-50"><th class="px-4 py-2 text-left text-xs font-semibold text-[#A5A5A5]">Correo</th><td class="px-4 py-2 font-medium">{{ empresa.email|default:'-' }}</td></tr>
 <tr class="bg-white"><th class="px-4 py-2 text-left text-xs font-semibold text-[#A5A5A5]">Trabajadores</th><td class="px-4 py-2 font-medium">{{ total_trabajadores }}</td></tr>
 <tr class="bg-gray-50"><th class="px-4 py-2 text-left text-xs font-semibold text-[#A5A5A5]">Usuarios asociados</th><td class="px-4 py-2 font-medium">{{ total_usuarios }}</td></tr>
 <tr class="bg-white"><th class="px-4 py-2 text-left text-xs font-semibold text-[#A5A5A5]">Registro</th><td class="px-4 py-2 font-medium">{{ empresa.created|date:'d/m/Y H:i'|default:'-' }}</td></tr>
@@ -42,7 +39,7 @@
 <div class="grid grid-cols-3 gap-2">
 {% for grupo in trabajadores_por_estado %}
 <div class="rounded-xl border border-gray-100 bg-white p-4 text-center shadow-sm">
-<div class="text-2xl font-bold {% if grupo.estado == 'HABILITADO' %}text-green-600{% else %}text-red-600{% endif %}">{{ grupo.total }}</div>
+<div class="text-2xl font-bold {% if grupo.habilitado %}text-green-600{% else %}text-red-600{% endif %}">{{ grupo.total }}</div>
 <div class="text-xs font-medium text-[#A5A5A5]">{{ grupo.label }}</div>
 </div>
 {% empty %}
@@ -51,8 +48,8 @@
 </div></section>
 
 <section class="control-detail-section mt-6"><div class="mb-2 flex items-center justify-between gap-3"><h2 class="text-xs font-semibold uppercase tracking-wide text-[#A5A5A5]">Trabajadores</h2><span class="text-xs text-[#616161]">{{ total_trabajadores }} registrados</span></div>
-<div class="control-table overflow-x-auto rounded-xl border border-gray-100 bg-white">
-<table class="min-w-full divide-y divide-gray-200">
+<div class="app-table-wrap control-table responsive-table">
+<table class="app-table responsive-table" aria-label="Trabajadores de la empresa">
 <thead class="bg-gray-50">
 <tr>
 <th class="px-4 py-2 text-left text-xs font-semibold text-[#A5A5A5]">DNI</th>
@@ -69,9 +66,9 @@
 <td class="px-4 py-2 text-sm">{{ trabajador.nombres }} {{ trabajador.apellidos }}</td>
 <td class="px-4 py-2 text-sm">{{ trabajador.cargo|default:'-' }}</td>
 <td class="px-4 py-2 text-sm">
-<span class="inline-block rounded-full px-2 py-0.5 text-xs font-medium {% if trabajador.estado == 'HABILITADO' %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">{{ trabajador.get_estado_display }}</span>
+<span class="inline-block rounded-full px-2 py-0.5 text-xs font-medium {% if trabajador.habilitado %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">{% if trabajador.habilitado %}Habilitado{% else %}Deshabilitado{% endif %}</span>
 </td>
-<td class="px-4 py-2 text-right text-sm"><a class="rounded-md border border-[#0F6FC6] px-3 py-1 text-xs font-medium text-[#0F6FC6] hover:bg-[#0F6FC6]/10" href="{% url 'app_control:trabajador_detalle' trabajador.pk %}">Ver</a></td>
+<td class="px-4 py-2 text-right text-sm"><a class="btn btn-tertiary btn-sm" href="{% url 'app_control:trabajador_detalle' trabajador.pk %}">Ver</a></td>
 </tr>
 {% empty %}
 <tr><td colspan="5" class="control-empty-state px-4 py-8 text-center"><p class="font-medium text-[#0f172a]">No hay trabajadores registrados.</p></td></tr>
@@ -83,7 +80,7 @@
 <footer class="control-action-bar flex items-center gap-2 border-t border-gray-100 pt-5">
 <a class="text-sm font-medium text-[#0F6FC6] hover:underline" href="{% url 'app_control:empresa_lista' %}">Volver a empresas</a>
 {% if request.user.role == '1' %}
-<a class="control-primary-button rounded-md bg-[#0F6FC6] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#0A5CA3]" href="{% url 'app_control:trabajador_crear' %}">Nuevo trabajador</a>
+<a class="btn btn-primary btn-sm" href="{% url 'app_control:trabajador_crear' %}">Nuevo trabajador</a>
 {% endif %}
 </footer>
 </div>

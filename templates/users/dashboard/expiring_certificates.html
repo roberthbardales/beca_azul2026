@@ -1,0 +1,45 @@
+<section class="dashboard-feed overflow-hidden rounded-lg border border-gray-100 bg-white"
+         aria-labelledby="certificados-vencer-title">
+    <div class="border-b px-4 py-3
+                {% if certificados_vencidos %}border-red-100 bg-red-50/60{% else %}border-amber-100 bg-amber-50/60{% endif %}">
+        <div class="flex items-start gap-3">
+            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg
+                         {% if certificados_vencidos %}bg-red-100 text-red-700{% else %}bg-amber-100 text-amber-700{% endif %}"
+                  aria-hidden="true">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <rect x="5" y="3" width="14" height="18" rx="2"/>
+                    <path stroke-linecap="round" d="M8 8h8M8 12h5M8 16h3"/>
+                </svg>
+            </span>
+            <div>
+                <h2 id="certificados-vencer-title"
+                    class="text-base font-semibold {% if certificados_vencidos %}text-red-900{% else %}text-amber-900{% endif %}">
+                    Certificados por vencer
+                </h2>
+                <p class="mt-0.5 text-xs font-medium
+                          {% if certificados_vencidos %}text-red-700{% else %}text-amber-700{% endif %}">
+                    {% if certificados_vencidos %}Requiere atención inmediata{% else %}Requiere atención{% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <ul class="divide-y divide-gray-100">
+        {% for certificado in certificados_por_vencer %}
+            <li class="px-4 py-3">
+                <a href="{% url 'app_control:trabajador_detalle' certificado.trabajador.pk %}"
+                   class="block rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <p class="text-sm font-medium text-[#0f172a]">{{ certificado.nombre }}</p>
+                    <p class="mt-1 text-xs text-[#A5A5A5]">
+                        {{ certificado.trabajador }} · {{ certificado.trabajador.empresa.nombre }} ·
+                        Vence {{ certificado.fecha_vencimiento|date:"d/m/Y" }}
+                    </p>
+                </a>
+            </li>
+        {% empty %}
+            <li class="px-4 py-6 text-center text-sm text-[#A5A5A5]">
+                No hay certificados con vencimiento en los próximos 30 días.
+            </li>
+        {% endfor %}
+    </ul>
+</section>

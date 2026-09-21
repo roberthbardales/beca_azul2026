@@ -1,0 +1,26 @@
+main input:not([type="checkbox"]):not([type="radio"]), main select, main textarea { min-height: 2.625rem; border-color: var(--ink-200) !important; border-radius: .5rem !important; color: var(--ink-900) !important; background: #fff !important; box-shadow: none !important; }
+main input::placeholder, main textarea::placeholder { color: var(--ink-400) !important; } main input:not([type="checkbox"]):not([type="radio"]):focus, main select:focus, main textarea:focus { border-color: var(--primary-500) !important; box-shadow: 0 0 0 3px var(--primary-100) !important; outline: 0 !important; } main input[type="checkbox"] { accent-color: var(--primary-600); }
+
+.form-control {
+    display: block;
+    width: 100%;
+    min-height: 2.7rem;
+    padding: .55rem .85rem;
+    border: 1px solid #d9dee5 !important;
+    border-radius: .4rem !important;
+    background: #fff !important;
+    color: var(--ink-900) !important;
+    font-size: .9rem;
+    line-height: 1.25;
+    box-shadow: 0 1px 3px rgba(16, 24, 40, .04) !important;
+}
+
+.form-control:focus {
+    border-color: var(--primary-500) !important;
+    box-shadow: 0 0 0 3px var(--primary-100) !important;
+    outline: 0;
+}
+
+.form-control::placeholder {
+    color: var(--ink-400) !important;
+}

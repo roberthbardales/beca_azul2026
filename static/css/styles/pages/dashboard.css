@@ -1,0 +1,31 @@
+.dashboard-page { width: 100%; max-width: 100rem; margin-inline: auto; }
+.dashboard-metrics { grid-template-columns: repeat(auto-fit, minmax(15rem, 17rem)) !important; justify-content: start; }
+.dashboard-metric { display: flex; width: 100%; height: 9rem; min-height: 9rem; flex-direction: column; padding: .875rem !important; box-shadow: var(--shadow-card) !important; transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease; }
+.dashboard-metric > div:first-child { min-height: 4.35rem; }
+.dashboard-metric h2 { min-height: 2rem; line-height: 1rem; }
+.dashboard-metric p[class*="text-3xl"] { margin-top: .3rem !important; font-size: 1.65rem !important; line-height: 2rem !important; }
+.dashboard-metric > div + div { margin-top: auto !important; min-height: 1.5rem; align-items: flex-end; }
+.dashboard-metric:hover { border-color: var(--primary-200) !important; box-shadow: 0 10px 24px -14px rgba(16, 24, 40, .24) !important; transform: translateY(-2px); }
+.dashboard-metric > div > span { border-radius: .8rem !important; }
+.dashboard-chart, .dashboard-feed { border-color: var(--ink-200) !important; box-shadow: var(--shadow-card) !important; }
+.dashboard-chart { min-width: 0; }
+.dashboard-chart-error { display: grid; height: 100%; place-items: center; color: #64748b; font-size: .875rem; font-weight: 600; text-align: center; }
+.dashboard-feed li { transition: background-color .16s ease; }
+.dashboard-feed li:hover { background: var(--ink-50); }
+.dashboard-feed a:focus-visible { outline-offset: -2px; }
+
+.dashboard-doughnut-layout { display: grid; align-items: center; gap: 1.25rem; }
+.dashboard-chart-legend { display: grid; gap: .7rem; }
+.dashboard-chart-legend-item { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: .55rem; padding: .3rem 0; }
+.dashboard-chart-legend-dot { width: .65rem; height: .65rem; border-radius: 9999px; }
+.dashboard-chart-legend-label { overflow: hidden; color: #475569; font-size: .78rem; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.dashboard-chart-legend-value { color: #0f172a; font-size: .78rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+@media (min-width: 640px) {
+    .dashboard-doughnut-layout { grid-template-columns: minmax(0, 1.1fr) minmax(12rem, .9fr); }
+}
+
+@media (max-width: 639px) {
+    .dashboard-metrics { grid-template-columns: minmax(0, 1fr) !important; }
+    .dashboard-chart { padding: 1rem !important; }
+}

@@ -12,12 +12,15 @@
 <body class="app-shell flex min-h-screen flex-col antialiased">
     <a class="skip-link" href="#main-content">Saltar al contenido principal</a>
 
-    {% include 'include/sidebar.html' %}
+    {% if request.user.is_authenticated %}
+        {% include 'include/topbar.html' %}
+        {% include 'include/sidebar.html' %}
+    {% else %}
+        {% include 'include/sidebar.html' %}
+    {% endif %}
 
-    <div class="app-content flex min-h-screen flex-col {% if request.user.is_authenticated %}lg:ml-64{% endif %}">
-        {% if request.user.is_authenticated %}
-            {% include 'include/topbar.html' %}
-        {% else %}
+    <div class="app-content flex min-h-screen flex-col {% if request.user.is_authenticated %}has-topbar lg:ml-64{% endif %}">
+        {% if not request.user.is_authenticated %}
             {% include 'include/header.html' %}
         {% endif %}
 
@@ -33,74 +36,7 @@
         {% endif %}
     </div>
 
-    <script>
-        (function () {
-            var toggle = document.getElementById('sidebar-toggle');
-            var sidebar = document.getElementById('sidebar');
-            var backdrop = document.getElementById('sidebar-backdrop');
-
-            var lastFocusedElement = null;
-
-            function openSidebar() {
-                if (!sidebar) return;
-                lastFocusedElement = document.activeElement;
-                sidebar.classList.remove('-translate-x-full');
-                if (backdrop) backdrop.classList.remove('hidden');
-                sidebar.removeAttribute('aria-hidden');
-                if (toggle) toggle.setAttribute('aria-expanded', 'true');
-                var firstLink = sidebar.querySelector('a');
-                if (firstLink) firstLink.focus();
-            }
-
-            function closeSidebar() {
-                if (!sidebar) return;
-                sidebar.classList.add('-translate-x-full');
-                if (backdrop) backdrop.classList.add('hidden');
-                if (window.innerWidth < 1024) sidebar.setAttribute('aria-hidden', 'true');
-                else sidebar.removeAttribute('aria-hidden');
-                if (toggle) toggle.setAttribute('aria-expanded', 'false');
-                if (lastFocusedElement && lastFocusedElement.focus) lastFocusedElement.focus();
-            }
-
-            function syncSidebarAccessibility() {
-                if (!sidebar) return;
-                if (window.innerWidth < 1024 && sidebar.classList.contains('-translate-x-full')) {
-                    sidebar.setAttribute('aria-hidden', 'true');
-                } else {
-                    sidebar.removeAttribute('aria-hidden');
-                }
-            }
-
-            if (toggle) toggle.setAttribute('aria-expanded', 'false');
-            syncSidebarAccessibility();
-            window.addEventListener('resize', syncSidebarAccessibility);
-            if (toggle) toggle.addEventListener('click', openSidebar);
-            if (backdrop) backdrop.addEventListener('click', closeSidebar);
-            document.addEventListener('keydown', function (event) {
-                if (event.key === 'Escape' && sidebar && !sidebar.classList.contains('-translate-x-full')) {
-                    closeSidebar();
-                }
-            });
-            if (sidebar) {
-                sidebar.querySelectorAll('a').forEach(function (link) {
-                    link.addEventListener('click', closeSidebar);
-                });
-            }
-
-            document.querySelectorAll('form').forEach(function (form) {
-                form.querySelectorAll('input, select, textarea').forEach(function (field) {
-                    var fieldContainer = field.parentElement;
-                    if (!fieldContainer) return;
-                    var error = fieldContainer.querySelector('.text-red-600');
-                    if (!error) return;
-                    if (!error.id) error.id = field.id + '-errors';
-                    field.setAttribute('aria-invalid', 'true');
-                    field.setAttribute('aria-describedby', error.id);
-                });
-            });
-        })();
-    </script>
-
+    {% include 'include/layout_scripts.html' %}
     {% block extra_js %}{% endblock %}
 </body>
 </html>

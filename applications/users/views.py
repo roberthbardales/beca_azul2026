@@ -15,7 +15,7 @@ from .forms import (
     UserRegisterForm,
     UsuarioGestionForm,
 )
-from .mixins import GestionUsuariosPermisoMixin
+from .mixins import ConsultaUsuariosPermisoMixin, GestionUsuariosPermisoMixin
 from .models import User
 from . import services
 
@@ -105,7 +105,7 @@ class MiPerfilView(LoginRequiredMixin, UpdateView):
         return super().form_valid(form)
 
 
-class UsuarioListView(GestionUsuariosPermisoMixin, ListView):
+class UsuarioListView(ConsultaUsuariosPermisoMixin, ListView):
     model = User
     template_name = 'users/usuarios/lista.html'
     context_object_name = 'usuarios'
@@ -149,7 +149,7 @@ class UsuarioListView(GestionUsuariosPermisoMixin, ListView):
         return super().get_context_data(**kwargs)
 
 
-class UsuarioDetailView(GestionUsuariosPermisoMixin, DetailView):
+class UsuarioDetailView(ConsultaUsuariosPermisoMixin, DetailView):
     model = User
     template_name = 'users/usuarios/detalle.html'
     context_object_name = 'usuario'

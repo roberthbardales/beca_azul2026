@@ -1,16 +1,15 @@
-<header class="app-topbar sticky top-0 z-20 flex shrink-0 items-center justify-between border-b px-4 lg:px-6">
+<header class="app-topbar fixed inset-x-0 top-0 z-50 flex h-12 shrink-0 items-center justify-between px-3 sm:px-5 lg:px-6">
     <div class="flex min-w-0 items-center gap-2 sm:gap-3">
-        <button id="sidebar-toggle" type="button" class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg text-[var(--primary-600)] transition-colors hover:bg-[var(--primary-50)] lg:hidden" aria-label="Abrir menú" aria-controls="sidebar" aria-expanded="false">
+        <button id="sidebar-toggle" type="button" class="inline-flex min-h-10 min-w-10 items-center justify-center rounded-lg text-white/90 transition-colors hover:bg-white/10 lg:hidden" aria-label="Abrir menú" aria-controls="sidebar" aria-expanded="false">
             <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
         </button>
-        <a class="hidden rounded-lg px-2 py-1 text-sm font-bold tracking-tight text-[var(--ink-900)] sm:block lg:hidden" href="{% url 'app_control:dashboard' %}">Beca Azul</a>
         {% with url_name=request.resolver_match.url_name|default:'' %}
-        <nav class="flex min-w-0 items-center gap-2 text-sm" aria-label="Ubicación actual">
-            <a class="hidden font-medium text-[var(--ink-500)] hover:text-[var(--primary-700)] sm:block" href="{% url 'app_control:dashboard' %}">Sistema de control</a>
-            <svg class="hidden h-4 w-4 shrink-0 text-[var(--ink-300)] sm:block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m9 18 6-6-6-6"/></svg>
-            <span class="truncate font-semibold text-[var(--ink-900)]">
+        <nav class="ml-6 flex min-w-0 items-center gap-2 text-sm" aria-label="Ubicación actual">
+            <a class="hidden font-medium text-white/65 hover:text-white sm:block" href="{% url 'app_control:dashboard' %}">Sistema de control</a>
+            <svg class="hidden h-4 w-4 shrink-0 text-white/35 sm:block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m9 18 6-6-6-6"/></svg>
+            <span class="truncate font-semibold text-white">
                 {% if url_name == 'dashboard' %}Panel de control
                 {% elif url_name == 'trabajador_buscar' %}Buscar trabajador
                 {% elif 'usuario' in url_name %}Usuarios
@@ -25,9 +24,9 @@
     <div class="relative">
         <details class="group">
             <summary class="flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-lg px-2 py-1 text-[var(--ink-900)] transition-colors hover:bg-[var(--ink-50)] [&::-webkit-details-marker]:hidden">
-                <span class="hidden text-right sm:block"><span class="block text-sm font-medium text-[var(--ink-900)]">{{ request.user.get_full_name|default:request.user.email }}</span><span class="block text-xs text-[var(--ink-500)]">{{ request.user.get_role_display }}</span></span>
+                <span class="hidden text-right sm:block"><span class="block text-sm font-medium text-white">{{ request.user.get_full_name|default:request.user.email }}</span><span class="block text-xs text-white/60">{{ request.user.get_role_display }}</span></span>
                 <span class="user-avatar flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold text-white" aria-hidden="true">{{ request.user.first_name|default:request.user.email|slice:":1"|upper }}</span>
-                <svg class="h-4 w-4 text-[var(--ink-500)] transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <svg class="h-4 w-4 text-white/70 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                 </svg>
             </summary>

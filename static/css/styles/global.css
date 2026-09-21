@@ -1,0 +1,32 @@
+* { box-sizing: border-box; }
+html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+body { min-width: 320px; background: var(--ink-50) !important; color: var(--ink-900) !important; font-family: Onest, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; font-feature-settings: "cv11", "ss01"; }
+::selection { background: var(--primary-100); color: var(--primary-700); }
+*:focus-visible { outline: 2px solid var(--primary-500) !important; outline-offset: 2px; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--ink-300); border: 2px solid transparent; border-radius: 999px; background-clip: content-box; }
+::-webkit-scrollbar-thumb:hover { background-color: var(--ink-400); }
+.app-content.has-topbar { padding-top: 3rem; }
+.page-main { padding: .5rem 0 2.5rem; }
+.page-container { width: min(100% - 2rem, 80rem); margin-inline: auto; }
+.skip-link { position: fixed; z-index: 100; top: .75rem; left: .75rem; padding: .65rem .85rem; border-radius: .5rem; background: var(--primary-700); color: #fff; transform: translateY(-180%); transition: transform .16s ease; }
+.skip-link:focus { transform: translateY(0); }
+.public-header { min-height: 4rem; border-color: var(--ink-200) !important; background: rgba(255, 255, 255, .94) !important; backdrop-filter: blur(12px); }
+.public-footer { border-color: var(--ink-200) !important; color: var(--ink-500) !important; background: #fff !important; }
+main .rounded-md[class*="bg-slate-200"] { background: var(--ink-100) !important; color: var(--ink-700) !important; }
+main .rounded-md[class*="bg-slate-200"]:hover { background: var(--ink-200) !important; }
+main h1, main h2, main h3 { color: var(--ink-900) !important; letter-spacing: -.02em; } main h1 { font-weight: 700 !important; }
+main p, main [class*="text-[#A5A5A5]"] { color: var(--ink-500) !important; }
+[class*="bg-[#0F6FC6]"] { background-color: var(--primary-600) !important; } [class*="bg-[#0A5CA3]"]:hover { background-color: var(--primary-700) !important; }
+[class*="text-[#0F6FC6]"] { color: var(--primary-600) !important; } [class*="hover:text-[#0F6FC6]"]:hover { color: var(--primary-600) !important; } [class*="border-[#0F6FC6]"] { border-color: var(--primary-500) !important; }
+[class*="hover:bg-[#0F6FC6]"]:hover { background-color: var(--primary-50) !important; } [class*="focus:border-[#00B0F0]"]:focus { border-color: var(--primary-500) !important; } [class*="focus:ring-[#00B0F0]"]:focus { --tw-ring-color: var(--primary-100) !important; }
+[class*="text-[#0f172a]"] { color: var(--ink-900) !important; } [class*="text-[#A5A5A5]"] { color: var(--ink-500) !important; }
+main [class*="rounded-xl"][class*="bg-white"] { border-color: var(--ink-200) !important; border-radius: 1rem !important; box-shadow: var(--shadow-card) !important; }
+main [class*="bg-green-100"] { background: var(--success-50) !important; } main [class*="text-green-700"], main [class*="text-green-600"] { color: var(--success-700) !important; }
+main [class*="bg-yellow-100"] { background: var(--warning-50) !important; } main [class*="text-yellow-700"], main [class*="text-yellow-600"] { color: var(--warning-700) !important; }
+main [class*="bg-red-100"], main [class*="bg-red-50"] { background: var(--danger-50) !important; } main [class*="text-red-700"], main [class*="text-red-600"], main [class*="text-red-500"] { color: var(--danger-700) !important; }
+main [class*="bg-blue-100"] { background: var(--primary-50) !important; } main [class*="text-blue-700"] { color: var(--primary-700) !important; }
+@media (max-width: 1023px) { .page-container { width: min(100% - 1.5rem, 80rem); } }
+@media (max-width: 640px) { .page-main { padding-top: 1rem; } main h1 { font-size: 1.375rem !important; } main table { font-size: .8125rem; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; } }

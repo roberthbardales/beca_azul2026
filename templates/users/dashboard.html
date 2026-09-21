@@ -1,170 +1,24 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Dashboard | Sistema de Control{% endblock %}
 
 {% block content %}
-<section aria-labelledby="dashboard-title">
-    <div class="mb-4 flex flex-col gap-2 border-b border-gray-200 pb-3 sm:flex-row sm:items-end sm:justify-between">
-        <h1 id="dashboard-title" class="text-2xl font-bold text-[#0f172a]">Panel de control</h1>
-    </div>
+<section class="dashboard-page" aria-labelledby="dashboard-title">
+    {% include 'users/dashboard/page_header.html' %}
+    {% include 'users/dashboard/metric_cards.html' %}
+    {% include 'users/dashboard/charts.html' %}
 
-    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        <article class="dashboard-metric rounded-xl border border-gray-100 bg-white p-5 shadow-sm" aria-labelledby="metric-empresas">
-            <div class="flex items-start justify-between gap-4">
-                <div>
-                    <h2 id="metric-empresas" class="text-xs font-semibold uppercase tracking-wide text-[#A5A5A5]">Empresas</h2>
-                    <p class="mt-2 text-3xl font-bold tabular-nums text-[#0f172a]">{{ total_empresas }}</p>
-                </div>
-                <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-100 text-blue-700" aria-hidden="true">
-                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linejoin="round" d="M4 21V5l8-3 8 3v16"/><path stroke-linecap="round" d="M8 8h1m-1 4h1m6-4h1m-1 4h1M3 21h18M10 21v-4h4v4"/></svg>
-                </span>
-            </div>
-            <div class="mt-4 flex flex-wrap items-center gap-2 text-xs">
-                <span class="inline-flex items-center gap-1.5 rounded-full bg-green-100 px-2.5 py-1 font-semibold text-green-600"><span class="h-1.5 w-1.5 rounded-full bg-current" aria-hidden="true"></span>{{ empresas_habilitadas }} habilitadas</span>
-                {% if empresas_deshabilitadas %}<span class="inline-flex items-center gap-1.5 rounded-full bg-red-50 px-2.5 py-1 font-semibold text-red-500"><span class="h-1.5 w-1.5 rounded-full bg-current" aria-hidden="true"></span>{{ empresas_deshabilitadas }} deshabilitadas</span>{% endif %}
-            </div>
-        </article>
-
-        <article class="dashboard-metric rounded-xl border border-gray-100 bg-white p-5 shadow-sm" aria-labelledby="metric-trabajadores">
-            <div class="flex items-start justify-between gap-4">
-                <div>
-                    <h2 id="metric-trabajadores" class="text-xs font-semibold uppercase tracking-wide text-[#A5A5A5]">Trabajadores</h2>
-                    <p class="mt-2 text-3xl font-bold tabular-nums text-[#0f172a]">{{ total_trabajadores }}</p>
-                </div>
-                <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-100 text-blue-700" aria-hidden="true">
-                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="7" r="3"/><path stroke-linecap="round" d="M5 21c.7-4 3-6 7-6s6.3 2 7 6"/></svg>
-                </span>
-            </div>
-            <div class="mt-4 flex flex-wrap gap-2 text-xs">
-                <span class="inline-flex items-center gap-1.5 rounded-full bg-green-100 px-2.5 py-1 font-semibold text-green-600"><span class="h-1.5 w-1.5 rounded-full bg-current" aria-hidden="true"></span>{{ trabajadores_habilitados }} habilitados</span>
-                <span class="inline-flex items-center gap-1.5 rounded-full bg-red-50 px-2.5 py-1 font-semibold text-red-500"><span class="h-1.5 w-1.5 rounded-full bg-current" aria-hidden="true"></span>{{ trabajadores_deshabilitados }} deshabilitados</span>
-            </div>
-        </article>
-
-        <article class="dashboard-metric rounded-xl border border-gray-100 bg-white p-5 shadow-sm" aria-labelledby="metric-certificados">
-            <div class="flex items-start justify-between gap-4">
-                <div>
-                    <h2 id="metric-certificados" class="text-xs font-semibold uppercase tracking-wide text-[#A5A5A5]">Certificados</h2>
-                    <p class="mt-2 text-3xl font-bold tabular-nums text-[#0f172a]">{{ total_certificados }}</p>
-                </div>
-                <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg {% if certificados_vencidos %}bg-red-50 text-red-500{% elif certificados_proximos_30 %}bg-yellow-100 text-yellow-600{% else %}bg-blue-100 text-blue-700{% endif %}" aria-hidden="true">
-                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><rect x="5" y="3" width="14" height="18" rx="2"/><path stroke-linecap="round" d="M8 8h8M8 12h5M8 16h3"/></svg>
-                </span>
-            </div>
-            <div class="mt-4 flex flex-wrap gap-2 text-xs">
-                {% if certificados_vencidos %}<span class="inline-flex items-center gap-1.5 rounded-full bg-red-50 px-2.5 py-1 font-semibold text-red-500"><span class="h-1.5 w-1.5 rounded-full bg-current" aria-hidden="true"></span>{{ certificados_vencidos }} vencidos</span>{% endif %}
-                {% if certificados_proximos_30 %}<span class="inline-flex items-center gap-1.5 rounded-full bg-yellow-100 px-2.5 py-1 font-semibold text-yellow-600"><span class="h-1.5 w-1.5 rounded-full bg-current" aria-hidden="true"></span>{{ certificados_proximos_30 }} vencen en 30 días</span>{% endif %}
-                <span class="inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-2.5 py-1 font-medium text-[#A5A5A5]">{{ certificados_proximos_60 }} en los próximos 60 días</span>
-            </div>
-        </article>
-    </div>
-
-    <section class="dashboard-chart mt-7 rounded-xl border border-gray-100 bg-white p-5 shadow-sm" aria-labelledby="empresa-grafica-title">
-        <div class="mb-4 flex items-start justify-between gap-4">
-            <div>
-                <h2 id="empresa-grafica-title" class="text-base font-semibold text-[#0f172a]">Trabajadores por empresa</h2>
-                <p class="mt-1 text-xs text-[#A5A5A5]">Distribución actual por empresa.</p>
-            </div>
-        </div>
-        <div class="relative h-72 sm:h-80">
-            <canvas id="trabajadores-por-empresa" aria-label="Gráfica de barras de trabajadores por empresa"></canvas>
-        </div>
-    </section>
-
-
-    <div class="mt-7 grid gap-7 xl:grid-cols-2">
-        <section class="dashboard-feed overflow-hidden rounded-xl border border-gray-100 bg-white" aria-labelledby="trabajadores-recientes-title">
-            <div class="flex items-start justify-between gap-4 border-b border-blue-100 bg-blue-50/60 px-5 py-4">
-                <div class="flex items-start gap-3">
-                    <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-100 text-blue-700" aria-hidden="true">
-                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="7" r="3"/><path stroke-linecap="round" d="M5 21c.7-4 3-6 7-6s6.3 2 7 6"/></svg>
-                    </span>
-                    <div>
-                        <h2 id="trabajadores-recientes-title" class="text-base font-semibold text-blue-900">Trabajadores recientes</h2>
-                        <p class="mt-0.5 text-xs font-medium text-blue-700">Últimos registros</p>
-                    </div>
-                </div>
-                <a href="{% url 'app_control:trabajador_lista' %}" class="shrink-0 text-xs font-semibold text-blue-700 hover:text-blue-800">Ver todos</a>
-            </div>
-            <ul class="divide-y divide-gray-100">
-                {% for trabajador in trabajadores_recientes %}
-                <li class="px-5 py-3.5">
-                    <a href="{% url 'app_control:trabajador_detalle' trabajador.pk %}" class="block rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <p class="text-sm font-medium text-[#0f172a]">{{ trabajador }}</p>
-                        <p class="mt-1 text-xs text-[#A5A5A5]">{{ trabajador.empresa.nombre }} · {{ trabajador.created|date:"d/m/Y" }}</p>
-                    </a>
-                </li>
-                {% empty %}
-                <li class="px-5 py-8 text-center text-sm text-[#A5A5A5]">Aún no hay trabajadores registrados.</li>
-                {% endfor %}
-            </ul>
-        </section>
-
-        <section class="dashboard-feed overflow-hidden rounded-xl border border-gray-100 bg-white" aria-labelledby="certificados-vencer-title">
-            <div class="border-b {% if certificados_vencidos %}border-red-100 bg-red-50/60{% else %}border-amber-100 bg-amber-50/60{% endif %} px-5 py-4">
-                <div class="flex items-start gap-3">
-                    <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg {% if certificados_vencidos %}bg-red-100 text-red-700{% else %}bg-amber-100 text-amber-700{% endif %}" aria-hidden="true">
-                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><rect x="5" y="3" width="14" height="18" rx="2"/><path stroke-linecap="round" d="M8 8h8M8 12h5M8 16h3"/></svg>
-                    </span>
-                    <div>
-                        <h2 id="certificados-vencer-title" class="text-base font-semibold {% if certificados_vencidos %}text-red-900{% else %}text-amber-900{% endif %}">Certificados por vencer</h2>
-                        <p class="mt-0.5 text-xs font-medium {% if certificados_vencidos %}text-red-700{% else %}text-amber-700{% endif %}">{% if certificados_vencidos %}Requiere atención inmediata{% else %}Requiere atención{% endif %}</p>
-                    </div>
-                </div>
-            </div>
-            <ul class="divide-y divide-gray-100">
-                {% for certificado in certificados_por_vencer %}
-                <li class="px-5 py-3.5">
-                    <a href="{% url 'app_control:trabajador_detalle' certificado.trabajador.pk %}" class="block rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <p class="text-sm font-medium text-[#0f172a]">{{ certificado.nombre }}</p>
-                        <p class="mt-1 text-xs text-[#A5A5A5]">{{ certificado.trabajador }} · {{ certificado.trabajador.empresa.nombre }} · Vence {{ certificado.fecha_vencimiento|date:"d/m/Y" }}</p>
-                    </a>
-                </li>
-                {% empty %}
-                <li class="px-5 py-8 text-center text-sm text-[#A5A5A5]">No hay certificados con vencimiento en los próximos 30 días.</li>
-                {% endfor %}
-            </ul>
-        </section>
+    <div class="dashboard-feeds mt-5 grid items-start gap-5 xl:grid-cols-2">
+        {% include 'users/dashboard/recent_workers.html' %}
+        {% include 'users/dashboard/expiring_certificates.html' %}
     </div>
 </section>
+
+{{ dashboard_charts|json_script:"dashboard-charts-data" }}
 {% endblock %}
 
 {% block extra_js %}
-{{ grafica_empresas_labels|json_script:"grafica-empresas-labels" }}
-{{ grafica_empresas_datos|json_script:"grafica-empresas-datos" }}
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
-<script>
-    (function () {
-        var canvas = document.getElementById('trabajadores-por-empresa');
-        if (!canvas || typeof Chart === 'undefined') return;
-
-        var labels = JSON.parse(document.getElementById('grafica-empresas-labels').textContent);
-        var data = JSON.parse(document.getElementById('grafica-empresas-datos').textContent);
-        new Chart(canvas, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Trabajadores',
-                    data: data,
-                    backgroundColor: '#1f47db',
-                    borderRadius: 6,
-                    maxBarThickness: 42
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: { callbacks: { label: function (context) { return ' ' + context.raw + ' trabajadores'; } } }
-                },
-                scales: {
-                    y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: '#e5e7eb' } },
-                    x: { grid: { display: false } }
-                }
-            }
-        });
-    })();
-</script>
+<script src="{% static 'vendor/chartjs/chart.umd.min.js' %}"></script>
+<script src="{% static 'js/pages/dashboard.js' %}"></script>
 {% endblock %}

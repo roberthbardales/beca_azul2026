@@ -1,0 +1,30 @@
+.control-page-header { border-color: var(--ink-200) !important; } .control-page-header > div > p, .control-form-section > p { color: var(--ink-500) !important; } .control-summary-grid > div { border: 1px solid var(--ink-100); background: var(--ink-50) !important; } .control-detail-section > h2 { margin-bottom: .65rem; color: var(--ink-500) !important; } .control-detail-section > div, .control-detail-section > form { border-color: var(--ink-200) !important; box-shadow: var(--shadow-card); } .control-form-section { border-color: var(--ink-100) !important; } .control-form-section legend { padding-right: .5rem; } .control-action-bar { border-color: var(--ink-200) !important; } .control-confirmation-header { border-color: #fecaca !important; } .control-confirmation-header h1 { color: var(--danger-700) !important; }
+.worker-form-card { border-color: #d9dee5 !important; border-radius: .4rem !important; background: #fff !important; box-shadow: 0 2px 8px rgba(16, 24, 40, .06) !important; }
+main .worker-form-card.rounded-xl.bg-white { border-radius: .5rem !important; }
+.worker-form-card .control-page-header { border-color: #d9dee5 !important; }
+.worker-form-card .control-form-section legend { color: var(--ink-900) !important; }
+.worker-form-card .control-action-bar { border-color: #d9dee5 !important; }
+.worker-form-card { padding: 1.1rem !important; }
+.worker-form-card .control-page-header { margin-bottom: 1rem !important; padding-bottom: .8rem !important; }
+.worker-form-card .control-page-header h1 { font-size: 1.5rem !important; line-height: 1.25; letter-spacing: -.025em; color: #111827 !important; }
+.worker-form-card .control-page-header h1 svg { width: 1.35rem; height: 1.35rem; color: var(--primary-600) !important; }
+.worker-form-card form { gap: .85rem !important; }
+.worker-form-card form > * + * { margin-top: .85rem !important; }
+.worker-form-card .control-form-section { gap: .6rem !important; }
+.worker-form-card .control-form-section > * + * { margin-top: .6rem !important; }
+.worker-form-card .control-form-section.border-t { padding-top: .85rem !important; }
+.worker-form-card .control-form-section + .control-form-section { margin-top: .85rem !important; border-top: 1px solid #d9dee5 !important; }
+.worker-form-card label { color: #111827 !important; font-size: .8rem !important; font-weight: 600 !important; }
+.worker-form-card .text-red-600 { color: #c62828 !important; font-size: .75rem !important; font-weight: 500; }
+.worker-form-card .form-control:has(+ .text-red-600) { border-color: #e53935 !important; box-shadow: 0 0 0 2px rgba(229, 57, 53, .1) !important; }
+.worker-form-card .control-action-bar { margin-top: .15rem !important; padding-top: .85rem !important; }
+.control-form-page { background: var(--ink-50); }
+@media (min-width: 640px) {
+    .worker-form-card { padding: 1.35rem !important; }
+}
+@media (max-width: 639px) {
+    .worker-form-card .control-action-bar { align-items: stretch; }
+    .worker-form-card .control-action-bar .btn { width: 100%; }
+}
+.control-table { position: relative; border-color: var(--ink-200) !important; } .control-table table { min-width: 42rem; } .control-table td, .control-table th { padding-top: .75rem !important; padding-bottom: .75rem !important; } .control-table thead { background: var(--ink-50) !important; } .control-table tbody tr:hover { background: var(--ink-50) !important; } .control-empty-state, .list-empty-state, .search-empty-state { color: var(--ink-500) !important; background: var(--ink-50) !important; } .control-empty-state p:first-child { color: var(--ink-900) !important; } .list-empty-state::before, .search-empty-state::before { display: block; width: 2.5rem; height: 2.5rem; margin: 0 auto .75rem; border: 1px solid var(--primary-200); border-radius: .75rem; background: var(--primary-50); box-shadow: inset 0 0 0 .5rem #fff; content: ""; } .search-empty-state { border-color: var(--ink-200) !important; box-shadow: var(--shadow-card) !important; }
+@media (max-width: 640px) { .control-table { margin-inline: 0; overflow: visible; } .control-summary-grid { grid-template-columns: 1fr !important; } .control-page-header > div:last-child { width: 100%; } .control-page-header > div:last-child > a, .control-page-header > div:last-child > form, .control-page-header > div:last-child > form > button { flex: 1 1 auto; } }

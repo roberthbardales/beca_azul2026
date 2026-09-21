@@ -1,0 +1,16 @@
+<section class="dashboard-chart rounded-lg border border-gray-100 bg-white p-4 shadow-sm"
+         aria-labelledby="cumplimiento-grafica-title">
+    <h2 id="cumplimiento-grafica-title" class="mb-3 text-base font-semibold text-[#0f172a]">
+        Estado de cumplimiento
+    </h2>
+
+    <div class="dashboard-doughnut-layout">
+        <div class="relative mx-auto h-48 w-48 sm:h-56 sm:w-56">
+            <canvas id="estado-cumplimiento"
+                    aria-label="Gráfica circular del estado de los certificados"></canvas>
+        </div>
+        <div id="cumplimiento-legend"
+             class="dashboard-chart-legend"
+             aria-label="Detalle del estado de cumplimiento"></div>
+    </div>
+</section>

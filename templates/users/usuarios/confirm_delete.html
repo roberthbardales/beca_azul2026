@@ -19,7 +19,7 @@
 
             <form method="post" class="control-action-bar flex flex-col-reverse gap-3 border-t border-red-100 pt-5 sm:flex-row sm:items-center">
                 {% csrf_token %}
-                <button class="rounded-lg bg-red-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-red-800" type="submit">Eliminar</button>
+                <button class="btn btn-quinary" type="submit">Eliminar</button>
                 <a class="text-sm font-medium text-[#A5A5A5] hover:underline" href="{% url 'app_users:usuario_detalle' usuario.pk %}">Cancelar</a>
             </form>
         </div>
