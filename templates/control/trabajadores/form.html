@@ -42,6 +42,7 @@
                 </div></fieldset>
 
                 <fieldset class="control-form-section space-y-3" aria-label="Documento y empresa"><div class="grid gap-3 sm:grid-cols-3">
+                    {% if request.user.role != '3' %}
                     <div>
                         <label for="{{ form.empresa.id_for_label }}" class="mb-1 block text-xs font-medium text-[#0f172a]">Empresa</label>
                         <select name="{{ form.empresa.html_name }}" id="{{ form.empresa.id_for_label }}" class="form-control" required>
@@ -51,6 +52,7 @@
                         </select>
                         {% for error in form.empresa.errors %}<div class="mt-1 text-xs text-red-600">{{ error }}</div>{% endfor %}
                     </div>
+                    {% endif %}
                     <div>
                         <label for="{{ form.tipo_documento.id_for_label }}" class="mb-1 block text-xs font-medium text-[#0f172a]">Tipo de documento</label>
                         <select name="{{ form.tipo_documento.html_name }}" id="{{ form.tipo_documento.id_for_label }}" class="form-control">
@@ -73,7 +75,7 @@
                         <input type="text" name="{{ form.cargo.html_name }}" id="{{ form.cargo.id_for_label }}" value="{{ form.cargo.value|default:'' }}" class="form-control">
                         {% for error in form.cargo.errors %}<div class="mt-1 text-xs text-red-600">{{ error }}</div>{% endfor %}
                     </div>
-                    {% for field in form|slice:'6:' %}
+                    {% for field in form %}
                     {% if field.name != 'empresa' and field.name != 'tipo_documento' and field.name != 'dni' and field.name != 'nombres' and field.name != 'apellidos' and field.name != 'cargo' %}
                     <div>
                         <label for="{{ field.id_for_label }}" class="mb-1 block text-xs font-medium text-[#0f172a]">{{ field.label }}</label>

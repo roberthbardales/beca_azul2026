@@ -79,9 +79,6 @@
 
 <footer class="control-action-bar flex items-center gap-2 border-t border-gray-100 pt-5">
 <a class="text-sm font-medium text-[#0F6FC6] hover:underline" href="{% url 'app_control:empresa_lista' %}">Volver a empresas</a>
-{% if request.user.role == '1' %}
-<a class="btn btn-primary btn-sm" href="{% url 'app_control:trabajador_crear' %}">Nuevo trabajador</a>
-{% endif %}
 </footer>
 </div>
 </div></div>

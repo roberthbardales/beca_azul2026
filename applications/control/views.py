@@ -179,6 +179,11 @@ class EmpresaBuscarView(LoginRequiredMixin, ListView):
     paginate_by = 20
     login_url = reverse_lazy('app_users:login')
 
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.role == User.USUARIO_EMPRESA:
+            raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)
+
     def get_queryset(self):
         queryset = Empresa.objects.annotate(
             total_trabajadores=Count('trabajadores', distinct=True)
@@ -293,6 +298,10 @@ class TrabajadorListView(VerTrabajadoresMixin, ListView):
         'nombre': ('apellidos', 'nombres'),
         'empresa': ('empresa__nombre', 'apellidos', 'nombres'),
         'cargo': ('cargo', 'apellidos', 'nombres'),
+        'sctr': ('sctr', 'apellidos', 'nombres'),
+        'induccion': ('induccion', 'apellidos', 'nombres'),
+        'cursos': ('cursos', 'apellidos', 'nombres'),
+        'aptitud_medica': ('aptitud_medica', 'apellidos', 'nombres'),
         'certificados': ('certificados_count', 'apellidos', 'nombres'),
         'estado': ('habilitado', 'apellidos', 'nombres'),
     }
@@ -343,9 +352,13 @@ class TrabajadorListView(VerTrabajadoresMixin, ListView):
         kwargs.setdefault('sortable_columns', {
             'dni': 'DNI',
             'nombre': 'Nombre completo',
-            'empresa': 'Empresa',
-            'cargo': 'Cargo',
-            'certificados': 'Certificados',
+             'empresa': 'Empresa',
+             'cargo': 'Cargo',
+             'sctr': 'SCTR',
+             'induccion': 'Inducción',
+             'cursos': 'Cursos',
+             'aptitud_medica': 'Aptitud médica',
+             'certificados': 'Certificados',
             'estado': 'Estado del trabajador',
         })
         return super().get_context_data(**kwargs)
@@ -414,9 +427,16 @@ class TrabajadorDetailView(VerTrabajadorDetalleMixin, DetailView):
     template_name = 'control/trabajadores/detalle.html'
     context_object_name = 'trabajador'
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if self.request.user.role == User.USUARIO_EMPRESA:
+            queryset = queryset.filter(empresa=self.request.user.empresa)
+        return queryset
+
     def get_context_data(self, **kwargs):
         kwargs.setdefault('certificados', self.object.certificados.all().order_by('-fecha_emision'))
         kwargs.setdefault('incidencias', self.object.incidencias.select_related('registrado_por'))
+        kwargs.setdefault('es_empresa', self.request.user.role == User.USUARIO_EMPRESA)
         return super().get_context_data(**kwargs)
 
 

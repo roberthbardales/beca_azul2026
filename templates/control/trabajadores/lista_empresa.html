@@ -9,6 +9,10 @@
         <h1 class="text-2xl font-bold text-[#0f172a]">Trabajadores</h1>
         <p class="text-sm text-[#A5A5A5]">{{ empresa.nombre }} · RUC {{ empresa.ruc }}</p>
     </div>
+    <a class="btn btn-primary" href="{% url 'app_control:trabajador_empresa_crear' %}">
+        <svg class="h-4 w-4" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" d="M12 5v14M5 12h14"/></svg>
+        Nuevo trabajador
+    </a>
 </div>
 
 <form method="get" action="{% url 'app_control:trabajador_empresa_lista' %}" class="list-filter" role="search">
@@ -51,6 +55,7 @@
                 </th>
                 {% endwith %}
                 {% endfor %}
+                <th class="px-3 py-1 text-right text-xs font-semibold text-[#A5A5A5]">Acciones</th>
             </tr>
         </thead>
         <tbody class="divide-y divide-gray-100">

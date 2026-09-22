@@ -72,8 +72,15 @@ class UsuarioGestionForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         self.current_user = kwargs.pop('current_user', None)
+        allow_all_roles = kwargs.pop('allow_all_roles', False)
         super().__init__(*args, **kwargs)
-        if self.current_user and self.current_user.role == User.BECA_AZUL:
+        if self.current_user and self.current_user.role == User.BECA_AZUL and allow_all_roles:
+            choices = [
+                (User.PLANTA, 'Usuario Planta'),
+                (User.USUARIO_EMPRESA, 'Usuario Empresa'),
+                (User.GARITA, 'Usuario Garita'),
+            ]
+        elif self.current_user and self.current_user.role == User.BECA_AZUL:
             choices = [
                 (User.USUARIO_EMPRESA, 'Usuario Empresa'),
             ]

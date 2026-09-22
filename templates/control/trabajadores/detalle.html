@@ -11,11 +11,13 @@
                 <p class="mt-1 text-sm text-gray-500">Detalle del trabajador</p>
             </div>
             <div class="flex flex-wrap gap-2">
-                <a class="btn btn-secondary btn-sm" href="{% if es_empresa %}{% url 'app_control:trabajador_empresa_lista' %}{% else %}{% url 'app_control:trabajador_lista' %}{% endif %}">Volver</a>
                 {% if es_empresa %}
                     <a class="btn btn-primary btn-sm" href="{% url 'app_control:trabajador_empresa_editar' trabajador.pk %}">Editar</a>
-                {% elif request.user.role == '1' %}
-                    <a class="btn btn-primary btn-sm" href="{% url 'app_control:trabajador_editar' trabajador.pk %}">Editar</a>
+                    <form method="post" action="{% url 'app_control:trabajador_empresa_toggle' trabajador.pk %}">
+                        {% csrf_token %}
+                        <button class="btn btn-secondary btn-sm" type="submit">{% if trabajador.activo %}Desactivar registro{% else %}Activar registro{% endif %}</button>
+                    </form>
+                    <a class="btn btn-quinary btn-sm" href="{% url 'app_control:trabajador_empresa_eliminar' trabajador.pk %}">Eliminar</a>
                 {% endif %}
             </div>
         </header>
@@ -49,31 +51,21 @@
                             <td class="px-4 py-3 text-sm">{{ trabajador.cargo|default:'-' }}</td>
                             <td class="px-4 py-3 text-sm">{% if trabajador.habilitado %}<span class="rounded-full bg-green-100 px-2 py-1 text-xs text-green-700">Sí</span>{% else %}<span class="rounded-full bg-red-100 px-2 py-1 text-xs text-red-700">No</span>{% endif %}</td>
                             <td class="px-4 py-3 text-sm">{% if trabajador.activo %}Sí{% else %}No{% endif %}</td>
+                            <td class="px-4 py-3 text-sm">{% if trabajador.sctr == 'APROBADO' %}<span class="inline-flex rounded-full p-1 text-green-700" title="Aprobado"><svg style="width:1.05rem;height:1.05rem" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#16a34a"/><path fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="m7 12 3 3 7-7"/></svg></span>{% elif trabajador.sctr == 'RECHAZADO' %}<span class="inline-flex rounded-full p-1 text-amber-700" title="Rechazado"><svg style="width:1.05rem;height:1.05rem" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#f59e0b"/><path fill="none" stroke="#fff" stroke-linecap="round" stroke-width="2.5" d="M12 7v6M12 17v.01"/></svg></span>{% else %}<span class="inline-flex rounded-full p-1 text-red-700" title="No aprobado"><svg style="width:1.05rem;height:1.05rem" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#dc2626"/><path fill="none" stroke="#fff" stroke-linecap="round" stroke-width="2.5" d="m8 8 8 8m0-8-8 8"/></svg></span>{% endif %}</td>
+                            <td class="px-4 py-3 text-sm">{% if trabajador.induccion == 'APROBADO' %}<span class="inline-flex rounded-full p-1 text-green-700" title="Aprobado"><svg style="width:1.05rem;height:1.05rem" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#16a34a"/><path fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="m7 12 3 3 7-7"/></svg></span>{% elif trabajador.induccion == 'RECHAZADO' %}<span class="inline-flex rounded-full p-1 text-amber-700" title="Rechazado"><svg style="width:1.05rem;height:1.05rem" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#f59e0b"/><path fill="none" stroke="#fff" stroke-linecap="round" stroke-width="2.5" d="M12 7v6M12 17v.01"/></svg></span>{% else %}<span class="inline-flex rounded-full p-1 text-red-700" title="No aprobado"><svg style="width:1.05rem;height:1.05rem" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#dc2626"/><path fill="none" stroke="#fff" stroke-linecap="round" stroke-width="2.5" d="m8 8 8 8m0-8-8 8"/></svg></span>{% endif %}</td>
+                            <td class="px-4 py-3 text-sm">{% if trabajador.cursos == 'APROBADO' %}<span class="inline-flex rounded-full p-1 text-green-700" title="Aprobado"><svg style="width:1.05rem;height:1.05rem" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#16a34a"/><path fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="m7 12 3 3 7-7"/></svg></span>{% elif trabajador.cursos == 'RECHAZADO' %}<span class="inline-flex rounded-full p-1 text-amber-700" title="Rechazado"><svg style="width:1.05rem;height:1.05rem" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#f59e0b"/><path fill="none" stroke="#fff" stroke-linecap="round" stroke-width="2.5" d="M12 7v6M12 17v.01"/></svg></span>{% else %}<span class="inline-flex rounded-full p-1 text-red-700" title="No aprobado"><svg style="width:1.05rem;height:1.05rem" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#dc2626"/><path fill="none" stroke="#fff" stroke-linecap="round" stroke-width="2.5" d="m8 8 8 8m0-8-8 8"/></svg></span>{% endif %}</td>
+                            <td class="px-4 py-3 text-sm">{% if trabajador.aptitud_medica == 'APROBADO' %}<span class="inline-flex rounded-full p-1 text-green-700" title="Aprobado"><svg style="width:1.05rem;height:1.05rem" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#16a34a"/><path fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="m7 12 3 3 7-7"/></svg></span>{% elif trabajador.aptitud_medica == 'RECHAZADO' %}<span class="inline-flex rounded-full p-1 text-amber-700" title="Rechazado"><svg style="width:1.05rem;height:1.05rem" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#f59e0b"/><path fill="none" stroke="#fff" stroke-linecap="round" stroke-width="2.5" d="M12 7v6M12 17v.01"/></svg></span>{% else %}<span class="inline-flex rounded-full p-1 text-red-700" title="No aprobado"><svg style="width:1.05rem;height:1.05rem" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#dc2626"/><path fill="none" stroke="#fff" stroke-linecap="round" stroke-width="2.5" d="m8 8 8 8m0-8-8 8"/></svg></span>{% endif %}</td>
                             <td class="px-4 py-3 text-sm">{{ certificados|length }}</td>
                             <td class="px-4 py-3 text-sm">{{ incidencias|length }}</td>
-                            <td class="px-4 py-3 text-sm">{{ trabajador.get_sctr_display }}</td>
-                            <td class="px-4 py-3 text-sm">{{ trabajador.get_induccion_display }}</td>
-                            <td class="px-4 py-3 text-sm">{{ trabajador.get_cursos_display }}</td>
-                            <td class="px-4 py-3 text-sm">{{ trabajador.get_aptitud_medica_display }}</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
         </section>
 
-        <section class="border-b border-gray-200 p-5">
-            <div class="mb-3 flex items-center justify-between"><h2 class="text-sm font-semibold text-[#0f172a]">Acciones</h2>{% if trabajador.activo %}<span class="text-xs text-green-700">Activo</span>{% else %}<span class="text-xs text-red-700">Inactivo</span>{% endif %}</div>
-            <div class="flex flex-wrap gap-2">
-                {% if request.user.role == '1' %}
-                <form method="post" action="{% url 'app_control:trabajador_estado' trabajador.pk %}">{% csrf_token %}<input type="hidden" name="estado" value="{% if trabajador.habilitado %}0{% else %}1{% endif %}"><button class="btn btn-primary btn-sm" type="submit">{% if trabajador.habilitado %}Deshabilitar{% else %}Habilitar{% endif %}</button></form>
-                {% endif %}
-                {% if es_empresa or request.user.role == '1' %}
-                <form method="post" action="{% if es_empresa %}{% url 'app_control:trabajador_empresa_toggle' trabajador.pk %}{% else %}{% url 'app_control:trabajador_toggle' trabajador.pk %}{% endif %}">{% csrf_token %}<button class="btn btn-secondary btn-sm" type="submit">{% if trabajador.activo %}Desactivar registro{% else %}Activar registro{% endif %}</button></form>
-                {% endif %}
-                {% if es_empresa %}<a class="btn btn-quinary btn-sm" href="{% url 'app_control:trabajador_empresa_eliminar' trabajador.pk %}">Eliminar</a>{% elif request.user.role == '1' %}<a class="btn btn-quinary btn-sm" href="{% url 'app_control:trabajador_eliminar' trabajador.pk %}">Eliminar</a>{% endif %}
-            </div>
-        </section>
-
+    </div>
+    <div class="flex justify-center py-5">
+        <a class="btn btn-secondary btn-sm" href="{% if es_empresa %}{% url 'app_control:trabajador_empresa_lista' %}{% else %}{% url 'app_control:trabajador_lista' %}{% endif %}">Volver</a>
     </div>
 </main>
 {% endblock %}

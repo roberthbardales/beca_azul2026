@@ -1,13 +1,13 @@
-# Usuarios del sistema
+
+
+## Usuarios del fixture `fixtures/seed.json`
 
 | ID | Nombre | Email | Rol |
 |----|--------|-------|-----|
-| 1 | Admin Principal | administrador@gmail.com | Administrador |
-| 2 | Beca Azul | beca_azul@gmail.com | Beca Azul |
-| 3 | Planta Operador | planta@gmail.com | Usuario Planta |
-| 4 | Empresa Demo | usuario_empresa@gmail.com | Usuario Empresa (empresa 1) |
-| 5 | Garita Acceso | garita@gmail.com | Usuario Garita |
-| 6 | pepe ramos | pepito@gmail.com | Usuario Planta |
-| 7 | julio fernandez | jramos@gmail.com | Beca Azul |
-| 19 | juan perez | jperez@gmail.com | Beca Azul |
-| 20 | russell bardales | roberthbardales@gmail.com | Superusuario |
+| 1 | Admin Principal | admin@gmail.com | Administrador |
+| 2 | Beca Azul | becaazul@gmail.com | Beca Azul |
+| 3 | Usuario Planta | planta@gmail.com | Usuario Planta |
+| 4 | Usuario Empresa | empresa@gmail.com | Usuario Empresa (empresa 1) |
+| 5 | Usuario Garita | garita@gmail.com | Usuario Garita |
+
+Las contraseñas del fixture están almacenadas como hashes; no es posible obtener las contraseñas originales desde `seed.json`. Cámbialas al cargarlas en producción.

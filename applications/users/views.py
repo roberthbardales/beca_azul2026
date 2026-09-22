@@ -15,7 +15,7 @@ from .forms import (
     UserRegisterForm,
     UsuarioGestionForm,
 )
-from .mixins import ConsultaUsuariosPermisoMixin, GestionUsuariosPermisoMixin
+from .mixins import CrearUsuariosPermisoMixin, ConsultaUsuariosPermisoMixin, GestionUsuariosPermisoMixin
 from .models import User
 from . import services
 
@@ -50,7 +50,6 @@ class LoginUser(FormView):
         if user is None:
             form.add_error(None, 'Email o contraseña incorrectos.')
             return self.form_invalid(form)
-        messages.success(self.request, f'Bienvenido, {user.first_name}.')
         if user.role == User.GARITA:
             return redirect('app_control:empresa_buscar')
         return super().form_valid(form)
@@ -141,6 +140,11 @@ class UsuarioListView(ConsultaUsuariosPermisoMixin, ListView):
         kwargs.setdefault('estado', self.request.GET.get('estado', ''))
         if user.role == User.BECA_AZUL:
             kwargs.setdefault('roles', [(User.USUARIO_EMPRESA, 'Usuario Empresa')])
+        elif user.is_superuser or user.role == User.ADMINISTRADOR:
+            kwargs.setdefault(
+                'roles',
+                [(v, l) for v, l in User.ROLE_CHOICES if v != User.ADMINISTRADOR],
+            )
         else:
             kwargs.setdefault(
                 'roles',
@@ -158,10 +162,12 @@ class UsuarioDetailView(ConsultaUsuariosPermisoMixin, DetailView):
         user = self.request.user
         if user.role == User.BECA_AZUL:
             return User.objects.filter(role=User.USUARIO_EMPRESA)
+        if user.is_superuser or user.role == User.ADMINISTRADOR:
+            return User.objects.exclude(role=User.ADMINISTRADOR)
         return User.objects.filter(role__in=[User.BECA_AZUL, User.PLANTA, User.GARITA])
 
 
-class UsuarioCreateView(GestionUsuariosPermisoMixin, CreateView):
+class UsuarioCreateView(CrearUsuariosPermisoMixin, CreateView):
     model = User
     form_class = UsuarioGestionForm
     template_name = 'users/usuarios/form.html'
@@ -170,6 +176,7 @@ class UsuarioCreateView(GestionUsuariosPermisoMixin, CreateView):
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs['current_user'] = self.request.user
+        kwargs['allow_all_roles'] = True
         return kwargs
 
     def form_valid(self, form):
@@ -192,6 +199,8 @@ class UsuarioUpdateView(GestionUsuariosPermisoMixin, UpdateView):
         user = self.request.user
         if user.role == User.BECA_AZUL:
             return User.objects.filter(role=User.USUARIO_EMPRESA)
+        if user.is_superuser or user.role == User.ADMINISTRADOR:
+            return User.objects.exclude(role=User.ADMINISTRADOR)
         return User.objects.filter(role__in=[User.BECA_AZUL, User.PLANTA, User.GARITA])
 
     def form_valid(self, form):
@@ -204,6 +213,8 @@ class UsuarioToggleView(GestionUsuariosPermisoMixin, View):
         user = request.user
         if user.role == User.BECA_AZUL:
             usuario = get_object_or_404(User, pk=pk, role=User.USUARIO_EMPRESA)
+        elif user.is_superuser or user.role == User.ADMINISTRADOR:
+            usuario = get_object_or_404(User, pk=pk)
         else:
             usuario = get_object_or_404(User, pk=pk, role__in=[User.BECA_AZUL, User.PLANTA, User.GARITA])
         if usuario.pk == request.user.pk:
@@ -230,6 +241,8 @@ class UsuarioDeleteView(GestionUsuariosPermisoMixin, DeleteView):
         user = self.request.user
         if user.role == User.BECA_AZUL:
             return User.objects.filter(role=User.USUARIO_EMPRESA)
+        if user.is_superuser or user.role == User.ADMINISTRADOR:
+            return User.objects.exclude(role=User.ADMINISTRADOR)
         return User.objects.filter(role__in=[User.BECA_AZUL, User.PLANTA, User.GARITA])
 
     def delete(self, request, *args, **kwargs):
@@ -252,6 +265,8 @@ class UsuarioPasswordResetView(GestionUsuariosPermisoMixin, FormView):
         user = self.request.user
         if user.role == User.BECA_AZUL:
             return get_object_or_404(User, pk=self.kwargs['pk'], role=User.USUARIO_EMPRESA)
+        if user.is_superuser or user.role == User.ADMINISTRADOR:
+            return get_object_or_404(User, pk=self.kwargs['pk'])
         return get_object_or_404(
             User,
             pk=self.kwargs['pk'],
