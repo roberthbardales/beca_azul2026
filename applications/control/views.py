@@ -3,6 +3,7 @@ from datetime import date, timedelta
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
+from django.db import transaction
 from django.db.models import Count, Q
 from django.db.models.functions import TruncDate
 from django.http import HttpResponseRedirect, JsonResponse
@@ -21,11 +22,8 @@ from applications.users.mixins import (
 )
 from applications.users.models import User
 
-from .forms import CertificadoForm, EmpresaForm, IncidenciaForm, TrabajadorEmpresaForm, TrabajadorForm
+from .forms import CertificadoCargaFormSet, CertificadoForm, EmpresaForm, IncidenciaForm, TrabajadorEmpresaForm, TrabajadorForm
 from .models import Certificado, Empresa, Incidencia, Trabajador
-
-MAX_CERTIFICADOS = 4
-
 
 class DashboardView(LoginRequiredMixin, View):
     template_name = 'users/dashboard.html'
@@ -48,7 +46,7 @@ class DashboardView(LoginRequiredMixin, View):
         trabajadores_deshabilitados = Trabajador.objects.filter(habilitado=False).count()
 
         total_certificados = Certificado.objects.count()
-        certificados_sin_vencimiento = Certificado.objects.filter(fecha_vencimiento__isnull=True).count()
+        certificados_sin_vencimiento = 0
         certificados_vencidos = Certificado.objects.filter(fecha_vencimiento__lt=hoy).count()
         certificados_proximos_30 = Certificado.objects.filter(
             fecha_vencimiento__gte=hoy, fecha_vencimiento__lte=limite_30
@@ -260,7 +258,7 @@ class EmpresaDetailView(VerEmpresasMixin, DetailView):
                 {
                     'habilitado': grupo['habilitado'],
                     'total': grupo['total'],
-                    'label': 'Habilitado' if grupo['habilitado'] else 'Deshabilitado',
+                    'label': 'Homologado' if grupo['habilitado'] else 'No homologado',
                 }
                 for grupo in trabajadores.values('habilitado').annotate(total=Count('habilitado')).order_by('habilitado')
             ],
@@ -298,10 +296,6 @@ class TrabajadorListView(VerTrabajadoresMixin, ListView):
         'nombre': ('apellidos', 'nombres'),
         'empresa': ('empresa__nombre', 'apellidos', 'nombres'),
         'cargo': ('cargo', 'apellidos', 'nombres'),
-        'sctr': ('sctr', 'apellidos', 'nombres'),
-        'induccion': ('induccion', 'apellidos', 'nombres'),
-        'cursos': ('cursos', 'apellidos', 'nombres'),
-        'aptitud_medica': ('aptitud_medica', 'apellidos', 'nombres'),
         'certificados': ('certificados_count', 'apellidos', 'nombres'),
         'estado': ('habilitado', 'apellidos', 'nombres'),
     }
@@ -348,18 +342,14 @@ class TrabajadorListView(VerTrabajadoresMixin, ListView):
         kwargs.setdefault('dir', self.request.GET.get('dir', 'asc'))
         kwargs.setdefault('query_string', query_params.urlencode())
         kwargs.setdefault('empresas', Empresa.objects.order_by('nombre'))
-        kwargs.setdefault('estado_choices', ((1, 'Habilitado'), (0, 'Deshabilitado')))
+        kwargs.setdefault('estado_choices', ((1, 'Homologado'), (0, 'No homologado')))
         kwargs.setdefault('sortable_columns', {
             'dni': 'DNI',
             'nombre': 'Nombre completo',
              'empresa': 'Empresa',
              'cargo': 'Cargo',
-             'sctr': 'SCTR',
-             'induccion': 'Inducción',
-             'cursos': 'Cursos',
-             'aptitud_medica': 'Aptitud médica',
              'certificados': 'Certificados',
-            'estado': 'Estado del trabajador',
+            'estado': 'Estado',
         })
         return super().get_context_data(**kwargs)
 
@@ -435,12 +425,19 @@ class TrabajadorDetailView(VerTrabajadorDetalleMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         kwargs.setdefault('certificados', self.object.certificados.all().order_by('-fecha_emision'))
+        certificados = {certificado.tipo: certificado for certificado in self.object.certificados.all()}
+        kwargs.setdefault('certificados_requeridos', [
+            {'tipo': Certificado.SCTR, 'label': 'SCTR', 'objeto': certificados.get(Certificado.SCTR)},
+            {'tipo': Certificado.INDUCCION, 'label': 'Inducción', 'objeto': certificados.get(Certificado.INDUCCION)},
+            {'tipo': Certificado.APTITUD_MEDICA, 'label': 'Aptitud médica', 'objeto': certificados.get(Certificado.APTITUD_MEDICA)},
+        ])
+        kwargs.setdefault('cursos', self.object.certificados.filter(tipo=Certificado.CURSOS).order_by('-fecha_emision'))
         kwargs.setdefault('incidencias', self.object.incidencias.select_related('registrado_por'))
         kwargs.setdefault('es_empresa', self.request.user.role == User.USUARIO_EMPRESA)
         return super().get_context_data(**kwargs)
 
 
-class TrabajadorEstadoView(AdministrarTrabajadoresMixin, View):
+class TrabajadorHomologacionView(AdministrarTrabajadoresMixin, View):
     def post(self, request, pk):
         trabajador = get_object_or_404(Trabajador, pk=pk)
         estado = request.POST.get('estado')
@@ -449,7 +446,7 @@ class TrabajadorEstadoView(AdministrarTrabajadoresMixin, View):
             return redirect('app_control:trabajador_detalle', pk=trabajador.pk)
         trabajador.habilitado = estado == '1'
         trabajador.save(update_fields=['habilitado'])
-        messages.success(self.request, f'El estado del trabajador "{trabajador}" fue actualizado.')
+        messages.success(self.request, f'La homologación del trabajador "{trabajador}" fue actualizada.')
         return redirect('app_control:trabajador_detalle', pk=trabajador.pk)
 
 
@@ -489,18 +486,10 @@ class CertificadoCreateView(AdministrarTrabajadoresMixin, CreateView):
 
     def get_context_data(self, **kwargs):
         kwargs.setdefault('trabajador', self.get_trabajador())
-        kwargs.setdefault('certificados_count', self.get_trabajador().certificados.count())
-        kwargs.setdefault('max_certificados', MAX_CERTIFICADOS)
         return super().get_context_data(**kwargs)
 
     def form_valid(self, form):
         self.trabajador = self.get_trabajador()
-        if self.trabajador.certificados.count() >= MAX_CERTIFICADOS:
-            messages.error(
-                self.request,
-                f'El trabajador ya tiene el máximo de {MAX_CERTIFICADOS} certificados.',
-            )
-            return redirect('app_control:trabajador_detalle', pk=self.trabajador.pk)
         form.instance.trabajador = self.trabajador
         messages.success(self.request, 'Certificado registrado correctamente.')
         return super().form_valid(form)
@@ -516,8 +505,6 @@ class CertificadoUpdateView(AdministrarTrabajadoresMixin, UpdateView):
 
     def get_context_data(self, **kwargs):
         kwargs.setdefault('trabajador', self.object.trabajador)
-        kwargs.setdefault('max_certificados', MAX_CERTIFICADOS)
-        kwargs.setdefault('certificados_count', self.object.trabajador.certificados.count())
         return super().get_context_data(**kwargs)
 
     def form_valid(self, form):
@@ -649,7 +636,7 @@ class TrabajadorEmpresaListView(TrabajadorEmpresaPermisoMixin, ListView):
         kwargs.setdefault('sort', self.request.GET.get('sort', ''))
         kwargs.setdefault('dir', self.request.GET.get('dir', 'asc'))
         kwargs.setdefault('query_string', query_params.urlencode())
-        kwargs.setdefault('estado_choices', ((1, 'Habilitado'), (0, 'Deshabilitado')))
+        kwargs.setdefault('estado_choices', ((1, 'Homologado'), (0, 'No homologado')))
         kwargs.setdefault('sortable_columns', {
             'dni': 'DNI',
             'nombre': 'Nombre completo',
@@ -689,9 +676,23 @@ class TrabajadorEmpresaCreateView(TrabajadorEmpresaBaseMixin, CreateView):
         kwargs['empresa'] = self.request.user.empresa
         return kwargs
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.setdefault('certificado_formset', CertificadoCargaFormSet(prefix='certificados'))
+        return context
+
     def form_valid(self, form):
+        formset = CertificadoCargaFormSet(self.request.POST, self.request.FILES, prefix='certificados')
+        if not formset.is_valid():
+            return self.render_to_response(self.get_context_data(form=form, certificado_formset=formset))
         form.instance.empresa = self.request.user.empresa
-        self.object = form.save()
+        with transaction.atomic():
+            self.object = form.save()
+            for certificado_form in formset:
+                if certificado_form.cleaned_data and not certificado_form.cleaned_data.get('DELETE'):
+                    certificado = certificado_form.save(commit=False)
+                    certificado.trabajador = self.object
+                    certificado.save()
         messages.success(self.request, 'Trabajador registrado correctamente.')
         return HttpResponseRedirect(self.get_success_url())
 
@@ -707,8 +708,51 @@ class TrabajadorEmpresaUpdateView(TrabajadorEmpresaBaseMixin, UpdateView):
         kwargs['empresa'] = self.request.user.empresa
         return kwargs
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        initial = [
+            {
+                'tipo': Certificado.CURSOS,
+                'categoria': certificado.categoria,
+                'fecha_emision': certificado.fecha_emision.isoformat(),
+                'fecha_vencimiento': certificado.fecha_vencimiento.isoformat(),
+                'archivo': certificado.archivo,
+            }
+            for certificado in self.object.certificados.filter(tipo=Certificado.CURSOS).select_related('categoria')
+        ]
+        context.setdefault('certificado_formset', CertificadoCargaFormSet(initial=initial or None, prefix='certificados'))
+        return context
+
     def form_valid(self, form):
-        self.object = form.save()
+        formset = CertificadoCargaFormSet(self.request.POST, self.request.FILES, prefix='certificados')
+        if not formset.is_valid():
+            return self.render_to_response(self.get_context_data(form=form, certificado_formset=formset))
+        with transaction.atomic():
+            self.object = form.save()
+            cursos_existentes = {
+                certificado.categoria_id: certificado
+                for certificado in self.object.certificados.filter(tipo=Certificado.CURSOS)
+            }
+            cursos_recibidos = set()
+            for certificado_form in formset:
+                if certificado_form.cleaned_data and not certificado_form.cleaned_data.get('DELETE'):
+                    categoria = certificado_form.cleaned_data.get('categoria')
+                    if not categoria:
+                        continue
+                    certificado = cursos_existentes.get(categoria.pk, Certificado())
+                    certificado.tipo = Certificado.CURSOS
+                    certificado.categoria = categoria
+                    certificado.fecha_emision = certificado_form.cleaned_data['fecha_emision']
+                    certificado.fecha_vencimiento = certificado_form.cleaned_data['fecha_vencimiento']
+                    archivo = certificado_form.cleaned_data.get('archivo')
+                    if archivo:
+                        certificado.archivo = archivo
+                    certificado.trabajador = self.object
+                    certificado.save()
+                    cursos_recibidos.add(categoria.pk)
+            for categoria_id, certificado in cursos_existentes.items():
+                if categoria_id not in cursos_recibidos:
+                    certificado.delete()
         messages.success(self.request, 'Trabajador actualizado correctamente.')
         return HttpResponseRedirect(self.get_success_url())
 
@@ -742,25 +786,28 @@ class CertificadoEmpresaCreateView(TrabajadorEmpresaBaseMixin, CreateView):
     form_class = CertificadoForm
     template_name = 'control/certificados/form.html'
 
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        form.fields['tipo'].disabled = True
+        return form
+
     def get_trabajador(self):
         return get_object_or_404(Trabajador, pk=self.kwargs['trabajador_pk'], empresa=self.request.user.empresa)
 
     def get_context_data(self, **kwargs):
         kwargs.setdefault('trabajador', self.get_trabajador())
-        kwargs.setdefault('certificados_count', self.get_trabajador().certificados.count())
-        kwargs.setdefault('max_certificados', MAX_CERTIFICADOS)
+        kwargs.setdefault('es_curso', True)
         return super().get_context_data(**kwargs)
+
+    def get_initial(self):
+        initial = super().get_initial()
+        initial['tipo'] = self.request.GET.get('tipo', Certificado.CURSOS)
+        return initial
 
     def form_valid(self, form):
         self.trabajador = self.get_trabajador()
-        if self.trabajador.certificados.count() >= MAX_CERTIFICADOS:
-            messages.error(
-                self.request,
-                f'El trabajador ya tiene el máximo de {MAX_CERTIFICADOS} certificados.',
-            )
-            return redirect('app_control:trabajador_empresa_detalle', pk=self.trabajador.pk)
         form.instance.trabajador = self.trabajador
-        messages.success(self.request, 'Certificado registrado correctamente.')
+        messages.success(self.request, 'Curso registrado correctamente.')
         return super().form_valid(form)
 
     def get_success_url(self):
@@ -772,6 +819,14 @@ class CertificadoEmpresaUpdateView(TrabajadorEmpresaBaseMixin, UpdateView):
     form_class = CertificadoForm
     template_name = 'control/certificados/form.html'
 
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        for field_name in ('tipo', 'categoria'):
+            form.fields[field_name].disabled = True
+        form.initial['fecha_emision'] = self.object.fecha_emision.isoformat()
+        form.initial['fecha_vencimiento'] = self.object.fecha_vencimiento.isoformat()
+        return form
+
     def get_queryset(self):
         return Certificado.objects.filter(
             trabajador__empresa=self.request.user.empresa
@@ -779,8 +834,6 @@ class CertificadoEmpresaUpdateView(TrabajadorEmpresaBaseMixin, UpdateView):
 
     def get_context_data(self, **kwargs):
         kwargs.setdefault('trabajador', self.object.trabajador)
-        kwargs.setdefault('max_certificados', MAX_CERTIFICADOS)
-        kwargs.setdefault('certificados_count', self.object.trabajador.certificados.count())
         return super().get_context_data(**kwargs)
 
     def form_valid(self, form):

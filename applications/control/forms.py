@@ -1,6 +1,13 @@
 from django import forms
+from django.forms import formset_factory
+from django.core.exceptions import ValidationError
 
-from .models import Certificado, Empresa, Incidencia, Trabajador
+from .models import CategoriaCurso, Certificado, Empresa, Incidencia, Trabajador
+
+
+def validate_pdf(value):
+    if not value.name.lower().endswith('.pdf'):
+        raise ValidationError('El archivo debe estar en formato PDF.')
 
 
 class EmpresaForm(forms.ModelForm):
@@ -26,7 +33,7 @@ class TrabajadorForm(forms.ModelForm):
         model = Trabajador
         fields = (
             'empresa', 'tipo_documento', 'dni', 'nombres', 'apellidos',
-            'cargo', 'sctr', 'induccion', 'cursos', 'aptitud_medica',
+            'cargo',
         )
 
     def clean_dni(self):
@@ -44,16 +51,37 @@ class TrabajadorForm(forms.ModelForm):
         return dni
 
 class TrabajadorEmpresaForm(forms.ModelForm):
+    sctr_archivo = forms.FileField(required=False, validators=[validate_pdf])
+    sctr_fecha_emision = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), required=False)
+    sctr_fecha_vencimiento = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), required=False)
+    induccion_archivo = forms.FileField(required=False, validators=[validate_pdf])
+    induccion_fecha_emision = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), required=False)
+    induccion_fecha_vencimiento = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), required=False)
+    aptitud_medica_archivo = forms.FileField(required=False, validators=[validate_pdf])
+    aptitud_medica_fecha_emision = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), required=False)
+    aptitud_medica_fecha_vencimiento = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), required=False)
+
     class Meta:
         model = Trabajador
         fields = (
             'tipo_documento', 'dni', 'nombres', 'apellidos',
-            'cargo', 'sctr', 'induccion', 'cursos', 'aptitud_medica',
+            'cargo',
         )
 
     def __init__(self, *args, **kwargs):
         self.empresa = kwargs.pop('empresa', None)
         super().__init__(*args, **kwargs)
+        if not self.instance.pk:
+            for prefix in ('induccion', 'aptitud_medica'):
+                for suffix in ('archivo', 'fecha_emision', 'fecha_vencimiento'):
+                    self.fields[f'{prefix}_{suffix}'].required = True
+        else:
+            for certificado in self.instance.certificados.all():
+                if certificado.tipo in (Certificado.SCTR, Certificado.INDUCCION, Certificado.APTITUD_MEDICA):
+                    prefix = certificado.tipo.lower()
+                    self.initial[f'{prefix}_archivo'] = certificado.archivo
+                    self.initial[f'{prefix}_fecha_emision'] = certificado.fecha_emision.isoformat()
+                    self.initial[f'{prefix}_fecha_vencimiento'] = certificado.fecha_vencimiento.isoformat()
 
     def clean_dni(self):
         dni = self.cleaned_data.get('dni', '').strip()
@@ -69,12 +97,41 @@ class TrabajadorEmpresaForm(forms.ModelForm):
                 raise forms.ValidationError('Ya existe un trabajador con este documento en la empresa seleccionada.')
         return dni
 
+    def clean(self):
+        cleaned = super().clean()
+        for prefix in ('sctr', 'induccion', 'aptitud_medica'):
+            emision = cleaned.get(f'{prefix}_fecha_emision')
+            vencimiento = cleaned.get(f'{prefix}_fecha_vencimiento')
+            if emision and vencimiento and vencimiento < emision:
+                self.add_error(f'{prefix}_fecha_vencimiento', 'La fecha no puede ser anterior a la emisión.')
+        return cleaned
+
     def save(self, commit=True):
         trabajador = super().save(commit=False)
         if self.empresa:
             trabajador.empresa = self.empresa
         if commit:
             trabajador.save()
+            for tipo, prefix in (
+                (Certificado.SCTR, 'sctr'),
+                (Certificado.INDUCCION, 'induccion'),
+                (Certificado.APTITUD_MEDICA, 'aptitud_medica'),
+            ):
+                archivo = self.cleaned_data.get(f'{prefix}_archivo')
+                if archivo:
+                    certificado = Certificado.objects.filter(trabajador=trabajador, tipo=tipo).first()
+                    if certificado:
+                        certificado.fecha_emision = self.cleaned_data[f'{prefix}_fecha_emision']
+                        certificado.fecha_vencimiento = self.cleaned_data[f'{prefix}_fecha_vencimiento']
+                        certificado.archivo = archivo
+                        certificado.save()
+                    else:
+                        Certificado.objects.create(
+                            trabajador=trabajador, tipo=tipo,
+                            fecha_emision=self.cleaned_data[f'{prefix}_fecha_emision'],
+                            fecha_vencimiento=self.cleaned_data[f'{prefix}_fecha_vencimiento'],
+                            archivo=archivo,
+                        )
         return trabajador
 
 
@@ -96,17 +153,91 @@ class IncidenciaForm(forms.ModelForm):
 class CertificadoForm(forms.ModelForm):
     class Meta:
         model = Certificado
-        fields = ('nombre', 'descripcion', 'fecha_emision', 'fecha_vencimiento', 'archivo')
+        fields = ('tipo', 'categoria', 'fecha_emision', 'fecha_vencimiento', 'archivo')
         widgets = {
             'fecha_emision': forms.DateInput(attrs={'type': 'date'}),
             'fecha_vencimiento': forms.DateInput(attrs={'type': 'date'}),
-            'descripcion': forms.Textarea(attrs={'rows': 2}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['categoria'].queryset = CategoriaCurso.objects.filter(activo=True)
+        self.fields['categoria'].required = False
+        self.fields['archivo'].validators.append(validate_pdf)
 
     def clean(self):
         cleaned = super().clean()
+        tipo = cleaned.get('tipo')
+        categoria = cleaned.get('categoria')
+        if tipo == Certificado.CURSOS and not categoria:
+            self.add_error('categoria', 'La categoría es obligatoria para los cursos.')
+        if tipo != Certificado.CURSOS and categoria:
+            self.add_error('categoria', 'La categoría solo aplica a los cursos.')
+        if tipo and self.instance.trabajador_id:
+            qs = Certificado.objects.filter(trabajador=self.instance.trabajador, tipo=tipo)
+            qs = qs.filter(categoria=categoria) if tipo == Certificado.CURSOS else qs.filter(categoria__isnull=True)
+            if self.instance.pk:
+                qs = qs.exclude(pk=self.instance.pk)
+            if qs.exists():
+                self.add_error('tipo', 'Ya existe un certificado para este requisito.')
         emision = cleaned.get('fecha_emision')
         vencimiento = cleaned.get('fecha_vencimiento')
         if emision and vencimiento and vencimiento < emision:
             self.add_error('fecha_vencimiento', 'La fecha de vencimiento no puede ser anterior a la fecha de emisión.')
         return cleaned
+
+
+class CertificadoCargaForm(forms.ModelForm):
+    class Meta:
+        model = Certificado
+        fields = ('tipo', 'categoria', 'fecha_emision', 'fecha_vencimiento', 'archivo')
+        widgets = {
+            'fecha_emision': forms.DateInput(attrs={'type': 'date'}),
+            'fecha_vencimiento': forms.DateInput(attrs={'type': 'date'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['tipo'].widget = forms.HiddenInput()
+        self.fields['tipo'].initial = Certificado.CURSOS
+        self.fields['categoria'].queryset = CategoriaCurso.objects.filter(activo=True)
+        self.fields['categoria'].required = False
+        self.fields['archivo'].validators.append(validate_pdf)
+
+    def clean(self):
+        cleaned = super().clean()
+        if not cleaned:
+            return cleaned
+        tipo = cleaned.get('tipo')
+        categoria = cleaned.get('categoria')
+        if tipo == Certificado.CURSOS and not categoria:
+            self.add_error('categoria', 'La categoría es obligatoria para los cursos.')
+        if tipo == Certificado.SCTR and categoria:
+            self.add_error('categoria', 'SCTR no utiliza categoría.')
+        if tipo == Certificado.CURSOS and categoria:
+            self.cleaned_data['categoria'] = categoria
+        emision = cleaned.get('fecha_emision')
+        vencimiento = cleaned.get('fecha_vencimiento')
+        if emision and vencimiento and vencimiento < emision:
+            self.add_error('fecha_vencimiento', 'La fecha no puede ser anterior a la emisión.')
+        return cleaned
+
+
+class CertificadoCargaFormSetBase(forms.BaseFormSet):
+    def clean(self):
+        super().clean()
+        vistos = set()
+        for form in self.forms:
+            if not getattr(form, 'cleaned_data', None):
+                continue
+            tipo = form.cleaned_data.get('tipo')
+            categoria = form.cleaned_data.get('categoria')
+            if not tipo:
+                continue
+            clave = (tipo, categoria.pk if categoria else None)
+            if clave in vistos:
+                raise forms.ValidationError('No se puede repetir el mismo tipo o categoría de certificado.')
+            vistos.add(clave)
+
+
+CertificadoCargaFormSet = formset_factory(CertificadoCargaForm, formset=CertificadoCargaFormSetBase, extra=1)

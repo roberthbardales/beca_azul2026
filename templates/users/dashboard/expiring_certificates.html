@@ -29,7 +29,7 @@
             <li class="px-4 py-3">
                 <a href="{% url 'app_control:trabajador_detalle' certificado.trabajador.pk %}"
                    class="block rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <p class="text-sm font-medium text-[#0f172a]">{{ certificado.nombre }}</p>
+                    <p class="text-sm font-medium text-[#0f172a]">{{ certificado.get_tipo_display }}{% if certificado.categoria %} · {{ certificado.categoria }}{% endif %}</p>
                     <p class="mt-1 text-xs text-[#A5A5A5]">
                         {{ certificado.trabajador }} · {{ certificado.trabajador.empresa.nombre }} ·
                         Vence {{ certificado.fecha_vencimiento|date:"d/m/Y" }}

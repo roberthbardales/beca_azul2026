@@ -1,8 +1,9 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.db import models
 from django.db.models import Q
+from django.utils import timezone
 from model_utils.models import TimeStampedModel
 
 
@@ -40,16 +41,6 @@ class Empresa(TimeStampedModel):
 
 
 class Trabajador(TimeStampedModel):
-    APROBADO = 'APROBADO'
-    DESAPROBADO = 'DESAPROBADO'
-    RECHAZADO = 'RECHAZADO'
-
-    ESTADO_DOCUMENTO_CHOICES = (
-        (APROBADO, 'Aprobado'),
-        (DESAPROBADO, 'Desaprobado'),
-        (RECHAZADO, 'Rechazado'),
-    )
-
     DNI = 'DNI'
     CE = 'CE'
     PASAPORTE = 'PASAPORTE'
@@ -66,10 +57,6 @@ class Trabajador(TimeStampedModel):
     apellidos = models.CharField(max_length=150)
     cargo = models.CharField(max_length=150, blank=True)
 
-    sctr = models.CharField(max_length=15, choices=ESTADO_DOCUMENTO_CHOICES, default=DESAPROBADO)
-    induccion = models.CharField(max_length=15, choices=ESTADO_DOCUMENTO_CHOICES, default=DESAPROBADO)
-    cursos = models.CharField(max_length=15, choices=ESTADO_DOCUMENTO_CHOICES, default=DESAPROBADO)
-    aptitud_medica = models.CharField(max_length=15, choices=ESTADO_DOCUMENTO_CHOICES, default=DESAPROBADO)
     habilitado = models.BooleanField(default=True, db_index=True)
     activo = models.BooleanField(default=True)
 
@@ -106,31 +93,92 @@ class Incidencia(TimeStampedModel):
         return f'Incidencia - {self.trabajador}'
 
 
+class CategoriaCurso(TimeStampedModel):
+    nombre = models.CharField(max_length=150, unique=True)
+    activo = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ('nombre',)
+        verbose_name = 'Categoría de curso'
+        verbose_name_plural = 'Categorías de cursos'
+
+    def __str__(self):
+        return self.nombre
+
+
 class Certificado(TimeStampedModel):
 
-    trabajador = models.ForeignKey(Trabajador, on_delete=models.CASCADE, related_name='certificados')
-    nombre = models.CharField(max_length=200)
-    descripcion = models.TextField(blank=True)
-    fecha_emision = models.DateField()
-    fecha_vencimiento = models.DateField(null=True, blank=True)
-    archivo = models.FileField(upload_to=certificado_upload_path, blank=True, null=True)
-
-    aprobado = models.BooleanField(default=False)
-    aprobado_por = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True
+    SCTR = 'SCTR'
+    INDUCCION = 'INDUCCION'
+    CURSOS = 'CURSOS'
+    APTITUD_MEDICA = 'APTITUD_MEDICA'
+    TIPO_CHOICES = (
+        (SCTR, 'SCTR'),
+        (INDUCCION, 'Inducción'),
+        (CURSOS, 'Cursos'),
+        (APTITUD_MEDICA, 'Aptitud médica'),
     )
-    fecha_aprobacion = models.DateField(null=True, blank=True)
+
+    trabajador = models.ForeignKey(Trabajador, on_delete=models.CASCADE, related_name='certificados')
+    tipo = models.CharField(max_length=20, choices=TIPO_CHOICES)
+    categoria = models.ForeignKey(
+        CategoriaCurso, on_delete=models.PROTECT, null=True, blank=True, related_name='certificados'
+    )
+    fecha_emision = models.DateField()
+    fecha_vencimiento = models.DateField()
+    archivo = models.FileField(upload_to=certificado_upload_path)
 
     class Meta:
         ordering = ('-created',)
         verbose_name = 'Certificado'
         verbose_name_plural = 'Certificados'
         constraints = [
+            models.UniqueConstraint(
+                fields=('trabajador', 'tipo'),
+                condition=Q(categoria__isnull=True),
+                name='certificado_unico_tipo_trabajador',
+            ),
+            models.UniqueConstraint(
+                fields=('trabajador', 'categoria'),
+                condition=Q(tipo='CURSOS'),
+                name='certificado_unico_categoria_curso_trabajador',
+            ),
             models.CheckConstraint(
-                check=Q(fecha_vencimiento__isnull=True) | Q(fecha_vencimiento__gte=models.F('fecha_emision')),
+                check=Q(fecha_vencimiento__gte=models.F('fecha_emision')),
                 name='certificado_fecha_vencimiento_no_antes_de_emision',
             ),
         ]
 
     def __str__(self):
-        return f'{self.nombre} - {self.trabajador}'
+        categoria = f' - {self.categoria}' if self.categoria else ''
+        return f'{self.get_tipo_display()}{categoria} - {self.trabajador}'
+
+    def save(self, *args, **kwargs):
+        archivo_anterior = None
+        if self.pk:
+            archivo_anterior = Certificado.objects.filter(pk=self.pk).values_list('archivo', flat=True).first()
+        super().save(*args, **kwargs)
+        if archivo_anterior and archivo_anterior != self.archivo.name:
+            self._eliminar_archivo(archivo_anterior)
+
+    def delete(self, *args, **kwargs):
+        archivo = self.archivo.name
+        result = super().delete(*args, **kwargs)
+        if archivo:
+            self._eliminar_archivo(archivo)
+        return result
+
+    @staticmethod
+    def _eliminar_archivo(nombre):
+        from django.core.files.storage import default_storage
+        if default_storage.exists(nombre):
+            default_storage.delete(nombre)
+
+    @property
+    def estado(self):
+        hoy = timezone.localdate()
+        if self.fecha_vencimiento < hoy:
+            return 'Vencido'
+        if self.fecha_vencimiento <= hoy + timedelta(days=30):
+            return 'Próximo a vencer'
+        return 'Vigente'

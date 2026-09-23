@@ -26,26 +26,26 @@ class DashboardViewTests(TestCase):
             apellidos='Prueba',
         )
 
-    def crear_certificado(self, nombre, vencimiento):
+    def crear_certificado(self, tipo, vencimiento):
         return Certificado.objects.create(
             trabajador=self.trabajador,
-            nombre=nombre,
+            tipo=tipo,
             fecha_emision=date.today() - timedelta(days=30),
             fecha_vencimiento=vencimiento,
         )
 
     def test_clasifica_todos_los_estados_de_certificados(self):
         hoy = date.today()
-        self.crear_certificado('Vigente', hoy + timedelta(days=31))
-        self.crear_certificado('Próximo', hoy + timedelta(days=10))
-        self.crear_certificado('Vencido', hoy - timedelta(days=1))
-        self.crear_certificado('Sin vencimiento', None)
+        self.crear_certificado(Certificado.SCTR, hoy + timedelta(days=31))
+        self.crear_certificado(Certificado.INDUCCION, hoy + timedelta(days=10))
+        self.crear_certificado(Certificado.APTITUD_MEDICA, hoy - timedelta(days=1))
+        self.crear_certificado(Certificado.CURSOS, hoy + timedelta(days=20))
 
         response = self.client.get(reverse('app_control:dashboard'))
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context['dashboard_charts']['cumplimiento'], [1, 1, 1])
-        self.assertEqual(response.context['certificados_sin_vencimiento'], 1)
+        self.assertEqual(response.context['dashboard_charts']['cumplimiento'], [1, 2, 1])
+        self.assertEqual(response.context['certificados_sin_vencimiento'], 0)
 
     def test_agrupa_empresas_fuera_del_top_diez(self):
         for index in range(11):

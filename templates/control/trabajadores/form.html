@@ -17,7 +17,7 @@
             <aside aria-label="Empresa asignada" class="mb-4 rounded-lg bg-blue-50 px-4 py-2 text-sm text-blue-700"><span class="font-semibold">Empresa asignada:</span> {{ request.user.empresa.nombre }}</aside>
             {% endif %}
 
-            <form method="post" novalidate class="space-y-5">
+            <form method="post" enctype="multipart/form-data" novalidate class="space-y-5">
                 {% csrf_token %}
 
                 {% if form.non_field_errors %}
@@ -76,7 +76,7 @@
                         {% for error in form.cargo.errors %}<div class="mt-1 text-xs text-red-600">{{ error }}</div>{% endfor %}
                     </div>
                     {% for field in form %}
-                    {% if field.name != 'empresa' and field.name != 'tipo_documento' and field.name != 'dni' and field.name != 'nombres' and field.name != 'apellidos' and field.name != 'cargo' %}
+                    {% if field.name != 'empresa' and field.name != 'tipo_documento' and field.name != 'dni' and field.name != 'nombres' and field.name != 'apellidos' and field.name != 'cargo' and 'archivo' not in field.name and 'fecha_' not in field.name %}
                     <div>
                         <label for="{{ field.id_for_label }}" class="mb-1 block text-xs font-medium text-[#0f172a]">{{ field.label }}</label>
                         <select name="{{ field.html_name }}" id="{{ field.id_for_label }}" class="form-control">
@@ -90,6 +90,27 @@
 
                 </fieldset>
 
+                 {% if request.user.role == '3' %}
+                 <fieldset class="control-form-section border-t border-gray-100 pt-5"><legend class="mb-3 text-sm font-semibold text-[#0f172a]">Certificados</legend>
+                      {{ certificado_formset.management_form }}
+                      <div class="app-table-wrap responsive-table"><table class="app-table w-full min-w-[600px]"><thead><tr><th>Tipo</th><th>Archivo PDF</th><th>Emisión</th><th>Vencimiento</th></tr></thead><tbody id="certificados-fijos">
+                          <tr><td>SCTR</td><td>{{ form.sctr_archivo }}{% for error in form.sctr_archivo.errors %}<div class="text-xs text-red-600">{{ error }}</div>{% endfor %}</td><td>{{ form.sctr_fecha_emision }}{{ form.sctr_fecha_emision.errors }}</td><td>{{ form.sctr_fecha_vencimiento }}{{ form.sctr_fecha_vencimiento.errors }}</td></tr>
+                          <tr><td>Inducción</td><td>{{ form.induccion_archivo }}{% for error in form.induccion_archivo.errors %}<div class="text-xs text-red-600">{{ error }}</div>{% endfor %}</td><td>{{ form.induccion_fecha_emision }}{{ form.induccion_fecha_emision.errors }}</td><td>{{ form.induccion_fecha_vencimiento }}{{ form.induccion_fecha_vencimiento.errors }}</td></tr>
+                          <tr><td>Aptitud médica</td><td>{{ form.aptitud_medica_archivo }}{% for error in form.aptitud_medica_archivo.errors %}<div class="text-xs text-red-600">{{ error }}</div>{% endfor %}</td><td>{{ form.aptitud_medica_fecha_emision }}{{ form.aptitud_medica_fecha_emision.errors }}</td><td>{{ form.aptitud_medica_fecha_vencimiento }}{{ form.aptitud_medica_fecha_vencimiento.errors }}</td></tr>
+                       </tbody></table></div>
+                 </fieldset>
+                 <fieldset class="control-form-section border-t border-gray-100 pt-5"><legend class="mb-3 text-sm font-semibold text-[#0f172a]">Cursos</legend>
+                      <div class="app-table-wrap responsive-table"><table class="app-table w-full min-w-[720px]"><thead><tr><th>Tipo</th><th>Archivo PDF</th><th>Emisión</th><th>Vencimiento</th><th>Categoría</th></tr></thead><tbody id="certificados-opcionales">
+                      {% for certificado_form in certificado_formset %}
+                           <tr data-certificado-form><td>Curso{{ certificado_form.tipo }}</td><td>{{ certificado_form.archivo }}{{ certificado_form.archivo.errors }}</td><td>{{ certificado_form.fecha_emision }}{{ certificado_form.fecha_emision.errors }}</td><td>{{ certificado_form.fecha_vencimiento }}{{ certificado_form.fecha_vencimiento.errors }}</td><td>{{ certificado_form.categoria }}{{ certificado_form.categoria.errors }}</td></tr>
+                      {% endfor %}
+                       </tbody></table></div>
+                       <template id="certificado-form-template"><tr data-certificado-form><td>Curso{{ certificado_formset.empty_form.tipo }}</td><td>{{ certificado_formset.empty_form.archivo }}</td><td>{{ certificado_formset.empty_form.fecha_emision }}</td><td>{{ certificado_formset.empty_form.fecha_vencimiento }}</td><td>{{ certificado_formset.empty_form.categoria }}</td></tr></template>
+                      {% if certificado_formset.non_form_errors %}<div class="text-xs text-red-600">{{ certificado_formset.non_form_errors }}</div>{% endif %}
+                      <button type="button" class="btn btn-secondary btn-sm" id="agregar-certificado-opcional">Agregar otro curso</button>
+                 </fieldset>
+                 {% endif %}
+
                 <footer class="control-action-bar flex flex-col-reverse gap-3 border-t border-gray-100 pt-5 sm:flex-row sm:items-center">
                     <button class="btn btn-primary" type="submit">
                         <svg class="h-4 w-4" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M5 4.5h11l3 3V19a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5.5a1 1 0 0 1 1-1Z"/><path stroke-linecap="round" d="M8 4.5v5h7v-5M8 20v-5h8v5"/></svg>
@@ -98,6 +119,19 @@
                     <a class="btn btn-secondary" href="{% if request.user.role == '3' %}{% url 'app_control:trabajador_empresa_lista' %}{% else %}{% url 'app_control:trabajador_lista' %}{% endif %}">Cancelar</a>
                 </footer>
             </form>
+            {% if request.user.role == '3' %}<script>
+                const total = document.getElementById('id_certificados-TOTAL_FORMS');
+                const container = document.getElementById('certificados-opcionales');
+                const addButton = document.getElementById('agregar-certificado-opcional');
+                const formTemplate = document.getElementById('certificado-form-template');
+                addButton.addEventListener('click', () => {
+                    const index = Number(total.value);
+                    const row = formTemplate.content.firstElementChild.cloneNode(true);
+                    row.innerHTML = row.innerHTML.replaceAll('__prefix__', index);
+                    container.appendChild(row);
+                    total.value = index + 1;
+                });
+            </script>{% endif %}
         </div>
     </div>
 </div>

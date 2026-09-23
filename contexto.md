@@ -170,25 +170,40 @@ contacto. No se puede eliminar una empresa que tenga relaciones protegidas.
 
 Pertenece a una empresa y contiene tipo de documento, DNI, nombres, apellidos,
 cargo, `habilitado` y `activo`. El DNI/documento activo debe ser único dentro de
-la empresa. Además registra `sctr`, `induccion`, `cursos` y `aptitud_medica`.
-Cada campo admite `APROBADO`, `DESAPROBADO` y `RECHAZADO`, con valor inicial
-`DESAPROBADO`.
+la empresa. Los requisitos documentales no se almacenan como estados en el
+trabajador; se gestionan mediante la relación `certificados`.
+
+ Al registrar un trabajador desde el portal de empresa se deben guardar únicamente
+ sus datos básicos. Los certificados y cursos se agregan posteriormente desde el
+ detalle del trabajador; SCTR, Inducción y Aptitud médica admiten un certificado
+ por trabajador y Cursos admite varios.
 
 ### Certificado
 
-Pertenece a un trabajador, registra emisión, vencimiento, aprobación y archivo.
-Los archivos se almacenan bajo `media/certificados/`, deben ser PDF y tienen un
-límite configurado de 5 MB. El estado `habilitado` del trabajador es
-independiente de los estados documentales y de los certificados.
+Pertenece a un trabajador y registra `tipo`, fecha de emisión, fecha de
+vencimiento y archivo PDF. Los tipos disponibles son `SCTR`, `INDUCCION`,
+`CURSOS` y `APTITUD_MEDICA`. SCTR, Inducción y Aptitud médica admiten un solo
+certificado por trabajador. Cursos admite varios certificados, uno por cada
+`CategoriaCurso`.
+
+`CategoriaCurso` contiene el nombre y el indicador `activo` de cada categoría.
+Las categorías se crean, editan o desactivan desde Django Admin. La combinación
+trabajador/categoría es única para los certificados de cursos. Las fechas de
+vencimiento no pueden ser anteriores a las fechas de emisión. El estado se
+calcula como `Vigente`, `Próximo a vencer` (30 días) o `Vencido`.
+
+Los archivos se almacenan bajo `media/certificados/`, se validan como PDF y se
+eliminan al reemplazar o eliminar el certificado. El estado `habilitado` del
+trabajador es independiente del estado de los certificados.
 
 ## Permisos por rol
 
 | Rol | Usuarios | Empresas | Trabajadores |
 |---|---|---|---|
-| Administrador | Gestiona usuarios de administración | Solo lectura | Solo lectura |
-| Beca Azul | Gestiona usuarios empresa | CRUD | CRUD, certificados y estados documentales |
-| Usuario Empresa | Sin acceso | Sin acceso | CRUD solo de su empresa |
-| Planta | Consulta de usuarios, sin crear/editar/eliminar ni activar/desactivar | Sin acceso | Puede consultar y gestionar trabajadores/certificados, pero no puede habilitar/deshabilitar trabajadores |
+| Administrador | Gestiona usuarios de administración | Solo lectura | Solo lectura; puede ver y descargar certificados |
+| Beca Azul | Gestiona usuarios empresa | CRUD | CRUD de trabajadores; puede ver y descargar certificados |
+| Usuario Empresa | Sin acceso | Sin acceso | CRUD solo de su empresa; puede cargar, editar, reemplazar y eliminar certificados |
+| Planta | Consulta de usuarios, sin crear/editar/eliminar ni activar/desactivar | Sin acceso | Consulta trabajadores y certificados |
 | Garita | Sin acceso | Sin acceso | Sin acceso a paneles |
 
 Las restricciones se implementan principalmente en
@@ -196,15 +211,32 @@ Las restricciones se implementan principalmente en
 `applications/control/`. La autorización debe validarse siempre en backend;
 ocultar botones en las plantillas no es suficiente.
 
+### Restricciones específicas de certificados
+
+- Solo `USUARIO_EMPRESA` puede crear, editar, reemplazar o eliminar certificados
+  desde la aplicación, siempre dentro de su propia empresa.
+- `ADMINISTRADOR`, `BECA_AZUL` y `PLANTA` pueden visualizar y descargar los
+  certificados desde el detalle del trabajador.
+- Las categorías de cursos solo se administran desde Django Admin.
+- Estas restricciones se aplican tanto ocultando acciones en las plantillas como
+  bloqueando las vistas mediante mixins y filtros por empresa.
+
+### Detalle del trabajador
+
+- El detalle muestra siempre filas para SCTR, Inducción, Aptitud médica y Cursos.
+- Los cursos registrados aparecen como filas adicionales; si no existe ninguno,
+  se muestra una fila vacía con la acción para añadirlo.
+- Los certificados faltantes se muestran como filas vacías con una acción `Añadir`
+  para crear el tipo correspondiente.
+- Solo el usuario empresa ve las acciones de añadir, editar y eliminar; el resto
+  de roles puede consultar y descargar los certificados.
+
 ### Restricciones específicas de Planta
 
 - `PLANTA` puede acceder al listado y detalle de usuarios en modo consulta.
-- `PLANTA` no puede crear, editar, eliminar, restablecer contraseñas ni activar/desactivar usuarios.
-- `PLANTA` no puede cambiar el estado documental ni activar/desactivar trabajadores.
-- Solo `BECA_AZUL` puede editar los cuatro estados documentales; los demás roles
-  autorizados solo pueden visualizarlos.
-- Estas restricciones se aplican tanto ocultando las acciones en las plantillas como bloqueando las vistas mediante mixins.
-- `BECA_AZUL` y `ADMINISTRADOR` mantienen sus permisos actuales.
+- `PLANTA` no puede crear, editar, eliminar, restablecer contraseñas ni
+  activar/desactivar usuarios.
+- `PLANTA` no puede activar/desactivar trabajadores ni modificar certificados.
 
 ## Configuración requerida
 
@@ -263,9 +295,12 @@ trabajadores y permisos por roles. El dashboard está implementado con métricas
 tres gráficas Chart.js, trabajadores recientes y certificados por vencer. Sus
 componentes están divididos en parciales y Chart.js se sirve localmente. Los
 scripts comunes del layout se cargan desde `templates/include/layout_scripts.html`.
-El fixture `fixtures/seed.json` contiene 10 empresas, 10 trabajadores, 10
-incidencias, 10 certificados y cinco usuarios, uno por rol, con contraseña local
-de prueba `admin`.
+El fixture `fixtures/seed.json` contiene 10 empresas, 20 trabajadores, tres
+categorías de cursos, 43 certificados y cinco usuarios, uno por rol. Cada
+trabajador de prueba tiene Inducción y Aptitud médica; el primer trabajador
+también tiene SCTR y dos categorías de cursos. Las rutas de archivo de la
+fixture son rutas de demostración y requieren que los PDFs existan en `media/`
+para poder abrirlos.
 
 En el entorno local usado para la última validación se utilizan Python `3.12.0` y
 Django `4.2.25`. `manage.py check`, `makemigrations --check`, `manage.py test` y
