@@ -54,14 +54,19 @@
             <div class="flex items-center justify-between gap-3">
                 <h2 class="text-lg font-semibold text-[#0f172a]">Certificados</h2>
             </div>
-            <div class="app-table-wrap responsive-table mt-3"><table class="app-table w-full"><thead><tr><th>Tipo</th><th>Categoría</th><th>Emisión</th><th>Vencimiento</th><th>Estado</th><th>Archivo</th><th>Acciones</th></tr></thead><tbody>
-                {% for fila in certificados_requeridos %}<tr><td>{{ fila.label }}</td><td>-</td>{% if fila.objeto %}<td>{{ fila.objeto.fecha_emision|date:'d/m/Y' }}</td><td>{{ fila.objeto.fecha_vencimiento|date:'d/m/Y' }}</td><td>{{ fila.objeto.estado }}</td><td><a class="text-[#0F6FC6] hover:underline" href="{{ fila.objeto.archivo.url }}" target="_blank" rel="noopener">Ver PDF</a></td><td>{% if es_empresa %}<a class="text-[#0F6FC6] hover:underline" href="{% url 'app_control:certificado_empresa_editar' fila.objeto.pk %}">Editar</a>{% endif %}</td>{% else %}<td>-</td><td>-</td><td>-</td><td>{% if es_empresa %}<a class="text-[#0F6FC6] hover:underline" href="{% url 'app_control:certificado_empresa_crear' trabajador.pk %}?tipo={{ fila.tipo }}">Añadir</a>{% endif %}</td>{% endif %}</tr>{% endfor %}
-                {% for certificado in cursos %}<tr><td>Cursos</td><td>{{ certificado.categoria|default:'-' }}</td><td>{{ certificado.fecha_emision|date:'d/m/Y' }}</td><td>{{ certificado.fecha_vencimiento|date:'d/m/Y' }}</td><td>{{ certificado.estado }}</td><td><a class="text-[#0F6FC6] hover:underline" href="{{ certificado.archivo.url }}" target="_blank" rel="noopener">Ver PDF</a></td><td>{% if es_empresa %}<a class="text-[#0F6FC6] hover:underline" href="{% url 'app_control:certificado_empresa_editar' certificado.pk %}">Editar</a>{% endif %}</td></tr>{% empty %}<tr><td>Cursos</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>{% if es_empresa %}<a class="text-[#0F6FC6] hover:underline" href="{% url 'app_control:certificado_empresa_crear' trabajador.pk %}?tipo=CURSOS">Añadir</a>{% endif %}</td></tr>{% endfor %}
+            <div class="app-table-wrap responsive-table mt-3"><table class="app-table w-full"><thead><tr><th>Tipo</th><th>Emisión</th><th>Vencimiento</th><th>Estado</th><th>Archivo</th><th>Acciones</th></tr></thead><tbody>
+                {% for fila in certificados_requeridos %}<tr><td>{{ fila.label }}</td>{% if fila.objeto %}<td>{{ fila.objeto.fecha_emision|date:'d/m/Y' }}</td><td>{{ fila.objeto.fecha_vencimiento|date:'d/m/Y' }}</td><td>{{ fila.objeto.estado }}</td><td><a class="text-[#0F6FC6] hover:underline" href="{{ fila.objeto.archivo.url }}" target="_blank" rel="noopener">Ver PDF</a></td><td>{% if es_empresa %}<a class="text-[#0F6FC6] hover:underline" href="{% url 'app_control:certificado_empresa_editar' fila.objeto.pk %}">Editar</a>{% endif %}</td>{% else %}<td>-</td><td>-</td><td>-</td><td>{% if es_empresa %}<a class="text-[#0F6FC6] hover:underline" href="{% url 'app_control:certificado_empresa_crear' trabajador.pk %}?tipo={{ fila.tipo }}">Añadir</a>{% endif %}</td>{% endif %}</tr>{% endfor %}
+                {% for certificado in cursos %}<tr><td>Cursos</td><td>{{ certificado.fecha_emision|date:'d/m/Y' }}</td><td>{{ certificado.fecha_vencimiento|date:'d/m/Y' }}</td><td>{{ certificado.estado }}</td><td><a class="text-[#0F6FC6] hover:underline" href="{{ certificado.archivo.url }}" target="_blank" rel="noopener">Ver PDF</a></td><td>{% if es_empresa %}<a class="text-[#0F6FC6] hover:underline" href="{% url 'app_control:certificado_empresa_editar' certificado.pk %}">Editar</a>{% endif %}</td></tr>{% empty %}<tr><td>Cursos</td><td>-</td><td>-</td><td>-</td><td>-</td><td>{% if es_empresa %}<a class="text-[#0F6FC6] hover:underline" href="{% url 'app_control:certificado_empresa_crear' trabajador.pk %}?tipo=CURSOS">Añadir</a>{% endif %}</td></tr>{% endfor %}
             </tbody></table></div>
         </section>
 
         <section class="border-b border-gray-200 p-5">
-            <h2 class="text-lg font-semibold text-[#0f172a]">Incidencias</h2>
+            <div class="flex items-center justify-between gap-3">
+                <h2 class="text-lg font-semibold text-[#0f172a]">Incidencias</h2>
+                {% if request.user.role == '1' %}
+                    <a class="btn btn-primary btn-sm" href="{% url 'app_control:incidencia_crear' trabajador.pk %}">Agregar incidencia</a>
+                {% endif %}
+            </div>
             {% if incidencias %}
                 <div class="mt-3 space-y-3">
                     {% for incidencia in incidencias %}

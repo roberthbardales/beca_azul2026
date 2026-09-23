@@ -60,7 +60,8 @@ Las rutas se registran en `beca_azul2026/urls.py`,
 ### Presentación de `/empresas/`
 
 - Para `PLANTA`, `/empresas/` muestra la consulta de empresas y trabajadores autorizados, con filtro por empresa, búsqueda de trabajador, DNI, estado y acceso al detalle.
-- Para `ADMINISTRADOR` y `BECA_AZUL`, `/empresas/` mantiene el listado administrativo de empresas con RUC, estado, trabajadores y acciones.
+- Para `ADMINISTRADOR` y `BECA_AZUL`, `/empresas/` mantiene el listado administrativo de empresas con RUC, SCTR, fechas de emisión y vencimiento, estado, trabajadores, homologación y acciones.
+- El listado incluye un botón para consultar directamente las empresas desactivadas y un botón para crear nuevas empresas.
 - La tabla utiliza las clases reutilizables `.app-table-wrap` y `.app-table`, definidas en `static/css/styles/components/tables.css`, con columnas adaptables al contenido y comportamiento responsive.
 - La presentación visual mantiene la información y rutas existentes; los cambios de esta vista son de composición, tipografía, colores, bordes, iconos y comportamiento responsive.
 
@@ -163,7 +164,8 @@ Roles disponibles:
 
 ### Empresa
 
-Incluye nombre, RUC único, `habilitado` y `activo`. No contiene datos de
+Incluye nombre, RUC único, `homologado` y `activo`. La homologación se actualiza
+automáticamente según el estado de sus trabajadores. No contiene datos de
 contacto. No se puede eliminar una empresa que tenga relaciones protegidas.
 
 ### Trabajador
@@ -175,16 +177,17 @@ trabajador; se gestionan mediante la relación `certificados`.
 
  Al registrar un trabajador desde el portal de empresa se deben guardar únicamente
  sus datos básicos. Los certificados y cursos se agregan posteriormente desde el
- detalle del trabajador; SCTR, Inducción y Aptitud médica admiten un certificado
- por trabajador y Cursos admite varios.
+  detalle del trabajador. Inducción y Aptitud médica admiten un certificado por
+  trabajador y Cursos admite varios. El SCTR pertenece a la empresa y existe un
+  único SCTR por empresa.
 
 ### Certificado
 
-Pertenece a un trabajador y registra `tipo`, fecha de emisión, fecha de
-vencimiento y archivo PDF. Los tipos disponibles son `SCTR`, `INDUCCION`,
-`CURSOS` y `APTITUD_MEDICA`. SCTR, Inducción y Aptitud médica admiten un solo
-certificado por trabajador. Cursos admite varios certificados, uno por cada
-`CategoriaCurso`.
+Pertenece a una empresa o a un trabajador y registra `tipo`, fecha de emisión,
+fecha de vencimiento y archivo PDF. Los tipos disponibles son `SCTR`,
+`INDUCCION`, `CURSOS` y `APTITUD_MEDICA`. SCTR admite un solo certificado por
+empresa. Inducción y Aptitud médica admiten un solo certificado por trabajador.
+Cursos admite varios certificados, uno por cada `CategoriaCurso`.
 
 `CategoriaCurso` contiene el nombre y el indicador `activo` de cada categoría.
 Las categorías se crean, editan o desactivan desde Django Admin. La combinación
@@ -223,7 +226,8 @@ ocultar botones en las plantillas no es suficiente.
 
 ### Detalle del trabajador
 
-- El detalle muestra siempre filas para SCTR, Inducción, Aptitud médica y Cursos.
+- El detalle de empresa muestra el estado y vigencia del SCTR. El detalle del
+  trabajador muestra filas para Inducción, Aptitud médica y Cursos.
 - Los cursos registrados aparecen como filas adicionales; si no existe ninguno,
   se muestra una fila vacía con la acción para añadirlo.
 - Los certificados faltantes se muestran como filas vacías con una acción `Añadir`
@@ -297,8 +301,8 @@ componentes están divididos en parciales y Chart.js se sirve localmente. Los
 scripts comunes del layout se cargan desde `templates/include/layout_scripts.html`.
 El fixture `fixtures/seed.json` contiene 10 empresas, 20 trabajadores, tres
 categorías de cursos, 43 certificados y cinco usuarios, uno por rol. Cada
-trabajador de prueba tiene Inducción y Aptitud médica; el primer trabajador
-también tiene SCTR y dos categorías de cursos. Las rutas de archivo de la
+trabajador de prueba tiene Inducción y Aptitud médica; las empresas pueden
+tener SCTR y los trabajadores tienen además categorías de cursos. Las rutas de archivo de la
 fixture son rutas de demostración y requieren que los PDFs existan en `media/`
 para poder abrirlos.
 

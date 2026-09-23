@@ -1,5 +1,5 @@
 {% extends 'base.html' %}{% block title %}{{ empresa.nombre }} | Control{% endblock %}{% block content %}
-<div class="control-detail-page flex justify-center"><div class="w-full max-w-3xl space-y-6">
+<div class="control-detail-page flex justify-center"><div class="w-full max-w-6xl space-y-6">
 <div class="rounded-xl border border-gray-100 bg-white p-6 shadow-sm sm:p-8">
 <header class="control-page-header mb-6 flex flex-col gap-4 border-b border-gray-100 pb-5 sm:flex-row sm:items-start sm:justify-between">
 <div>
@@ -8,44 +8,36 @@
 </div>
 <div class="flex flex-wrap items-center gap-2">
 <span class="inline-block rounded-full px-2 py-0.5 text-xs font-medium {% if empresa.activo %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">{% if empresa.activo %}Activa{% else %}Inactiva{% endif %}</span>
-<span class="inline-block rounded-full px-2 py-0.5 text-xs font-medium {% if empresa.habilitado %}bg-green-50 text-green-600{% else %}bg-red-50 text-red-600{% endif %}">{% if empresa.habilitado %}Habilitada{% else %}Deshabilitada{% endif %}</span>
+<span class="inline-block rounded-full px-2 py-0.5 text-xs font-medium {% if empresa.homologado %}bg-green-50 text-green-600{% else %}bg-red-50 text-red-600{% endif %}">{% if empresa.homologado %}Homologada{% else %}No homologada{% endif %}</span>
 {% if request.user.role == '1' %}
 <a class="btn btn-tertiary btn-sm" href="{% url 'app_control:empresa_editar' empresa.pk %}">Editar</a>
-<form method="post" action="{% url 'app_control:empresa_toggle' empresa.pk %}" class="inline">{% csrf_token %}<button type="submit" class="btn btn-sm {% if empresa.activo %}btn-quinary{% else %}btn-primary{% endif %}">{% if empresa.activo %}Desactivar{% else %}Activar{% endif %}</button></form>
-<a class="btn btn-quinary btn-sm" href="{% url 'app_control:empresa_eliminar' empresa.pk %}">Eliminar</a>
+<form method="post" action="{% url 'app_control:empresa_toggle' empresa.pk %}" class="inline">{% csrf_token %}<button type="submit" class="btn btn-sm {% if empresa.activo %}btn-quinary{% else %}btn-primary{% endif %}">{% if empresa.activo %}Desactivar empresa{% else %}Activar empresa{% endif %}</button></form>
+<a class="btn btn-quinary btn-sm" href="{% url 'app_control:empresa_eliminar' empresa.pk %}">Eliminar empresa</a>
 {% endif %}
 </div>
 </header>
 
-<section aria-label="Resumen de empresa" class="control-summary-grid mb-6 grid gap-3 sm:grid-cols-3">
-<div class="rounded-lg bg-slate-50 px-4 py-3"><p class="text-xs font-semibold uppercase tracking-wide text-[#A5A5A5]">Trabajadores</p><p class="mt-1 text-xl font-bold text-[#0f172a]">{{ total_trabajadores }}</p></div>
-<div class="rounded-lg bg-slate-50 px-4 py-3"><p class="text-xs font-semibold uppercase tracking-wide text-[#A5A5A5]">Usuarios asociados</p><p class="mt-1 text-xl font-bold text-[#0f172a]">{{ total_usuarios }}</p></div>
-<div class="rounded-lg bg-slate-50 px-4 py-3"><p class="text-xs font-semibold uppercase tracking-wide text-[#A5A5A5]">Estado</p><p class="mt-1 text-sm font-semibold {% if empresa.habilitado %}text-green-700{% else %}text-red-700{% endif %}">{% if empresa.habilitado %}Habilitada{% else %}Deshabilitada{% endif %}</p></div>
+<section aria-label="Resumen de empresa" class="mb-5 flex flex-wrap divide-y divide-gray-200 rounded-lg border border-gray-100 bg-slate-50 sm:divide-x sm:divide-y-0">
+<div class="min-w-[140px] flex-1 px-4 py-2"><p class="text-[11px] font-semibold uppercase tracking-wide text-[#A5A5A5]">RUC</p><p class="mt-1 text-sm font-bold text-[#0f172a]">{{ empresa.ruc }}</p></div>
+{% for grupo in trabajadores_por_estado %}<div class="min-w-[135px] flex-1 px-4 py-2"><p class="text-[11px] font-semibold uppercase tracking-wide text-[#A5A5A5]">{{ grupo.label }}</p><p class="mt-1 text-lg font-bold {% if grupo.habilitado %}text-green-600{% else %}text-red-600{% endif %}">{{ grupo.total }}</p></div>{% endfor %}
+<div class="min-w-[120px] flex-1 px-4 py-2"><p class="text-[11px] font-semibold uppercase tracking-wide text-[#A5A5A5]">Trabajadores</p><p class="mt-1 text-lg font-bold text-[#0f172a]">{{ total_trabajadores }}</p></div>
+<div class="min-w-[120px] flex-1 px-4 py-2"><p class="text-[11px] font-semibold uppercase tracking-wide text-[#A5A5A5]">Usuarios</p><p class="mt-1 text-lg font-bold text-[#0f172a]">{{ total_usuarios }}</p></div>
+<div class="min-w-[140px] flex-1 px-4 py-2"><p class="text-[11px] font-semibold uppercase tracking-wide text-[#A5A5A5]">SCTR</p><p class="mt-1 text-sm font-semibold {% if sctr %}text-green-700{% else %}text-red-700{% endif %}">{% if sctr %}Registrado{% else %}No registrado{% endif %}</p></div>
+<div class="min-w-[190px] flex-[1.4] px-4 py-2"><p class="text-[11px] font-semibold uppercase tracking-wide text-[#A5A5A5]">Vigencia SCTR</p><p class="mt-1 text-xs font-semibold text-[#0f172a]">{% if sctr %}{{ sctr.fecha_emision|date:'d/m/Y' }} - {{ sctr.fecha_vencimiento|date:'d/m/Y' }}{% else %}-{% endif %}</p></div>
 </section>
 
-<section class="control-detail-section"><h2 class="mb-2 text-xs font-semibold uppercase tracking-wide text-[#A5A5A5]">Datos de la empresa</h2>
-<div class="app-table-wrap">
-<table class="app-table" aria-label="Datos de la empresa">
-<tbody class="divide-y divide-gray-100">
-<tr class="bg-white"><th class="w-1/3 px-4 py-2 text-left text-xs font-semibold text-[#A5A5A5]">RUC</th><td class="px-4 py-2 font-medium">{{ empresa.ruc }}</td></tr>
-<tr class="bg-white"><th class="px-4 py-2 text-left text-xs font-semibold text-[#A5A5A5]">Trabajadores</th><td class="px-4 py-2 font-medium">{{ total_trabajadores }}</td></tr>
-<tr class="bg-gray-50"><th class="px-4 py-2 text-left text-xs font-semibold text-[#A5A5A5]">Usuarios asociados</th><td class="px-4 py-2 font-medium">{{ total_usuarios }}</td></tr>
-<tr class="bg-white"><th class="px-4 py-2 text-left text-xs font-semibold text-[#A5A5A5]">Registro</th><td class="px-4 py-2 font-medium">{{ empresa.created|date:'d/m/Y H:i'|default:'-' }}</td></tr>
-</tbody>
-</table>
-</div></section>
-
-<section class="control-detail-section mt-6"><h2 class="mb-2 text-xs font-semibold uppercase tracking-wide text-[#A5A5A5]">Trabajadores por estado</h2>
-<div class="grid grid-cols-3 gap-2">
-{% for grupo in trabajadores_por_estado %}
-<div class="rounded-xl border border-gray-100 bg-white p-4 text-center shadow-sm">
-<div class="text-2xl font-bold {% if grupo.habilitado %}text-green-600{% else %}text-red-600{% endif %}">{{ grupo.total }}</div>
-<div class="text-xs font-medium text-[#A5A5A5]">{{ grupo.label }}</div>
-</div>
-{% empty %}
-<div class="control-empty-state col-span-3 rounded-xl border border-gray-100 bg-white p-5 text-center shadow-sm"><p class="font-medium text-[#0f172a]">Aún no hay trabajadores.</p></div>
-{% endfor %}
-</div></section>
+{% if request.user.role == '3' %}
+<section class="control-detail-section rounded-lg border border-gray-100 bg-slate-50 p-4">
+<h2 class="mb-3 text-sm font-semibold text-[#0f172a]">SCTR de la empresa</h2>
+<form method="post" enctype="multipart/form-data" class="grid gap-3 sm:grid-cols-3">
+{% csrf_token %}
+<div><label for="{{ sctr_form.archivo.id_for_label }}" class="mb-1 block text-xs font-medium">Archivo PDF</label>{{ sctr_form.archivo }}{% for error in sctr_form.archivo.errors %}<div class="text-xs text-red-600">{{ error }}</div>{% endfor %}</div>
+<div><label for="{{ sctr_form.fecha_emision.id_for_label }}" class="mb-1 block text-xs font-medium">Fecha de emisión</label>{{ sctr_form.fecha_emision }}{% for error in sctr_form.fecha_emision.errors %}<div class="text-xs text-red-600">{{ error }}</div>{% endfor %}</div>
+<div><label for="{{ sctr_form.fecha_vencimiento.id_for_label }}" class="mb-1 block text-xs font-medium">Fecha de vencimiento</label>{{ sctr_form.fecha_vencimiento }}{% for error in sctr_form.fecha_vencimiento.errors %}<div class="text-xs text-red-600">{{ error }}</div>{% endfor %}</div>
+<div class="sm:col-span-3"><button type="submit" class="btn btn-primary btn-sm">Guardar SCTR</button></div>
+</form>
+</section>
+{% endif %}
 
 <section class="control-detail-section mt-6"><div class="mb-2 flex items-center justify-between gap-3"><h2 class="text-xs font-semibold uppercase tracking-wide text-[#A5A5A5]">Trabajadores</h2><span class="text-xs text-[#616161]">{{ total_trabajadores }} registrados</span></div>
 <div class="app-table-wrap control-table responsive-table">
@@ -78,7 +70,7 @@
 </div></section>
 
 <footer class="control-action-bar flex items-center gap-2 border-t border-gray-100 pt-5">
-<a class="text-sm font-medium text-[#0F6FC6] hover:underline" href="{% url 'app_control:empresa_lista' %}">Volver a empresas</a>
+<a class="text-sm font-medium text-[#0F6FC6] hover:underline" href="{% if request.user.role == '3' %}{% url 'app_control:trabajador_empresa_lista' %}{% else %}{% url 'app_control:empresa_lista' %}{% endif %}">{% if request.user.role == '3' %}Volver a trabajadores{% else %}Volver a empresas{% endif %}</a>
 </footer>
 </div>
 </div></div>

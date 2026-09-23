@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
-from django.db.models import Count, Q
+from django.db.models import Count, Prefetch, Q
 from django.db.models.functions import TruncDate
 from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -22,7 +22,7 @@ from applications.users.mixins import (
 )
 from applications.users.models import User
 
-from .forms import CertificadoCargaFormSet, CertificadoForm, EmpresaForm, IncidenciaForm, TrabajadorEmpresaForm, TrabajadorForm
+from .forms import CertificadoCargaFormSet, CertificadoForm, EmpresaForm, IncidenciaForm, SCTRForm, TrabajadorEmpresaForm, TrabajadorForm
 from .models import Certificado, Empresa, Incidencia, Trabajador
 
 class DashboardView(LoginRequiredMixin, View):
@@ -39,7 +39,7 @@ class DashboardView(LoginRequiredMixin, View):
 
         total_empresas = Empresa.objects.count()
         empresas_activas = Empresa.objects.filter(activo=True).count()
-        empresas_habilitadas = Empresa.objects.filter(habilitado=True).count()
+        empresas_habilitadas = Empresa.objects.filter(homologado=True).count()
 
         total_trabajadores = Trabajador.objects.count()
         trabajadores_habilitados = Trabajador.objects.filter(habilitado=True).count()
@@ -146,6 +146,8 @@ class EmpresaListView(VerEmpresasMixin, ListView):
         queryset = Empresa.objects.annotate(
             total_trabajadores=Count('trabajadores', distinct=True),
             total_usuarios=Count('usuarios', distinct=True),
+        ).prefetch_related(
+            Prefetch('certificados', queryset=Certificado.objects.filter(tipo=Certificado.SCTR), to_attr='sctr_certificados')
         ).order_by('-activo', 'nombre')
         q = self.request.GET.get('q', '').strip()
         if q:
@@ -185,7 +187,7 @@ class EmpresaBuscarView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         queryset = Empresa.objects.annotate(
             total_trabajadores=Count('trabajadores', distinct=True)
-        ).order_by('-habilitado', 'nombre')
+        ).order_by('-homologado', 'nombre')
         q = self.request.GET.get('q', '').strip()
         if q:
             queryset = queryset.filter(
@@ -197,7 +199,7 @@ class EmpresaBuscarView(LoginRequiredMixin, ListView):
             queryset = queryset.filter(activo=(estado == '1'))
         habilitado = self.request.GET.get('habilitado', '').strip()
         if habilitado in ('0', '1'):
-            queryset = queryset.filter(habilitado=(habilitado == '1'))
+            queryset = queryset.filter(homologado=(habilitado == '1'))
         return queryset
 
     def get_context_data(self, **kwargs):
@@ -242,15 +244,44 @@ class EmpresaToggleView(AdministrarEmpresasMixin, View):
         return redirect('app_control:empresa_detalle', pk=empresa.pk)
 
 
-class EmpresaDetailView(VerEmpresasMixin, DetailView):
+class EmpresaDetailView(LoginRequiredMixin, DetailView):
     model = Empresa
     template_name = 'control/empresas/detalle.html'
     context_object_name = 'empresa'
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.role == User.USUARIO_EMPRESA:
+            return super().dispatch(request, *args, **kwargs)
+        if request.user.role not in VerEmpresasMixin.required_roles and not request.user.is_superuser:
+            raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if self.request.user.role == User.USUARIO_EMPRESA:
+            return queryset.filter(pk=self.request.user.empresa_id)
+        return queryset
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if request.user.role != User.USUARIO_EMPRESA:
+            raise PermissionDenied
+        sctr = self.object.certificados.filter(tipo=Certificado.SCTR).first()
+        form = SCTRForm(request.POST, request.FILES, instance=sctr, empresa=self.object)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'SCTR actualizado correctamente.')
+            return redirect('app_control:empresa_detalle', pk=self.object.pk)
+        context = self.get_context_data(sctr_form=form)
+        return self.render_to_response(context)
 
     def get_context_data(self, **kwargs):
         trabajadores = self.object.trabajadores.order_by('apellidos', 'nombres')
         kwargs.setdefault('total_trabajadores', trabajadores.count())
         kwargs.setdefault('total_usuarios', self.object.usuarios.count())
+        kwargs.setdefault('sctr', self.object.certificados.filter(tipo=Certificado.SCTR).first())
+        if self.request.user.role == User.USUARIO_EMPRESA:
+            kwargs.setdefault('sctr_form', SCTRForm(instance=kwargs['sctr'], empresa=self.object))
         kwargs.setdefault('trabajadores', trabajadores)
         kwargs.setdefault(
             'trabajadores_por_estado',
@@ -427,7 +458,6 @@ class TrabajadorDetailView(VerTrabajadorDetalleMixin, DetailView):
         kwargs.setdefault('certificados', self.object.certificados.all().order_by('-fecha_emision'))
         certificados = {certificado.tipo: certificado for certificado in self.object.certificados.all()}
         kwargs.setdefault('certificados_requeridos', [
-            {'tipo': Certificado.SCTR, 'label': 'SCTR', 'objeto': certificados.get(Certificado.SCTR)},
             {'tipo': Certificado.INDUCCION, 'label': 'Inducción', 'objeto': certificados.get(Certificado.INDUCCION)},
             {'tipo': Certificado.APTITUD_MEDICA, 'label': 'Aptitud médica', 'objeto': certificados.get(Certificado.APTITUD_MEDICA)},
         ])

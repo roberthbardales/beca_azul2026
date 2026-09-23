@@ -58,7 +58,7 @@ class AdministrarTrabajadoresMixin(BaseRolePermisoMixin):
 
 
 class GestionarIncidenciasMixin(BaseRolePermisoMixin):
-    required_roles = (User.BECA_AZUL, User.PLANTA)
+    required_roles = (User.BECA_AZUL,)
 
 
 class TrabajadorEmpresaPermisoMixin(LoginRequiredMixin):

@@ -11,15 +11,83 @@ def validate_pdf(value):
 
 
 class EmpresaForm(forms.ModelForm):
+    sctr_archivo = forms.FileField(required=False, validators=[validate_pdf])
+    sctr_fecha_emision = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), required=False)
+    sctr_fecha_vencimiento = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), required=False)
+
     class Meta:
         model = Empresa
         fields = ('nombre', 'ruc', 'activo')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        certificado = self.instance.certificados.filter(tipo=Certificado.SCTR).first() if self.instance.pk else None
+        if certificado:
+            self.initial.update(sctr_archivo=certificado.archivo, sctr_fecha_emision=certificado.fecha_emision.isoformat(), sctr_fecha_vencimiento=certificado.fecha_vencimiento.isoformat())
+
+    def clean(self):
+        cleaned = super().clean()
+        emision, vencimiento = cleaned.get('sctr_fecha_emision'), cleaned.get('sctr_fecha_vencimiento')
+        if cleaned.get('sctr_archivo') and not emision:
+            self.add_error('sctr_fecha_emision', 'La fecha de emisión es obligatoria.')
+        if cleaned.get('sctr_archivo') and not vencimiento:
+            self.add_error('sctr_fecha_vencimiento', 'La fecha de vencimiento es obligatoria.')
+        if emision and vencimiento and vencimiento < emision:
+            self.add_error('sctr_fecha_vencimiento', 'La fecha no puede ser anterior a la emisión.')
+        return cleaned
+
+    def save(self, commit=True):
+        empresa = super().save(commit=commit)
+        archivo = self.cleaned_data.get('sctr_archivo')
+        if commit and archivo:
+            certificado, _ = Certificado.objects.get_or_create(empresa=empresa, tipo=Certificado.SCTR)
+            certificado.fecha_emision = self.cleaned_data['sctr_fecha_emision']
+            certificado.fecha_vencimiento = self.cleaned_data['sctr_fecha_vencimiento']
+            certificado.archivo = archivo
+            certificado.save()
+        return empresa
 
     def clean_ruc(self):
         ruc = self.cleaned_data.get('ruc')
         if ruc and (not ruc.isdigit() or len(ruc) != 11):
             raise forms.ValidationError('El RUC debe contener exactamente 11 dígitos numéricos.')
         return ruc
+
+
+class SCTRForm(forms.ModelForm):
+    archivo = forms.FileField(required=False, validators=[validate_pdf])
+    fecha_emision = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
+    fecha_vencimiento = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
+
+    class Meta:
+        model = Certificado
+        fields = ('archivo', 'fecha_emision', 'fecha_vencimiento')
+
+    def __init__(self, *args, empresa=None, **kwargs):
+        self.empresa = empresa
+        super().__init__(*args, **kwargs)
+        if self.instance.pk:
+            self.initial.update(
+                fecha_emision=self.instance.fecha_emision,
+                fecha_vencimiento=self.instance.fecha_vencimiento,
+            )
+
+    def clean(self):
+        cleaned = super().clean()
+        if not self.instance.pk and not cleaned.get('archivo'):
+            self.add_error('archivo', 'El archivo SCTR es obligatorio.')
+        if cleaned.get('fecha_emision') and cleaned.get('fecha_vencimiento') and cleaned['fecha_vencimiento'] < cleaned['fecha_emision']:
+            self.add_error('fecha_vencimiento', 'La fecha no puede ser anterior a la emisión.')
+        return cleaned
+
+    def save(self, commit=True):
+        certificado = super().save(commit=False)
+        certificado.empresa = self.empresa
+        certificado.trabajador = None
+        certificado.tipo = Certificado.SCTR
+        if commit:
+            certificado.save()
+        return certificado
 
 
 class TrabajadorForm(forms.ModelForm):
@@ -51,9 +119,6 @@ class TrabajadorForm(forms.ModelForm):
         return dni
 
 class TrabajadorEmpresaForm(forms.ModelForm):
-    sctr_archivo = forms.FileField(required=False, validators=[validate_pdf])
-    sctr_fecha_emision = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), required=False)
-    sctr_fecha_vencimiento = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), required=False)
     induccion_archivo = forms.FileField(required=False, validators=[validate_pdf])
     induccion_fecha_emision = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), required=False)
     induccion_fecha_vencimiento = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), required=False)
@@ -77,7 +142,7 @@ class TrabajadorEmpresaForm(forms.ModelForm):
                     self.fields[f'{prefix}_{suffix}'].required = True
         else:
             for certificado in self.instance.certificados.all():
-                if certificado.tipo in (Certificado.SCTR, Certificado.INDUCCION, Certificado.APTITUD_MEDICA):
+                if certificado.tipo in (Certificado.INDUCCION, Certificado.APTITUD_MEDICA):
                     prefix = certificado.tipo.lower()
                     self.initial[f'{prefix}_archivo'] = certificado.archivo
                     self.initial[f'{prefix}_fecha_emision'] = certificado.fecha_emision.isoformat()
@@ -99,7 +164,7 @@ class TrabajadorEmpresaForm(forms.ModelForm):
 
     def clean(self):
         cleaned = super().clean()
-        for prefix in ('sctr', 'induccion', 'aptitud_medica'):
+        for prefix in ('induccion', 'aptitud_medica'):
             emision = cleaned.get(f'{prefix}_fecha_emision')
             vencimiento = cleaned.get(f'{prefix}_fecha_vencimiento')
             if emision and vencimiento and vencimiento < emision:
@@ -113,7 +178,6 @@ class TrabajadorEmpresaForm(forms.ModelForm):
         if commit:
             trabajador.save()
             for tipo, prefix in (
-                (Certificado.SCTR, 'sctr'),
                 (Certificado.INDUCCION, 'induccion'),
                 (Certificado.APTITUD_MEDICA, 'aptitud_medica'),
             ):
@@ -161,6 +225,7 @@ class CertificadoForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields['tipo'].choices = tuple(choice for choice in self.fields['tipo'].choices if choice[0] != Certificado.SCTR)
         self.fields['categoria'].queryset = CategoriaCurso.objects.filter(activo=True)
         self.fields['categoria'].required = False
         self.fields['archivo'].validators.append(validate_pdf)
@@ -210,6 +275,8 @@ class CertificadoCargaForm(forms.ModelForm):
             return cleaned
         tipo = cleaned.get('tipo')
         categoria = cleaned.get('categoria')
+        if tipo and tipo != Certificado.CURSOS:
+            self.add_error('tipo', 'Este formulario solo permite certificados de cursos.')
         if tipo == Certificado.CURSOS and not categoria:
             self.add_error('categoria', 'La categoría es obligatoria para los cursos.')
         if tipo == Certificado.SCTR and categoria:

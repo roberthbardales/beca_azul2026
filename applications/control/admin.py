@@ -12,10 +12,10 @@ class CategoriaCursoAdmin(admin.ModelAdmin):
 
 @admin.register(Empresa)
 class EmpresaAdmin(admin.ModelAdmin):
-    list_display = ('nombre', 'ruc', 'habilitado', 'activo')
+    list_display = ('nombre', 'ruc', 'homologado', 'activo')
     search_fields = ('nombre', 'ruc')
-    list_filter = ('habilitado', 'activo')
-    readonly_fields = ('habilitado',)
+    list_filter = ('homologado', 'activo')
+    readonly_fields = ('homologado',)
     list_per_page = 20
 
 
@@ -48,8 +48,8 @@ class IncidenciaAdmin(admin.ModelAdmin):
 
 @admin.register(Certificado)
 class CertificadoAdmin(admin.ModelAdmin):
-    list_display = ('tipo', 'categoria', 'trabajador', 'fecha_emision', 'fecha_vencimiento')
-    search_fields = ('trabajador__dni', 'trabajador__nombres', 'categoria__nombre')
+    list_display = ('tipo', 'empresa', 'trabajador', 'fecha_emision', 'fecha_vencimiento')
+    search_fields = ('empresa__nombre', 'trabajador__dni', 'trabajador__nombres', 'categoria__nombre')
     list_filter = ('tipo', 'categoria')
     list_per_page = 20
-    list_select_related = ('trabajador', 'trabajador__empresa')
+    list_select_related = ('empresa', 'trabajador', 'trabajador__empresa')

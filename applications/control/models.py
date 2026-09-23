@@ -9,11 +9,12 @@ from model_utils.models import TimeStampedModel
 
 def certificado_upload_path(instance, filename):
     extension = filename.rsplit('.', 1)[-1] if '.' in filename else ''
-    base = instance.trabajador.dni
+    base = instance.trabajador.dni if instance.trabajador_id else instance.empresa.ruc
     fecha = instance.fecha_emision
     nombre = datetime.now().strftime('%d%m%Y%H%M%S')
     nombre_archivo = f'{base}_{nombre}.{extension}' if extension else f'{base}_{nombre}'
-    return f'certificados/empresa_{instance.trabajador.empresa_id}/{fecha:%Y}/{fecha:%m}/{nombre_archivo}'
+    empresa_id = instance.trabajador.empresa_id if instance.trabajador_id else instance.empresa_id
+    return f'certificados/empresa_{empresa_id}/{fecha:%Y}/{fecha:%m}/{nombre_archivo}'
 
 
 class Empresa(TimeStampedModel):
@@ -21,7 +22,7 @@ class Empresa(TimeStampedModel):
     nombre = models.CharField(max_length=150)
     ruc = models.CharField(max_length=11, unique=True)
 
-    habilitado = models.BooleanField(default=True, db_index=True)
+    homologado = models.BooleanField(default=True, db_index=True)
     activo = models.BooleanField(default=True)
 
     class Meta:
@@ -32,12 +33,12 @@ class Empresa(TimeStampedModel):
     def __str__(self):
         return self.nombre
 
-    def actualizar_habilitado(self):
+    def actualizar_homologado(self):
         tiene_deshabilitado = self.trabajadores.filter(habilitado=False).exists()
         nuevo_valor = not tiene_deshabilitado
-        if self.habilitado != nuevo_valor:
-            self.habilitado = nuevo_valor
-            self.save(update_fields=['habilitado'])
+        if self.homologado != nuevo_valor:
+            self.homologado = nuevo_valor
+            self.save(update_fields=['homologado'])
 
 
 class Trabajador(TimeStampedModel):
@@ -119,7 +120,8 @@ class Certificado(TimeStampedModel):
         (APTITUD_MEDICA, 'Aptitud médica'),
     )
 
-    trabajador = models.ForeignKey(Trabajador, on_delete=models.CASCADE, related_name='certificados')
+    empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE, null=True, blank=True, related_name='certificados')
+    trabajador = models.ForeignKey(Trabajador, on_delete=models.CASCADE, null=True, blank=True, related_name='certificados')
     tipo = models.CharField(max_length=20, choices=TIPO_CHOICES)
     categoria = models.ForeignKey(
         CategoriaCurso, on_delete=models.PROTECT, null=True, blank=True, related_name='certificados'
@@ -135,13 +137,18 @@ class Certificado(TimeStampedModel):
         constraints = [
             models.UniqueConstraint(
                 fields=('trabajador', 'tipo'),
-                condition=Q(categoria__isnull=True),
+                condition=Q(trabajador__isnull=False, categoria__isnull=True),
                 name='certificado_unico_tipo_trabajador',
             ),
             models.UniqueConstraint(
                 fields=('trabajador', 'categoria'),
-                condition=Q(tipo='CURSOS'),
+                condition=Q(trabajador__isnull=False, tipo='CURSOS'),
                 name='certificado_unico_categoria_curso_trabajador',
+            ),
+            models.UniqueConstraint(fields=('empresa', 'tipo'), condition=Q(empresa__isnull=False, tipo='SCTR'), name='certificado_unico_sctr_empresa'),
+            models.CheckConstraint(
+                check=(Q(tipo='SCTR', empresa__isnull=False, trabajador__isnull=True) | Q(tipo__in=('INDUCCION', 'CURSOS', 'APTITUD_MEDICA'), trabajador__isnull=False, empresa__isnull=True)),
+                name='certificado_propietario_segun_tipo',
             ),
             models.CheckConstraint(
                 check=Q(fecha_vencimiento__gte=models.F('fecha_emision')),
@@ -151,7 +158,7 @@ class Certificado(TimeStampedModel):
 
     def __str__(self):
         categoria = f' - {self.categoria}' if self.categoria else ''
-        return f'{self.get_tipo_display()}{categoria} - {self.trabajador}'
+        return f'{self.get_tipo_display()}{categoria} - {self.trabajador or self.empresa}'
 
     def save(self, *args, **kwargs):
         archivo_anterior = None

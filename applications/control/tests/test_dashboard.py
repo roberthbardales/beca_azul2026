@@ -28,7 +28,8 @@ class DashboardViewTests(TestCase):
 
     def crear_certificado(self, tipo, vencimiento):
         return Certificado.objects.create(
-            trabajador=self.trabajador,
+            empresa=self.empresa if tipo == Certificado.SCTR else None,
+            trabajador=None if tipo == Certificado.SCTR else self.trabajador,
             tipo=tipo,
             fecha_emision=date.today() - timedelta(days=30),
             fecha_vencimiento=vencimiento,

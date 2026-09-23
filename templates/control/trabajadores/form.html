@@ -4,9 +4,9 @@
 
 {% block content %}
 <div class="control-form-page flex justify-center">
-    <div class="w-full max-w-4xl">
-        <div class="worker-form-card rounded-xl border border-gray-100 bg-white p-5 shadow-sm sm:p-6">
-            <header class="control-page-header mb-6 flex flex-col gap-3 border-b border-gray-100 pb-5 sm:flex-row sm:items-center sm:justify-between">
+    <div class="w-full max-w-5xl">
+        <div class="worker-form-card rounded-xl border border-gray-100 bg-white p-3 shadow-sm sm:p-4">
+            <header class="control-page-header mb-4 flex flex-col gap-2 border-b border-gray-100 pb-3 sm:flex-row sm:items-center sm:justify-between">
                 <div><h1 class="flex items-center gap-2 text-xl font-bold text-[#0f172a]">
                     <svg class="h-5 w-5 text-[#1557C0]" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3.2"/><path stroke-linecap="round" stroke-linejoin="round" d="M5.5 20c.8-3.5 3-5.2 6.5-5.2s5.7 1.7 6.5 5.2M19 5v6m-3-3h6"/></svg>
                     {% if object %}Editar trabajador{% else %}Nuevo trabajador{% endif %}
@@ -17,7 +17,7 @@
             <aside aria-label="Empresa asignada" class="mb-4 rounded-lg bg-blue-50 px-4 py-2 text-sm text-blue-700"><span class="font-semibold">Empresa asignada:</span> {{ request.user.empresa.nombre }}</aside>
             {% endif %}
 
-            <form method="post" enctype="multipart/form-data" novalidate class="space-y-5">
+            <form method="post" enctype="multipart/form-data" novalidate class="space-y-3">
                 {% csrf_token %}
 
                 {% if form.non_field_errors %}
@@ -28,23 +28,23 @@
                     </div>
                 {% endif %}
 
-                <fieldset class="control-form-section space-y-3" aria-label="Datos personales"><div class="grid gap-3 sm:grid-cols-2">
+                <fieldset class="control-form-section space-y-2" aria-label="Datos personales"><div class="grid gap-2 sm:grid-cols-2">
                     <div>
-                        <label for="{{ form.nombres.id_for_label }}" class="mb-1 block text-xs font-medium text-[#0f172a]">Nombres</label>
+                        <label for="{{ form.nombres.id_for_label }}" class="mb-0.5 block text-[11px] font-medium text-[#0f172a]">Nombres</label>
                         <input type="text" name="{{ form.nombres.html_name }}" id="{{ form.nombres.id_for_label }}" value="{{ form.nombres.value|default:'' }}" class="form-control" required>
                         {% for error in form.nombres.errors %}<div class="mt-1 text-xs text-red-600">{{ error }}</div>{% endfor %}
                     </div>
                     <div>
-                        <label for="{{ form.apellidos.id_for_label }}" class="mb-1 block text-xs font-medium text-[#0f172a]">Apellidos</label>
+                        <label for="{{ form.apellidos.id_for_label }}" class="mb-0.5 block text-[11px] font-medium text-[#0f172a]">Apellidos</label>
                         <input type="text" name="{{ form.apellidos.html_name }}" id="{{ form.apellidos.id_for_label }}" value="{{ form.apellidos.value|default:'' }}" class="form-control" required>
                         {% for error in form.apellidos.errors %}<div class="mt-1 text-xs text-red-600">{{ error }}</div>{% endfor %}
                     </div>
                 </div></fieldset>
 
-                <fieldset class="control-form-section space-y-3" aria-label="Documento y empresa"><div class="grid gap-3 sm:grid-cols-3">
+                <fieldset class="control-form-section space-y-2" aria-label="Documento y empresa"><div class="grid gap-2 sm:grid-cols-3">
                     {% if request.user.role != '3' %}
                     <div>
-                        <label for="{{ form.empresa.id_for_label }}" class="mb-1 block text-xs font-medium text-[#0f172a]">Empresa</label>
+                        <label for="{{ form.empresa.id_for_label }}" class="mb-0.5 block text-[11px] font-medium text-[#0f172a]">Empresa</label>
                         <select name="{{ form.empresa.html_name }}" id="{{ form.empresa.id_for_label }}" class="form-control" required>
                             {% for value, label in form.fields.empresa.choices %}
                                 <option value="{{ value }}" {% if form.empresa.value|stringformat:"s" == value|stringformat:"s" %}selected{% endif %}>{{ label }}</option>
@@ -54,7 +54,7 @@
                     </div>
                     {% endif %}
                     <div>
-                        <label for="{{ form.tipo_documento.id_for_label }}" class="mb-1 block text-xs font-medium text-[#0f172a]">Tipo de documento</label>
+                        <label for="{{ form.tipo_documento.id_for_label }}" class="mb-0.5 block text-[11px] font-medium text-[#0f172a]">Tipo de documento</label>
                         <select name="{{ form.tipo_documento.html_name }}" id="{{ form.tipo_documento.id_for_label }}" class="form-control">
                             {% for value, label in form.fields.tipo_documento.choices %}
                                 <option value="{{ value }}" {% if form.tipo_documento.value|stringformat:"s" == value|stringformat:"s" %}selected{% endif %}>{{ label }}</option>
@@ -63,22 +63,22 @@
                         {% for error in form.tipo_documento.errors %}<div class="mt-1 text-xs text-red-600">{{ error }}</div>{% endfor %}
                     </div>
                     <div>
-                        <label for="{{ form.dni.id_for_label }}" class="mb-1 block text-xs font-medium text-[#0f172a]">N° de documento</label>
+                        <label for="{{ form.dni.id_for_label }}" class="mb-0.5 block text-[11px] font-medium text-[#0f172a]">N° de documento</label>
                         <input type="text" name="{{ form.dni.html_name }}" id="{{ form.dni.id_for_label }}" value="{{ form.dni.value|default:'' }}" class="form-control" required>
                         {% for error in form.dni.errors %}<div class="mt-1 text-xs text-red-600">{{ error }}</div>{% endfor %}
                     </div>
                 </div></fieldset>
 
-                <fieldset class="control-form-section space-y-3 border-t border-gray-100 pt-5" aria-label="Datos laborales y contacto"><div class="grid gap-3 sm:grid-cols-3">
+                <fieldset class="control-form-section space-y-2 border-t border-gray-100 pt-3" aria-label="Datos laborales y contacto"><div class="grid gap-2 sm:grid-cols-3">
                     <div>
-                        <label for="{{ form.cargo.id_for_label }}" class="mb-1 block text-xs font-medium text-[#0f172a]">Cargo</label>
+                        <label for="{{ form.cargo.id_for_label }}" class="mb-0.5 block text-[11px] font-medium text-[#0f172a]">Cargo</label>
                         <input type="text" name="{{ form.cargo.html_name }}" id="{{ form.cargo.id_for_label }}" value="{{ form.cargo.value|default:'' }}" class="form-control">
                         {% for error in form.cargo.errors %}<div class="mt-1 text-xs text-red-600">{{ error }}</div>{% endfor %}
                     </div>
                     {% for field in form %}
                     {% if field.name != 'empresa' and field.name != 'tipo_documento' and field.name != 'dni' and field.name != 'nombres' and field.name != 'apellidos' and field.name != 'cargo' and 'archivo' not in field.name and 'fecha_' not in field.name %}
                     <div>
-                        <label for="{{ field.id_for_label }}" class="mb-1 block text-xs font-medium text-[#0f172a]">{{ field.label }}</label>
+                        <label for="{{ field.id_for_label }}" class="mb-0.5 block text-[11px] font-medium text-[#0f172a]">{{ field.label }}</label>
                         <select name="{{ field.html_name }}" id="{{ field.id_for_label }}" class="form-control">
                             {% for value, label in field.field.choices %}<option value="{{ value }}" {% if field.value == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
                         </select>
@@ -91,16 +91,15 @@
                 </fieldset>
 
                  {% if request.user.role == '3' %}
-                 <fieldset class="control-form-section border-t border-gray-100 pt-5"><legend class="mb-3 text-sm font-semibold text-[#0f172a]">Certificados</legend>
+                  <fieldset class="control-form-section border-t border-gray-100 pt-3"><legend class="mb-2 text-sm font-semibold text-[#0f172a]">Certificados</legend>
                       {{ certificado_formset.management_form }}
-                      <div class="app-table-wrap responsive-table"><table class="app-table w-full min-w-[600px]"><thead><tr><th>Tipo</th><th>Archivo PDF</th><th>Emisión</th><th>Vencimiento</th></tr></thead><tbody id="certificados-fijos">
-                          <tr><td>SCTR</td><td>{{ form.sctr_archivo }}{% for error in form.sctr_archivo.errors %}<div class="text-xs text-red-600">{{ error }}</div>{% endfor %}</td><td>{{ form.sctr_fecha_emision }}{{ form.sctr_fecha_emision.errors }}</td><td>{{ form.sctr_fecha_vencimiento }}{{ form.sctr_fecha_vencimiento.errors }}</td></tr>
+                       <div class="app-table-wrap responsive-table"><table class="app-table w-full min-w-[520px]"><thead><tr><th>Tipo</th><th>Archivo PDF</th><th>Emisión</th><th>Vencimiento</th></tr></thead><tbody id="certificados-fijos">
                           <tr><td>Inducción</td><td>{{ form.induccion_archivo }}{% for error in form.induccion_archivo.errors %}<div class="text-xs text-red-600">{{ error }}</div>{% endfor %}</td><td>{{ form.induccion_fecha_emision }}{{ form.induccion_fecha_emision.errors }}</td><td>{{ form.induccion_fecha_vencimiento }}{{ form.induccion_fecha_vencimiento.errors }}</td></tr>
                           <tr><td>Aptitud médica</td><td>{{ form.aptitud_medica_archivo }}{% for error in form.aptitud_medica_archivo.errors %}<div class="text-xs text-red-600">{{ error }}</div>{% endfor %}</td><td>{{ form.aptitud_medica_fecha_emision }}{{ form.aptitud_medica_fecha_emision.errors }}</td><td>{{ form.aptitud_medica_fecha_vencimiento }}{{ form.aptitud_medica_fecha_vencimiento.errors }}</td></tr>
                        </tbody></table></div>
                  </fieldset>
-                 <fieldset class="control-form-section border-t border-gray-100 pt-5"><legend class="mb-3 text-sm font-semibold text-[#0f172a]">Cursos</legend>
-                      <div class="app-table-wrap responsive-table"><table class="app-table w-full min-w-[720px]"><thead><tr><th>Tipo</th><th>Archivo PDF</th><th>Emisión</th><th>Vencimiento</th><th>Categoría</th></tr></thead><tbody id="certificados-opcionales">
+                  <fieldset class="control-form-section border-t border-gray-100 pt-3"><legend class="mb-2 text-sm font-semibold text-[#0f172a]">Cursos</legend>
+                       <div class="app-table-wrap responsive-table"><table class="app-table w-full min-w-[620px]"><thead><tr><th>Tipo</th><th>Archivo PDF</th><th>Emisión</th><th>Vencimiento</th><th>Categoría</th></tr></thead><tbody id="certificados-opcionales">
                       {% for certificado_form in certificado_formset %}
                            <tr data-certificado-form><td>Curso{{ certificado_form.tipo }}</td><td>{{ certificado_form.archivo }}{{ certificado_form.archivo.errors }}</td><td>{{ certificado_form.fecha_emision }}{{ certificado_form.fecha_emision.errors }}</td><td>{{ certificado_form.fecha_vencimiento }}{{ certificado_form.fecha_vencimiento.errors }}</td><td>{{ certificado_form.categoria }}{{ certificado_form.categoria.errors }}</td></tr>
                       {% endfor %}
@@ -111,7 +110,7 @@
                  </fieldset>
                  {% endif %}
 
-                <footer class="control-action-bar flex flex-col-reverse gap-3 border-t border-gray-100 pt-5 sm:flex-row sm:items-center">
+                <footer class="control-action-bar flex flex-col-reverse gap-2 border-t border-gray-100 pt-3 sm:flex-row sm:items-center">
                     <button class="btn btn-primary" type="submit">
                         <svg class="h-4 w-4" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M5 4.5h11l3 3V19a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5.5a1 1 0 0 1 1-1Z"/><path stroke-linecap="round" d="M8 4.5v5h7v-5M8 20v-5h8v5"/></svg>
                         {% if object %}Actualizar{% else %}Registrar trabajador{% endif %}

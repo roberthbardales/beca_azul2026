@@ -5,6 +5,6 @@ from .models import Trabajador
 
 
 @receiver([post_save, post_delete], sender=Trabajador)
-def actualizar_habilitado_empresa(sender, instance, **kwargs):
+def actualizar_homologado_empresa(sender, instance, **kwargs):
     if instance.empresa_id:
-        instance.empresa.actualizar_habilitado()
+        instance.empresa.actualizar_homologado()

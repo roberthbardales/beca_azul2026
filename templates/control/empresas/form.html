@@ -48,6 +48,15 @@
                 </fieldset>
 
                 <fieldset class="control-form-section border-t border-gray-100 pt-5">
+                    <legend class="text-sm font-semibold text-[#0f172a]">SCTR de la empresa</legend>
+                    <div class="mt-3 grid gap-3 sm:grid-cols-3">
+                        <div>{{ form.sctr_archivo.label_tag }}{{ form.sctr_archivo }}{% for error in form.sctr_archivo.errors %}<div class="text-xs text-red-600">{{ error }}</div>{% endfor %}</div>
+                        <div>{{ form.sctr_fecha_emision.label_tag }}{{ form.sctr_fecha_emision }}{% for error in form.sctr_fecha_emision.errors %}<div class="text-xs text-red-600">{{ error }}</div>{% endfor %}</div>
+                        <div>{{ form.sctr_fecha_vencimiento.label_tag }}{{ form.sctr_fecha_vencimiento }}{% for error in form.sctr_fecha_vencimiento.errors %}<div class="text-xs text-red-600">{{ error }}</div>{% endfor %}</div>
+                    </div>
+                </fieldset>
+
+                <fieldset class="control-form-section border-t border-gray-100 pt-5">
                     <legend class="text-sm font-semibold text-[#0f172a]">Disponibilidad</legend>
                 <div class="mt-3 flex items-center gap-2">
                     <input type="checkbox" name="{{ form.activo.html_name }}" id="{{ form.activo.id_for_label }}"
