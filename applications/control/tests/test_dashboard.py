@@ -5,7 +5,7 @@ from django.urls import reverse
 
 from applications.users.models import User
 
-from ..models import Certificado, Empresa, Trabajador
+from ..models import Certificado, CursoTipo, Empresa, Trabajador
 
 
 class DashboardViewTests(TestCase):
@@ -31,6 +31,7 @@ class DashboardViewTests(TestCase):
             empresa=self.empresa if tipo == Certificado.SCTR else None,
             trabajador=None if tipo == Certificado.SCTR else self.trabajador,
             tipo=tipo,
+            curso=CursoTipo.ALTURA if tipo == Certificado.CURSOS else None,
             fecha_emision=date.today() - timedelta(days=30),
             fecha_vencimiento=vencimiento,
         )

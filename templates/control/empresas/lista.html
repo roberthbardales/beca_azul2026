@@ -26,7 +26,6 @@
     <h1>Empresas</h1>
     {% if request.user.role == '1' %}
     <div class="flex flex-wrap gap-2">
-        <a class="btn btn-secondary" href="{% url 'app_control:empresa_lista' %}?estado=0">Empresas desactivadas</a>
         <a class="btn btn-primary" href="{% url 'app_control:empresa_crear' %}"><svg class="h-4 w-4" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M12 5v14M5 12h14"/></svg>Nueva empresa</a>
     </div>
     {% endif %}

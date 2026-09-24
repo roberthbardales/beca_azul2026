@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
-from django.db.models import Count, Prefetch, Q
+from django.db.models import Count, Exists, OuterRef, Prefetch, Q
 from django.db.models.functions import TruncDate
 from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -14,6 +14,7 @@ from django.views.generic import CreateView, DeleteView, DetailView, ListView, U
 from applications.users.mixins import (
     AdministrarEmpresasMixin,
     AdministrarTrabajadoresMixin,
+    BecaAzulRequiredMixin,
     GestionarIncidenciasMixin,
     TrabajadorEmpresaPermisoMixin,
     VerEmpresasMixin,
@@ -119,6 +120,7 @@ class DashboardView(LoginRequiredMixin, View):
             ),
             'certificados_por_vencer': (
                 Certificado.objects.select_related('trabajador__empresa').filter(
+                    trabajador__isnull=False,
                     fecha_vencimiento__gte=hoy,
                     fecha_vencimiento__lte=limite_30,
                 ).order_by('fecha_vencimiento')[:5]
@@ -216,7 +218,6 @@ class EmpresaCreateView(AdministrarEmpresasMixin, CreateView):
     success_url = reverse_lazy('app_control:empresa_lista')
 
     def form_valid(self, form):
-        form.instance.activo = True
         messages.success(self.request, 'Empresa creada correctamente.')
         return super().form_valid(form)
 
@@ -289,7 +290,7 @@ class EmpresaDetailView(LoginRequiredMixin, DetailView):
                 {
                     'habilitado': grupo['habilitado'],
                     'total': grupo['total'],
-                    'label': 'Homologado' if grupo['habilitado'] else 'No homologado',
+                    'label': 'Habilitado' if grupo['habilitado'] else 'No habilitado',
                 }
                 for grupo in trabajadores.values('habilitado').annotate(total=Count('habilitado')).order_by('habilitado')
             ],
@@ -327,13 +328,24 @@ class TrabajadorListView(VerTrabajadoresMixin, ListView):
         'nombre': ('apellidos', 'nombres'),
         'empresa': ('empresa__nombre', 'apellidos', 'nombres'),
         'cargo': ('cargo', 'apellidos', 'nombres'),
-        'certificados': ('certificados_count', 'apellidos', 'nombres'),
+        'induccion': ('tiene_induccion', 'apellidos', 'nombres'),
+        'aptitud_medica': ('tiene_aptitud_medica', 'apellidos', 'nombres'),
+        'cursos': ('tiene_cursos', 'apellidos', 'nombres'),
         'estado': ('habilitado', 'apellidos', 'nombres'),
     }
 
     def get_queryset(self):
-        queryset = Trabajador.objects.select_related('empresa').prefetch_related('certificados').annotate(
-            certificados_count=Count('certificados', distinct=True)
+        certificados = Certificado.objects.filter(trabajador=OuterRef('pk'))
+        queryset = Trabajador.objects.select_related('empresa').prefetch_related(
+            Prefetch(
+                'certificados',
+                queryset=Certificado.objects.filter(tipo=Certificado.CURSOS),
+                to_attr='cursos_lista',
+            )
+        ).annotate(
+            tiene_induccion=Exists(certificados.filter(tipo=Certificado.INDUCCION)),
+            tiene_cursos=Exists(certificados.filter(tipo=Certificado.CURSOS)),
+            tiene_aptitud_medica=Exists(certificados.filter(tipo=Certificado.APTITUD_MEDICA)),
         ).order_by('habilitado', 'apellidos', 'nombres')
         q = self.request.GET.get('q', '').strip()
         if q:
@@ -379,7 +391,9 @@ class TrabajadorListView(VerTrabajadoresMixin, ListView):
             'nombre': 'Nombre completo',
              'empresa': 'Empresa',
              'cargo': 'Cargo',
-             'certificados': 'Certificados',
+             'induccion': 'Inducción',
+             'aptitud_medica': 'Aptitud médica',
+             'cursos': 'Cursos',
             'estado': 'Estado',
         })
         return super().get_context_data(**kwargs)
@@ -457,17 +471,18 @@ class TrabajadorDetailView(VerTrabajadorDetalleMixin, DetailView):
     def get_context_data(self, **kwargs):
         kwargs.setdefault('certificados', self.object.certificados.all().order_by('-fecha_emision'))
         certificados = {certificado.tipo: certificado for certificado in self.object.certificados.all()}
+        cursos = {certificado.curso: certificado for certificado in self.object.certificados.filter(tipo=Certificado.CURSOS)}
         kwargs.setdefault('certificados_requeridos', [
             {'tipo': Certificado.INDUCCION, 'label': 'Inducción', 'objeto': certificados.get(Certificado.INDUCCION)},
             {'tipo': Certificado.APTITUD_MEDICA, 'label': 'Aptitud médica', 'objeto': certificados.get(Certificado.APTITUD_MEDICA)},
         ])
-        kwargs.setdefault('cursos', self.object.certificados.filter(tipo=Certificado.CURSOS).order_by('-fecha_emision'))
+        kwargs.setdefault('cursos', [{'codigo': codigo, 'nombre': label, 'certificado': cursos.get(codigo)} for codigo, label in Certificado.CURSO_CHOICES])
         kwargs.setdefault('incidencias', self.object.incidencias.select_related('registrado_por'))
         kwargs.setdefault('es_empresa', self.request.user.role == User.USUARIO_EMPRESA)
         return super().get_context_data(**kwargs)
 
 
-class TrabajadorHomologacionView(AdministrarTrabajadoresMixin, View):
+class TrabajadorHomologacionView(BecaAzulRequiredMixin, View):
     def post(self, request, pk):
         trabajador = get_object_or_404(Trabajador, pk=pk)
         estado = request.POST.get('estado')
@@ -476,7 +491,7 @@ class TrabajadorHomologacionView(AdministrarTrabajadoresMixin, View):
             return redirect('app_control:trabajador_detalle', pk=trabajador.pk)
         trabajador.habilitado = estado == '1'
         trabajador.save(update_fields=['habilitado'])
-        messages.success(self.request, f'La homologación del trabajador "{trabajador}" fue actualizada.')
+        messages.success(self.request, f'El estado del trabajador "{trabajador}" fue actualizado.')
         return redirect('app_control:trabajador_detalle', pk=trabajador.pk)
 
 
@@ -521,6 +536,12 @@ class CertificadoCreateView(AdministrarTrabajadoresMixin, CreateView):
     def form_valid(self, form):
         self.trabajador = self.get_trabajador()
         form.instance.trabajador = self.trabajador
+        if form.cleaned_data.get('tipo') == Certificado.CURSOS:
+            Certificado.objects.filter(
+                trabajador=self.trabajador,
+                tipo=Certificado.CURSOS,
+                curso=form.cleaned_data.get('curso'),
+            ).delete()
         messages.success(self.request, 'Certificado registrado correctamente.')
         return super().form_valid(form)
 
@@ -622,10 +643,19 @@ class TrabajadorEmpresaListView(TrabajadorEmpresaPermisoMixin, ListView):
     paginate_by = 20
 
     def get_queryset(self):
+        certificados = Certificado.objects.filter(trabajador=OuterRef('pk'))
         queryset = Trabajador.objects.filter(empresa=self.request.user.empresa).select_related(
             'empresa'
-        ).prefetch_related('certificados').annotate(
-            certificados_count=Count('certificados', distinct=True)
+        ).prefetch_related(
+            Prefetch(
+                'certificados',
+                queryset=Certificado.objects.filter(tipo=Certificado.CURSOS),
+                to_attr='cursos_lista',
+            )
+        ).annotate(
+            tiene_induccion=Exists(certificados.filter(tipo=Certificado.INDUCCION)),
+            tiene_cursos=Exists(certificados.filter(tipo=Certificado.CURSOS)),
+            tiene_aptitud_medica=Exists(certificados.filter(tipo=Certificado.APTITUD_MEDICA)),
         ).order_by('habilitado', 'apellidos', 'nombres')
         q = self.request.GET.get('q', '').strip()
         if q:
@@ -646,7 +676,9 @@ class TrabajadorEmpresaListView(TrabajadorEmpresaPermisoMixin, ListView):
             'dni': ('dni',),
             'nombre': ('apellidos', 'nombres'),
             'cargo': ('cargo', 'apellidos', 'nombres'),
-            'certificados': ('certificados_count', 'apellidos', 'nombres'),
+            'induccion': ('tiene_induccion', 'apellidos', 'nombres'),
+            'aptitud_medica': ('tiene_aptitud_medica', 'apellidos', 'nombres'),
+            'cursos': ('tiene_cursos', 'apellidos', 'nombres'),
             'estado': ('habilitado', 'apellidos', 'nombres'),
         }
         order_fields = sortable_columns.get(sort)
@@ -671,7 +703,9 @@ class TrabajadorEmpresaListView(TrabajadorEmpresaPermisoMixin, ListView):
             'dni': 'DNI',
             'nombre': 'Nombre completo',
             'cargo': 'Cargo',
-            'certificados': 'Certificados',
+            'induccion': 'Inducción',
+            'aptitud_medica': 'Aptitud médica',
+            'cursos': 'Cursos',
             'estado': 'Estado del trabajador',
         })
         kwargs.setdefault('empresa', self.request.user.empresa)
@@ -743,12 +777,12 @@ class TrabajadorEmpresaUpdateView(TrabajadorEmpresaBaseMixin, UpdateView):
         initial = [
             {
                 'tipo': Certificado.CURSOS,
-                'categoria': certificado.categoria,
+                'curso': certificado.curso,
                 'fecha_emision': certificado.fecha_emision.isoformat(),
                 'fecha_vencimiento': certificado.fecha_vencimiento.isoformat(),
                 'archivo': certificado.archivo,
             }
-            for certificado in self.object.certificados.filter(tipo=Certificado.CURSOS).select_related('categoria')
+            for certificado in self.object.certificados.filter(tipo=Certificado.CURSOS)
         ]
         context.setdefault('certificado_formset', CertificadoCargaFormSet(initial=initial or None, prefix='certificados'))
         return context
@@ -760,18 +794,18 @@ class TrabajadorEmpresaUpdateView(TrabajadorEmpresaBaseMixin, UpdateView):
         with transaction.atomic():
             self.object = form.save()
             cursos_existentes = {
-                certificado.categoria_id: certificado
+                certificado.curso: certificado
                 for certificado in self.object.certificados.filter(tipo=Certificado.CURSOS)
             }
             cursos_recibidos = set()
             for certificado_form in formset:
                 if certificado_form.cleaned_data and not certificado_form.cleaned_data.get('DELETE'):
-                    categoria = certificado_form.cleaned_data.get('categoria')
-                    if not categoria:
+                    curso = certificado_form.cleaned_data.get('curso')
+                    if not curso:
                         continue
-                    certificado = cursos_existentes.get(categoria.pk, Certificado())
+                    certificado = cursos_existentes.get(curso, Certificado())
                     certificado.tipo = Certificado.CURSOS
-                    certificado.categoria = categoria
+                    certificado.curso = curso
                     certificado.fecha_emision = certificado_form.cleaned_data['fecha_emision']
                     certificado.fecha_vencimiento = certificado_form.cleaned_data['fecha_vencimiento']
                     archivo = certificado_form.cleaned_data.get('archivo')
@@ -779,9 +813,9 @@ class TrabajadorEmpresaUpdateView(TrabajadorEmpresaBaseMixin, UpdateView):
                         certificado.archivo = archivo
                     certificado.trabajador = self.object
                     certificado.save()
-                    cursos_recibidos.add(categoria.pk)
-            for categoria_id, certificado in cursos_existentes.items():
-                if categoria_id not in cursos_recibidos:
+                    cursos_recibidos.add(curso)
+            for curso_id, certificado in cursos_existentes.items():
+                if curso_id not in cursos_recibidos:
                     certificado.delete()
         messages.success(self.request, 'Trabajador actualizado correctamente.')
         return HttpResponseRedirect(self.get_success_url())
@@ -832,11 +866,17 @@ class CertificadoEmpresaCreateView(TrabajadorEmpresaBaseMixin, CreateView):
     def get_initial(self):
         initial = super().get_initial()
         initial['tipo'] = self.request.GET.get('tipo', Certificado.CURSOS)
+        initial['curso'] = self.request.GET.get('curso', '')
         return initial
 
     def form_valid(self, form):
         self.trabajador = self.get_trabajador()
         form.instance.trabajador = self.trabajador
+        Certificado.objects.filter(
+            trabajador=self.trabajador,
+            tipo=Certificado.CURSOS,
+            curso=form.cleaned_data.get('curso'),
+        ).delete()
         messages.success(self.request, 'Curso registrado correctamente.')
         return super().form_valid(form)
 
@@ -851,7 +891,7 @@ class CertificadoEmpresaUpdateView(TrabajadorEmpresaBaseMixin, UpdateView):
 
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
-        for field_name in ('tipo', 'categoria'):
+        for field_name in ('tipo', 'curso'):
             form.fields[field_name].disabled = True
         form.initial['fecha_emision'] = self.object.fecha_emision.isoformat()
         form.initial['fecha_vencimiento'] = self.object.fecha_vencimiento.isoformat()

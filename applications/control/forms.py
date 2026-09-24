@@ -2,7 +2,7 @@ from django import forms
 from django.forms import formset_factory
 from django.core.exceptions import ValidationError
 
-from .models import CategoriaCurso, Certificado, Empresa, Incidencia, Trabajador
+from .models import Certificado, Empresa, Incidencia, Trabajador
 
 
 def validate_pdf(value):
@@ -17,10 +17,15 @@ class EmpresaForm(forms.ModelForm):
 
     class Meta:
         model = Empresa
-        fields = ('nombre', 'ruc', 'activo')
+        fields = ('nombre', 'ruc')
 
     def __init__(self, *args, **kwargs):
+        can_edit_sctr = kwargs.pop('can_edit_sctr', False)
         super().__init__(*args, **kwargs)
+        if not can_edit_sctr:
+            self.fields.pop('sctr_archivo', None)
+            self.fields.pop('sctr_fecha_emision', None)
+            self.fields.pop('sctr_fecha_vencimiento', None)
         certificado = self.instance.certificados.filter(tipo=Certificado.SCTR).first() if self.instance.pk else None
         if certificado:
             self.initial.update(sctr_archivo=certificado.archivo, sctr_fecha_emision=certificado.fecha_emision.isoformat(), sctr_fecha_vencimiento=certificado.fecha_vencimiento.isoformat())
@@ -217,7 +222,7 @@ class IncidenciaForm(forms.ModelForm):
 class CertificadoForm(forms.ModelForm):
     class Meta:
         model = Certificado
-        fields = ('tipo', 'categoria', 'fecha_emision', 'fecha_vencimiento', 'archivo')
+        fields = ('tipo', 'curso', 'fecha_emision', 'fecha_vencimiento', 'archivo')
         widgets = {
             'fecha_emision': forms.DateInput(attrs={'type': 'date'}),
             'fecha_vencimiento': forms.DateInput(attrs={'type': 'date'}),
@@ -226,24 +231,23 @@ class CertificadoForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['tipo'].choices = tuple(choice for choice in self.fields['tipo'].choices if choice[0] != Certificado.SCTR)
-        self.fields['categoria'].queryset = CategoriaCurso.objects.filter(activo=True)
-        self.fields['categoria'].required = False
+        self.fields['curso'].required = False
         self.fields['archivo'].validators.append(validate_pdf)
 
     def clean(self):
         cleaned = super().clean()
         tipo = cleaned.get('tipo')
-        categoria = cleaned.get('categoria')
-        if tipo == Certificado.CURSOS and not categoria:
-            self.add_error('categoria', 'La categoría es obligatoria para los cursos.')
-        if tipo != Certificado.CURSOS and categoria:
-            self.add_error('categoria', 'La categoría solo aplica a los cursos.')
+        curso = cleaned.get('curso')
+        if tipo == Certificado.CURSOS and not curso:
+            self.add_error('curso', 'El curso es obligatorio para los certificados de cursos.')
+        if tipo != Certificado.CURSOS and curso:
+            self.add_error('curso', 'El curso solo aplica a los certificados de cursos.')
         if tipo and self.instance.trabajador_id:
             qs = Certificado.objects.filter(trabajador=self.instance.trabajador, tipo=tipo)
-            qs = qs.filter(categoria=categoria) if tipo == Certificado.CURSOS else qs.filter(categoria__isnull=True)
+            qs = qs.filter(curso=curso) if tipo == Certificado.CURSOS else qs.filter(curso__isnull=True)
             if self.instance.pk:
                 qs = qs.exclude(pk=self.instance.pk)
-            if qs.exists():
+            if qs.exists() and tipo != Certificado.CURSOS:
                 self.add_error('tipo', 'Ya existe un certificado para este requisito.')
         emision = cleaned.get('fecha_emision')
         vencimiento = cleaned.get('fecha_vencimiento')
@@ -255,7 +259,7 @@ class CertificadoForm(forms.ModelForm):
 class CertificadoCargaForm(forms.ModelForm):
     class Meta:
         model = Certificado
-        fields = ('tipo', 'categoria', 'fecha_emision', 'fecha_vencimiento', 'archivo')
+        fields = ('tipo', 'curso', 'fecha_emision', 'fecha_vencimiento', 'archivo')
         widgets = {
             'fecha_emision': forms.DateInput(attrs={'type': 'date'}),
             'fecha_vencimiento': forms.DateInput(attrs={'type': 'date'}),
@@ -265,8 +269,7 @@ class CertificadoCargaForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['tipo'].widget = forms.HiddenInput()
         self.fields['tipo'].initial = Certificado.CURSOS
-        self.fields['categoria'].queryset = CategoriaCurso.objects.filter(activo=True)
-        self.fields['categoria'].required = False
+        self.fields['curso'].required = False
         self.fields['archivo'].validators.append(validate_pdf)
 
     def clean(self):
@@ -274,15 +277,15 @@ class CertificadoCargaForm(forms.ModelForm):
         if not cleaned:
             return cleaned
         tipo = cleaned.get('tipo')
-        categoria = cleaned.get('categoria')
+        curso = cleaned.get('curso')
         if tipo and tipo != Certificado.CURSOS:
             self.add_error('tipo', 'Este formulario solo permite certificados de cursos.')
-        if tipo == Certificado.CURSOS and not categoria:
-            self.add_error('categoria', 'La categoría es obligatoria para los cursos.')
-        if tipo == Certificado.SCTR and categoria:
-            self.add_error('categoria', 'SCTR no utiliza categoría.')
-        if tipo == Certificado.CURSOS and categoria:
-            self.cleaned_data['categoria'] = categoria
+        if tipo == Certificado.CURSOS and not curso:
+            self.add_error('curso', 'El curso es obligatorio para los certificados de cursos.')
+        if tipo == Certificado.SCTR and curso:
+            self.add_error('curso', 'SCTR no utiliza curso.')
+        if tipo == Certificado.CURSOS and curso:
+            self.cleaned_data['curso'] = curso
         emision = cleaned.get('fecha_emision')
         vencimiento = cleaned.get('fecha_vencimiento')
         if emision and vencimiento and vencimiento < emision:
@@ -298,10 +301,10 @@ class CertificadoCargaFormSetBase(forms.BaseFormSet):
             if not getattr(form, 'cleaned_data', None):
                 continue
             tipo = form.cleaned_data.get('tipo')
-            categoria = form.cleaned_data.get('categoria')
+            curso = form.cleaned_data.get('curso')
             if not tipo:
                 continue
-            clave = (tipo, categoria.pk if categoria else None)
+            clave = (tipo, curso if curso else None)
             if clave in vistos:
                 raise forms.ValidationError('No se puede repetir el mismo tipo o categoría de certificado.')
             vistos.add(clave)

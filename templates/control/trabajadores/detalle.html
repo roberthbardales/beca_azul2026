@@ -10,6 +10,13 @@
                 <h1 class="text-xl font-bold text-[#0f172a]">{{ trabajador }}</h1>
             </div>
             <div class="flex flex-wrap gap-2">
+                {% if request.user.role == '1' %}
+                    <form method="post" action="{% url 'app_control:trabajador_homologacion' trabajador.pk %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="estado" value="{% if trabajador.habilitado %}0{% else %}1{% endif %}">
+                        <button class="btn {% if trabajador.habilitado %}btn-quinary{% else %}btn-primary{% endif %} btn-sm" type="submit">{% if trabajador.habilitado %}Deshabilitar trabajador{% else %}Habilitar trabajador{% endif %}</button>
+                    </form>
+                {% endif %}
                 {% if es_empresa %}
                     <a class="btn btn-primary btn-sm" href="{% url 'app_control:trabajador_empresa_editar' trabajador.pk %}">Editar trabajador</a>
                     <form method="post" action="{% url 'app_control:trabajador_empresa_toggle' trabajador.pk %}">
@@ -24,39 +31,27 @@
         <section class="border-b border-gray-200 p-5">
             <div class="app-table-wrap responsive-table">
                 <table class="app-table w-full" aria-label="Datos del trabajador">
-                    <thead>
-                        <tr>
-                            <th class="px-4 py-3 text-left text-xs text-gray-500">Nombres</th>
-                            <th class="px-4 py-3 text-left text-xs text-gray-500">Apellidos</th>
-                            <th class="px-4 py-3 text-left text-xs text-gray-500">Empresa</th>
-                            <th class="px-4 py-3 text-left text-xs text-gray-500">Documento</th>
-                            <th class="px-4 py-3 text-left text-xs text-gray-500">Cargo</th>
-                            <th class="px-4 py-3 text-left text-xs text-gray-500">Certificados</th>
-                            <th class="px-4 py-3 text-left text-xs text-gray-500">Homologado</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td class="px-4 py-3 text-sm font-medium">{{ trabajador.nombres }}</td>
-                            <td class="px-4 py-3 text-sm">{{ trabajador.apellidos }}</td>
-                            <td class="px-4 py-3 text-sm">{{ trabajador.empresa }}</td>
-                            <td class="px-4 py-3 text-sm">{{ trabajador.get_tipo_documento_display }} {{ trabajador.dni }}</td>
-                            <td class="px-4 py-3 text-sm">{{ trabajador.cargo|default:'-' }}</td>
-                            <td class="px-4 py-3 text-sm">{{ certificados|length }}</td>
-                            <td class="px-4 py-3 text-sm">{% if trabajador.habilitado %}<span class="rounded-full bg-green-100 px-2 py-1 text-xs text-green-700">Sí</span>{% else %}<span class="rounded-full bg-red-100 px-2 py-1 text-xs text-red-700">No</span>{% endif %}</td>
-                        </tr>
-                    </tbody>
+                    <thead><tr><th>Nombres</th><th>Apellidos</th><th>Empresa</th><th>Documento</th><th>Cargo</th><th>Certificados</th><th>Homologado</th></tr></thead>
+                    <tbody><tr><td>{{ trabajador.nombres }}</td><td>{{ trabajador.apellidos }}</td><td>{{ trabajador.empresa }}</td><td>{{ trabajador.get_tipo_documento_display }} {{ trabajador.dni }}</td><td>{{ trabajador.cargo|default:'-' }}</td><td>{{ certificados|length }}</td><td>{% if trabajador.habilitado %}<span class="rounded-full bg-green-100 px-2 py-1 text-xs text-green-700">Sí</span>{% else %}<span class="rounded-full bg-red-100 px-2 py-1 text-xs text-red-700">No</span>{% endif %}</td></tr></tbody>
                 </table>
             </div>
         </section>
 
         <section class="border-b border-gray-200 p-5">
             <div class="flex items-center justify-between gap-3">
-                <h2 class="text-lg font-semibold text-[#0f172a]">Certificados</h2>
+                <h2 class="text-lg font-semibold text-[#0f172a]">Certificados generales</h2>
             </div>
-            <div class="app-table-wrap responsive-table mt-3"><table class="app-table w-full"><thead><tr><th>Tipo</th><th>Emisión</th><th>Vencimiento</th><th>Estado</th><th>Archivo</th><th>Acciones</th></tr></thead><tbody>
+            <div class="app-table-wrap responsive-table mt-2"><table class="app-table w-full"><thead><tr><th>Tipo</th><th>Emisión</th><th>Vencimiento</th><th>Estado</th><th>Archivo</th><th>Acciones</th></tr></thead><tbody>
                 {% for fila in certificados_requeridos %}<tr><td>{{ fila.label }}</td>{% if fila.objeto %}<td>{{ fila.objeto.fecha_emision|date:'d/m/Y' }}</td><td>{{ fila.objeto.fecha_vencimiento|date:'d/m/Y' }}</td><td>{{ fila.objeto.estado }}</td><td><a class="text-[#0F6FC6] hover:underline" href="{{ fila.objeto.archivo.url }}" target="_blank" rel="noopener">Ver PDF</a></td><td>{% if es_empresa %}<a class="text-[#0F6FC6] hover:underline" href="{% url 'app_control:certificado_empresa_editar' fila.objeto.pk %}">Editar</a>{% endif %}</td>{% else %}<td>-</td><td>-</td><td>-</td><td>{% if es_empresa %}<a class="text-[#0F6FC6] hover:underline" href="{% url 'app_control:certificado_empresa_crear' trabajador.pk %}?tipo={{ fila.tipo }}">Añadir</a>{% endif %}</td>{% endif %}</tr>{% endfor %}
-                {% for certificado in cursos %}<tr><td>Cursos</td><td>{{ certificado.fecha_emision|date:'d/m/Y' }}</td><td>{{ certificado.fecha_vencimiento|date:'d/m/Y' }}</td><td>{{ certificado.estado }}</td><td><a class="text-[#0F6FC6] hover:underline" href="{{ certificado.archivo.url }}" target="_blank" rel="noopener">Ver PDF</a></td><td>{% if es_empresa %}<a class="text-[#0F6FC6] hover:underline" href="{% url 'app_control:certificado_empresa_editar' certificado.pk %}">Editar</a>{% endif %}</td></tr>{% empty %}<tr><td>Cursos</td><td>-</td><td>-</td><td>-</td><td>-</td><td>{% if es_empresa %}<a class="text-[#0F6FC6] hover:underline" href="{% url 'app_control:certificado_empresa_crear' trabajador.pk %}?tipo=CURSOS">Añadir</a>{% endif %}</td></tr>{% endfor %}
+            </tbody></table></div>
+        </section>
+
+        <section class="border-b border-gray-200 p-5">
+            <div class="flex items-center justify-between gap-3">
+                <h2 class="text-lg font-semibold text-[#0f172a]">Cursos</h2>
+            </div>
+            <div class="app-table-wrap responsive-table mt-2"><table class="app-table w-full"><thead><tr><th>Curso</th><th>Emisión</th><th>Vencimiento</th><th>Estado</th><th>Archivo</th><th>Acciones</th></tr></thead><tbody>
+                {% for fila in cursos %}<tr><td>{{ fila.nombre }}</td>{% if fila.certificado %}<td>{{ fila.certificado.fecha_emision|date:'d/m/Y' }}</td><td>{{ fila.certificado.fecha_vencimiento|date:'d/m/Y' }}</td><td>{{ fila.certificado.estado }}</td><td><a class="text-[#0F6FC6] hover:underline" href="{{ fila.certificado.archivo.url }}" target="_blank" rel="noopener">Ver PDF</a></td><td>{% if es_empresa %}<a class="text-[#0F6FC6] hover:underline" href="{% url 'app_control:certificado_empresa_editar' fila.certificado.pk %}">Editar</a>{% endif %}</td>{% else %}<td>-</td><td>-</td><td>Pendiente</td><td>-</td><td>{% if es_empresa %}<a class="text-[#0F6FC6] hover:underline" href="{% url 'app_control:certificado_empresa_crear' trabajador.pk %}?tipo=CURSOS&curso={{ fila.codigo }}">Añadir</a>{% endif %}</td>{% endif %}</tr>{% endfor %}
             </tbody></table></div>
         </section>
 

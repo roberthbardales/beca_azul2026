@@ -58,7 +58,7 @@
 <td class="px-4 py-2 text-sm">{{ trabajador.nombres }} {{ trabajador.apellidos }}</td>
 <td class="px-4 py-2 text-sm">{{ trabajador.cargo|default:'-' }}</td>
 <td class="px-4 py-2 text-sm">
-<span class="inline-block rounded-full px-2 py-0.5 text-xs font-medium {% if trabajador.habilitado %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">{% if trabajador.habilitado %}Homologado{% else %}No homologado{% endif %}</span>
+<span class="inline-block rounded-full px-2 py-0.5 text-xs font-medium {% if trabajador.habilitado %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">{% if trabajador.habilitado %}Habilitado{% else %}No habilitado{% endif %}</span>
 </td>
 <td class="px-4 py-2 text-right text-sm"><a class="btn btn-tertiary btn-sm" href="{% url 'app_control:trabajador_detalle' trabajador.pk %}">Ver</a></td>
 </tr>

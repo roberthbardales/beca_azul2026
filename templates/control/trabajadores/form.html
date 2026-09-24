@@ -99,12 +99,12 @@
                        </tbody></table></div>
                  </fieldset>
                   <fieldset class="control-form-section border-t border-gray-100 pt-3"><legend class="mb-2 text-sm font-semibold text-[#0f172a]">Cursos</legend>
-                       <div class="app-table-wrap responsive-table"><table class="app-table w-full min-w-[620px]"><thead><tr><th>Tipo</th><th>Archivo PDF</th><th>Emisión</th><th>Vencimiento</th><th>Categoría</th></tr></thead><tbody id="certificados-opcionales">
+                       <div class="app-table-wrap responsive-table"><table class="app-table w-full min-w-[620px]"><thead><tr><th>Tipo</th><th>Archivo PDF</th><th>Emisión</th><th>Vencimiento</th><th>Curso</th></tr></thead><tbody id="certificados-opcionales">
                       {% for certificado_form in certificado_formset %}
-                           <tr data-certificado-form><td>Curso{{ certificado_form.tipo }}</td><td>{{ certificado_form.archivo }}{{ certificado_form.archivo.errors }}</td><td>{{ certificado_form.fecha_emision }}{{ certificado_form.fecha_emision.errors }}</td><td>{{ certificado_form.fecha_vencimiento }}{{ certificado_form.fecha_vencimiento.errors }}</td><td>{{ certificado_form.categoria }}{{ certificado_form.categoria.errors }}</td></tr>
+<tr data-certificado-form><td>Curso{{ certificado_form.tipo }}</td><td>{{ certificado_form.archivo }}{{ certificado_form.archivo.errors }}</td><td>{{ certificado_form.fecha_emision }}{{ certificado_form.fecha_emision.errors }}</td><td>{{ certificado_form.fecha_vencimiento }}{{ certificado_form.fecha_vencimiento.errors }}</td><td>{{ certificado_form.curso }}{{ certificado_form.curso.errors }}</td></tr>
                       {% endfor %}
                        </tbody></table></div>
-                       <template id="certificado-form-template"><tr data-certificado-form><td>Curso{{ certificado_formset.empty_form.tipo }}</td><td>{{ certificado_formset.empty_form.archivo }}</td><td>{{ certificado_formset.empty_form.fecha_emision }}</td><td>{{ certificado_formset.empty_form.fecha_vencimiento }}</td><td>{{ certificado_formset.empty_form.categoria }}</td></tr></template>
+<template id="certificado-form-template"><tr data-certificado-form><td>Curso{{ certificado_formset.empty_form.tipo }}</td><td>{{ certificado_formset.empty_form.archivo }}</td><td>{{ certificado_formset.empty_form.fecha_emision }}</td><td>{{ certificado_formset.empty_form.fecha_vencimiento }}</td><td>{{ certificado_formset.empty_form.curso }}</td></tr></template>
                       {% if certificado_formset.non_form_errors %}<div class="text-xs text-red-600">{{ certificado_formset.non_form_errors }}</div>{% endif %}
                       <button type="button" class="btn btn-secondary btn-sm" id="agregar-certificado-opcional">Agregar otro curso</button>
                  </fieldset>

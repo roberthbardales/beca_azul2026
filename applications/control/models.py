@@ -7,6 +7,22 @@ from django.utils import timezone
 from model_utils.models import TimeStampedModel
 
 
+class CursoTipo(models.TextChoices):
+    CALIENTE = 'CALIENTE', 'Caliente'
+    ALTURA = 'ALTURA', 'Altura'
+    ESPACIO_CONFINADO = 'ESPACIO_CONFINADO', 'Espacio confinado'
+    ELECTRICO = 'ELECTRICO', 'Eléctrico'
+    EXCAVACION = 'EXCAVACION', 'Excavación'
+    IZAJE = 'IZAJE', 'Izaje'
+
+
+class CertificadoTipo(models.TextChoices):
+    SCTR = 'SCTR', 'SCTR'
+    INDUCCION = 'INDUCCION', 'Inducción'
+    CURSOS = 'CURSOS', 'Cursos'
+    APTITUD_MEDICA = 'APTITUD_MEDICA', 'Aptitud médica'
+
+
 def certificado_upload_path(instance, filename):
     extension = filename.rsplit('.', 1)[-1] if '.' in filename else ''
     base = instance.trabajador.dni if instance.trabajador_id else instance.empresa.ruc
@@ -22,7 +38,7 @@ class Empresa(TimeStampedModel):
     nombre = models.CharField(max_length=150)
     ruc = models.CharField(max_length=11, unique=True)
 
-    homologado = models.BooleanField(default=True, db_index=True)
+    homologado = models.BooleanField(default=False, db_index=True)
     activo = models.BooleanField(default=True)
 
     class Meta:
@@ -34,8 +50,8 @@ class Empresa(TimeStampedModel):
         return self.nombre
 
     def actualizar_homologado(self):
-        tiene_deshabilitado = self.trabajadores.filter(habilitado=False).exists()
-        nuevo_valor = not tiene_deshabilitado
+        trabajadores = self.trabajadores.all()
+        nuevo_valor = trabajadores.exists() and not trabajadores.filter(habilitado=False).exists()
         if self.homologado != nuevo_valor:
             self.homologado = nuevo_valor
             self.save(update_fields=['homologado'])
@@ -94,38 +110,19 @@ class Incidencia(TimeStampedModel):
         return f'Incidencia - {self.trabajador}'
 
 
-class CategoriaCurso(TimeStampedModel):
-    nombre = models.CharField(max_length=150, unique=True)
-    activo = models.BooleanField(default=True)
-
-    class Meta:
-        ordering = ('nombre',)
-        verbose_name = 'Categoría de curso'
-        verbose_name_plural = 'Categorías de cursos'
-
-    def __str__(self):
-        return self.nombre
-
-
 class Certificado(TimeStampedModel):
 
-    SCTR = 'SCTR'
-    INDUCCION = 'INDUCCION'
-    CURSOS = 'CURSOS'
-    APTITUD_MEDICA = 'APTITUD_MEDICA'
-    TIPO_CHOICES = (
-        (SCTR, 'SCTR'),
-        (INDUCCION, 'Inducción'),
-        (CURSOS, 'Cursos'),
-        (APTITUD_MEDICA, 'Aptitud médica'),
-    )
+    SCTR = CertificadoTipo.SCTR
+    INDUCCION = CertificadoTipo.INDUCCION
+    CURSOS = CertificadoTipo.CURSOS
+    APTITUD_MEDICA = CertificadoTipo.APTITUD_MEDICA
+    CURSO_CHOICES = CursoTipo.choices
+    TIPO_CHOICES = CertificadoTipo.choices
 
     empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE, null=True, blank=True, related_name='certificados')
     trabajador = models.ForeignKey(Trabajador, on_delete=models.CASCADE, null=True, blank=True, related_name='certificados')
     tipo = models.CharField(max_length=20, choices=TIPO_CHOICES)
-    categoria = models.ForeignKey(
-        CategoriaCurso, on_delete=models.PROTECT, null=True, blank=True, related_name='certificados'
-    )
+    curso = models.CharField(max_length=30, choices=CURSO_CHOICES, null=True, blank=True)
     fecha_emision = models.DateField()
     fecha_vencimiento = models.DateField()
     archivo = models.FileField(upload_to=certificado_upload_path)
@@ -137,17 +134,17 @@ class Certificado(TimeStampedModel):
         constraints = [
             models.UniqueConstraint(
                 fields=('trabajador', 'tipo'),
-                condition=Q(trabajador__isnull=False, categoria__isnull=True),
+                condition=Q(trabajador__isnull=False, curso__isnull=True),
                 name='certificado_unico_tipo_trabajador',
             ),
             models.UniqueConstraint(
-                fields=('trabajador', 'categoria'),
-                condition=Q(trabajador__isnull=False, tipo='CURSOS'),
-                name='certificado_unico_categoria_curso_trabajador',
+                fields=('trabajador', 'curso'),
+                condition=Q(trabajador__isnull=False, tipo='CURSOS', curso__isnull=False),
+                name='certificado_unico_curso_trabajador',
             ),
             models.UniqueConstraint(fields=('empresa', 'tipo'), condition=Q(empresa__isnull=False, tipo='SCTR'), name='certificado_unico_sctr_empresa'),
             models.CheckConstraint(
-                check=(Q(tipo='SCTR', empresa__isnull=False, trabajador__isnull=True) | Q(tipo__in=('INDUCCION', 'CURSOS', 'APTITUD_MEDICA'), trabajador__isnull=False, empresa__isnull=True)),
+                check=(Q(tipo='SCTR', empresa__isnull=False, trabajador__isnull=True, curso__isnull=True) | Q(tipo__in=('INDUCCION', 'APTITUD_MEDICA'), trabajador__isnull=False, empresa__isnull=True, curso__isnull=True) | Q(tipo='CURSOS', trabajador__isnull=False, empresa__isnull=True, curso__isnull=False)),
                 name='certificado_propietario_segun_tipo',
             ),
             models.CheckConstraint(
@@ -157,8 +154,8 @@ class Certificado(TimeStampedModel):
         ]
 
     def __str__(self):
-        categoria = f' - {self.categoria}' if self.categoria else ''
-        return f'{self.get_tipo_display()}{categoria} - {self.trabajador or self.empresa}'
+        curso = f' - {self.get_curso_display()}' if self.curso else ''
+        return f'{self.get_tipo_display()}{curso} - {self.trabajador or self.empresa}'
 
     def save(self, *args, **kwargs):
         archivo_anterior = None

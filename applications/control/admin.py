@@ -1,13 +1,6 @@
 from django.contrib import admin
 
-from .models import CategoriaCurso, Certificado, Empresa, Incidencia, Trabajador
-
-
-@admin.register(CategoriaCurso)
-class CategoriaCursoAdmin(admin.ModelAdmin):
-    list_display = ('nombre', 'activo')
-    list_filter = ('activo',)
-    search_fields = ('nombre',)
+from .models import Certificado, Empresa, Incidencia, Trabajador
 
 
 @admin.register(Empresa)
@@ -49,7 +42,7 @@ class IncidenciaAdmin(admin.ModelAdmin):
 @admin.register(Certificado)
 class CertificadoAdmin(admin.ModelAdmin):
     list_display = ('tipo', 'empresa', 'trabajador', 'fecha_emision', 'fecha_vencimiento')
-    search_fields = ('empresa__nombre', 'trabajador__dni', 'trabajador__nombres', 'categoria__nombre')
-    list_filter = ('tipo', 'categoria')
+    search_fields = ('empresa__nombre', 'trabajador__dni', 'trabajador__nombres')
+    list_filter = ('tipo', 'curso')
     list_per_page = 20
     list_select_related = ('empresa', 'trabajador', 'trabajador__empresa')

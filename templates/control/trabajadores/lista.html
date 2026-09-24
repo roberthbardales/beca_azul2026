@@ -69,12 +69,14 @@
                  <td data-label="Cargo" class="px-5 py-3 text-sm">
                       {{ trabajador.cargo|default:'-' }}
                  </td>
-                 <td data-label="Certificados" class="px-5 py-3 text-sm">{{ trabajador.certificados_count }}</td>
+                 <td data-label="Inducción" class="px-5 py-3 text-center">{% if trabajador.tiene_induccion %}<span class="inline-flex rounded-full p-1" title="Tiene inducción" aria-label="Tiene inducción"><svg style="width:1.05rem;height:1.05rem" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#16a34a"/><path fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="m7 12 3 3 7-7"/></svg></span>{% else %}<span class="inline-flex rounded-full p-1" title="No tiene inducción" aria-label="No tiene inducción"><svg style="width:1.05rem;height:1.05rem" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#dc2626"/><path fill="none" stroke="#fff" stroke-linecap="round" stroke-width="2.5" d="m8 8 8 8m0-8-8 8"/></svg></span>{% endif %}</td>
+                 <td data-label="Aptitud médica" class="px-5 py-3 text-center">{% if trabajador.tiene_aptitud_medica %}<span class="inline-flex rounded-full p-1" title="Tiene aptitud médica" aria-label="Tiene aptitud médica"><svg style="width:1.05rem;height:1.05rem" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#16a34a"/><path fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="m7 12 3 3 7-7"/></svg></span>{% else %}<span class="inline-flex rounded-full p-1" title="No tiene aptitud médica" aria-label="No tiene aptitud médica"><svg style="width:1.05rem;height:1.05rem" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#dc2626"/><path fill="none" stroke="#fff" stroke-linecap="round" stroke-width="2.5" d="m8 8 8 8m0-8-8 8"/></svg></span>{% endif %}</td>
+                 <td data-label="Cursos" class="px-5 py-3 text-sm">{% if trabajador.tiene_cursos %}{% for curso in trabajador.cursos_lista %}{{ curso.get_curso_display }}{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %}</td>
                 <td data-label="Estado del trabajador" class="px-5 py-3 text-sm">
                     {% if trabajador.habilitado %}
-                    <span class="inline-block rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">Homologado</span>
+                    <span class="inline-block rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">Habilitado</span>
                     {% else %}
-                    <span class="inline-block rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">No homologado</span>
+                    <span class="inline-block rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">No habilitado</span>
                     {% endif %}
                 </td>
                 <td data-label="Acciones" class="px-5 py-3 text-right text-sm">
@@ -82,7 +84,7 @@
                 </td>
             </tr>
             {% empty %}
-             <tr class="list-empty-row"><td colspan="7" class="list-empty-state px-4 py-10 text-center text-sm text-[#A5A5A5]">{% if q %}No se encontraron trabajadores para "{{ q }}".{% else %}No hay trabajadores registrados.{% endif %}</td></tr>
+             <tr class="list-empty-row"><td colspan="9" class="list-empty-state px-4 py-10 text-center text-sm text-[#A5A5A5]">{% if q %}No se encontraron trabajadores para "{{ q }}".{% else %}No hay trabajadores registrados.{% endif %}</td></tr>
             {% endfor %}
         </tbody>
     </table>
