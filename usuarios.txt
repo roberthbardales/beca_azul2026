@@ -1,17 +1,20 @@
-LISTA DE USUARIOS DEL SISTEMA
-==========================================================
 
-ID   NOMBRE                   EMAIL                          ROL
+la contraseña para todos es "admin"
 
-21   ejemplo jimenez          ejemplo@gmail.com             Usuario Empresa  S0p0rt3123 
-5    Garita Acceso            garita@gmail.com              Usuario Garita   admin
-6    manuel ramirez           manuelito@gmail.com           Usuario Planta    S0p0rt3123 
-2    ReBeca Azul Sanchez      beca_azul@gmail.com           Beca Azul         admin
-  
+ID | Nombre             | Email               | Rol
+1  | Admin Principal     | admin@gmail.com     | Administrador
+2  | Beca Azul           | becaazul@gmail.com  | Beca Azul
+3  | Usuario Planta      | planta@gmail.com    | Usuario Planta
+5  | Usuario Garita      | garita@gmail.com    | Usuario Garita
 
+16 | Usuario Apple       | apple@gmail.com     | Usuario Empresa
+17 | Usuario Google      | google@gmail.com    | Usuario Empresa
+18 | Usuario Microsoft   | microsoft@gmail.com | Usuario Empresa
+19 | Usuario Amazon      | amazon@gmail.com    | Usuario Empresa
+20 | Usuario Tesla       | tesla@gmail.com     | Usuario Empresa
+21 | Usuario Samsung     | samsung@gmail.com   | Usuario Empresa
+22 | Usuario Toyota      | toyota@gmail.com    | Usuario Empresa
+23 | Usuario Adobe       | adobe@gmail.com     | Usuario Empresa
+24 | Usuario Oracle      | oracle@gmail.com    | Usuario Empresa
+25 | Usuario Netflix     | netflix@gmail.com   | Usuario Empresa
 
- Administrador: morado
-- Beca Azul: azul
-- Usuario Empresa: verde azulado
-- Planta: ámbar
-- Garita y otros roles: gris pizarra

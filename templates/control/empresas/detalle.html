@@ -70,7 +70,7 @@
 </div></section>
 
 <footer class="control-action-bar flex items-center gap-2 border-t border-gray-100 pt-5">
-<a class="text-sm font-medium text-[#0F6FC6] hover:underline" href="{% if request.user.role == '3' %}{% url 'app_control:trabajador_empresa_lista' %}{% else %}{% url 'app_control:empresa_lista' %}{% endif %}">{% if request.user.role == '3' %}Volver a trabajadores{% else %}Volver a empresas{% endif %}</a>
+<a class="text-sm font-medium text-[#0F6FC6] hover:underline" href="{% if request.user.role == '3' %}{% url 'app_control:trabajador_lista' %}{% else %}{% url 'app_control:empresa_lista' %}{% endif %}">{% if request.user.role == '3' %}Volver a trabajadores{% else %}Volver a empresas{% endif %}</a>
 </footer>
 </div>
 </div></div>

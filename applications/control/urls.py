@@ -15,7 +15,6 @@ urlpatterns = [
     path('empresas/<int:pk>/eliminar/', views.EmpresaDeleteView.as_view(), name='empresa_eliminar'),
     path('trabajadores/', views.TrabajadorListView.as_view(), name='trabajador_lista'),
     path('trabajadores/buscar/', views.TrabajadorBuscarView.as_view(), name='trabajador_buscar'),
-    path('trabajadores/empresa/', views.TrabajadorEmpresaListView.as_view(), name='trabajador_empresa_lista'),
     path('trabajadores/empresa/crear/', views.TrabajadorEmpresaCreateView.as_view(), name='trabajador_empresa_crear'),
     path('trabajadores/empresa/<int:pk>/', views.TrabajadorEmpresaDetailView.as_view(), name='trabajador_empresa_detalle'),
     path('trabajadores/empresa/<int:pk>/editar/', views.TrabajadorEmpresaUpdateView.as_view(), name='trabajador_empresa_editar'),

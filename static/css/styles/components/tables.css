@@ -1,5 +1,8 @@
 main table { color: var(--ink-700); } main thead, main [class*="bg-gray-50"] { background: var(--ink-50) !important; } main th { color: var(--ink-500) !important; font-size: .75rem !important; font-weight: 600 !important; letter-spacing: .02em; } main tr { border-color: var(--ink-100) !important; } main tbody tr:hover { background: var(--ink-50); } main td { border-color: var(--ink-100) !important; }
 
+.list-table th.worker-requirement-header { background: #dbeafe !important; color: #1e40af !important; }
+.list-table th.worker-course-header { background: #cffafe !important; color: #155e75 !important; }
+
 .app-table-wrap {
     overflow: hidden;
     border: 1px solid #d9dee5;

@@ -81,7 +81,7 @@
 
     </div>
     <div class="flex justify-center py-5">
-        <a class="btn btn-secondary btn-sm" href="{% if es_empresa %}{% url 'app_control:trabajador_empresa_lista' %}{% else %}{% url 'app_control:trabajador_lista' %}{% endif %}">Volver</a>
+        <a class="btn btn-secondary btn-sm" href="{% url 'app_control:trabajador_lista' %}">Volver</a>
     </div>
 </main>
 {% endblock %}

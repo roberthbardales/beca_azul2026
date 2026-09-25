@@ -33,7 +33,7 @@ class DashboardView(LoginRequiredMixin, View):
         if request.user.role == User.GARITA:
             raise PermissionDenied
         if request.user.role == '3':
-            return redirect('app_control:trabajador_empresa_lista')
+            return redirect('app_control:trabajador_lista')
         hoy = date.today()
         limite_30 = hoy + timedelta(days=30)
         limite_60 = hoy + timedelta(days=60)
@@ -318,9 +318,9 @@ class EmpresaDeleteView(AdministrarEmpresasMixin, DeleteView):
         return HttpResponseRedirect(self.get_success_url())
 
 
-class TrabajadorListView(VerTrabajadoresMixin, ListView):
+class TrabajadorListView(LoginRequiredMixin, ListView):
     model = Trabajador
-    template_name = 'control/trabajadores/lista.html'
+    template_name = 'control/trabajadores/lista_empresa.html'
     context_object_name = 'trabajadores'
     paginate_by = 20
     sortable_columns = {
@@ -330,7 +330,6 @@ class TrabajadorListView(VerTrabajadoresMixin, ListView):
         'cargo': ('cargo', 'apellidos', 'nombres'),
         'induccion': ('tiene_induccion', 'apellidos', 'nombres'),
         'aptitud_medica': ('tiene_aptitud_medica', 'apellidos', 'nombres'),
-        'cursos': ('tiene_cursos', 'apellidos', 'nombres'),
         'estado': ('habilitado', 'apellidos', 'nombres'),
     }
 
@@ -344,9 +343,16 @@ class TrabajadorListView(VerTrabajadoresMixin, ListView):
             )
         ).annotate(
             tiene_induccion=Exists(certificados.filter(tipo=Certificado.INDUCCION)),
-            tiene_cursos=Exists(certificados.filter(tipo=Certificado.CURSOS)),
             tiene_aptitud_medica=Exists(certificados.filter(tipo=Certificado.APTITUD_MEDICA)),
+            **{
+                f'tiene_curso_{codigo.lower()}': Exists(
+                    certificados.filter(tipo=Certificado.CURSOS, curso=codigo)
+                )
+                for codigo, label in Certificado.CURSO_CHOICES
+            },
         ).order_by('habilitado', 'apellidos', 'nombres')
+        if self.request.user.role == User.USUARIO_EMPRESA:
+            queryset = queryset.filter(empresa=self.request.user.empresa)
         q = self.request.GET.get('q', '').strip()
         if q:
             queryset = queryset.filter(
@@ -360,13 +366,17 @@ class TrabajadorListView(VerTrabajadoresMixin, ListView):
         if estado in ('0', '1'):
             queryset = queryset.filter(habilitado=(estado == '1'))
         empresa_id = self.request.GET.get('empresa', '').strip()
-        if empresa_id.isdigit():
+        if self.request.user.role != User.USUARIO_EMPRESA and empresa_id.isdigit():
             queryset = queryset.filter(empresa_id=empresa_id)
         sort = self.request.GET.get('sort', '').strip()
         direction = self.request.GET.get('dir', 'asc').strip().lower()
         if direction not in ('asc', 'desc'):
             direction = 'asc'
         order_fields = self.sortable_columns.get(sort)
+        if not order_fields:
+            course_codes = {codigo.lower() for codigo, label in Certificado.CURSO_CHOICES}
+            if sort in course_codes:
+                order_fields = (f'tiene_curso_{sort}', 'apellidos', 'nombres')
         if order_fields:
             if direction == 'desc':
                 order_fields = tuple(f'-{field}' for field in order_fields)
@@ -392,10 +402,16 @@ class TrabajadorListView(VerTrabajadoresMixin, ListView):
              'empresa': 'Empresa',
              'cargo': 'Cargo',
              'induccion': 'Inducción',
-             'aptitud_medica': 'Aptitud médica',
-             'cursos': 'Cursos',
-            'estado': 'Estado',
+            'aptitud_medica': 'Aptitud médica',
         })
+        kwargs['sortable_columns'].update({codigo.lower(): label for codigo, label in Certificado.CURSO_CHOICES})
+        kwargs['sortable_columns']['estado'] = 'Estado'
+        kwargs.setdefault('cursos_columnas', Certificado.CURSO_CHOICES)
+        kwargs.setdefault('es_empresa', self.request.user.role == User.USUARIO_EMPRESA)
+        if kwargs['es_empresa']:
+            kwargs['sortable_columns'].pop('empresa', None)
+        kwargs.setdefault('empresas', Empresa.objects.order_by('nombre'))
+        kwargs.setdefault('empresa', getattr(self.request.user, 'empresa', None))
         return super().get_context_data(**kwargs)
 
 
@@ -654,8 +670,13 @@ class TrabajadorEmpresaListView(TrabajadorEmpresaPermisoMixin, ListView):
             )
         ).annotate(
             tiene_induccion=Exists(certificados.filter(tipo=Certificado.INDUCCION)),
-            tiene_cursos=Exists(certificados.filter(tipo=Certificado.CURSOS)),
             tiene_aptitud_medica=Exists(certificados.filter(tipo=Certificado.APTITUD_MEDICA)),
+            **{
+                f'tiene_curso_{codigo.lower()}': Exists(
+                    certificados.filter(tipo=Certificado.CURSOS, curso=codigo)
+                )
+                for codigo, label in Certificado.CURSO_CHOICES
+            },
         ).order_by('habilitado', 'apellidos', 'nombres')
         q = self.request.GET.get('q', '').strip()
         if q:
@@ -678,9 +699,12 @@ class TrabajadorEmpresaListView(TrabajadorEmpresaPermisoMixin, ListView):
             'cargo': ('cargo', 'apellidos', 'nombres'),
             'induccion': ('tiene_induccion', 'apellidos', 'nombres'),
             'aptitud_medica': ('tiene_aptitud_medica', 'apellidos', 'nombres'),
-            'cursos': ('tiene_cursos', 'apellidos', 'nombres'),
             'estado': ('habilitado', 'apellidos', 'nombres'),
         }
+        sortable_columns.update({
+            codigo.lower(): (f'tiene_curso_{codigo.lower()}', 'apellidos', 'nombres')
+            for codigo, label in Certificado.CURSO_CHOICES
+        })
         order_fields = sortable_columns.get(sort)
         if order_fields:
             if direction == 'desc':
@@ -705,10 +729,12 @@ class TrabajadorEmpresaListView(TrabajadorEmpresaPermisoMixin, ListView):
             'cargo': 'Cargo',
             'induccion': 'Inducción',
             'aptitud_medica': 'Aptitud médica',
-            'cursos': 'Cursos',
-            'estado': 'Estado del trabajador',
         })
+        kwargs['sortable_columns'].update({codigo.lower(): label for codigo, label in Certificado.CURSO_CHOICES})
+        kwargs['sortable_columns']['estado'] = 'Estado del trabajador'
+        kwargs.setdefault('cursos_columnas', Certificado.CURSO_CHOICES)
         kwargs.setdefault('empresa', self.request.user.empresa)
+        kwargs.setdefault('es_empresa', True)
         return super().get_context_data(**kwargs)
 
 
@@ -733,7 +759,7 @@ class TrabajadorEmpresaCreateView(TrabajadorEmpresaBaseMixin, CreateView):
     model = Trabajador
     form_class = TrabajadorEmpresaForm
     template_name = 'control/trabajadores/form.html'
-    success_url = reverse_lazy('app_control:trabajador_empresa_lista')
+    success_url = reverse_lazy('app_control:trabajador_lista')
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -742,7 +768,13 @@ class TrabajadorEmpresaCreateView(TrabajadorEmpresaBaseMixin, CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context.setdefault('certificado_formset', CertificadoCargaFormSet(prefix='certificados'))
+        context.setdefault(
+            'certificado_formset',
+            CertificadoCargaFormSet(
+                initial=[{'tipo': Certificado.CURSOS, 'curso': curso} for curso, label in Certificado.CURSO_CHOICES],
+                prefix='certificados',
+            ),
+        )
         return context
 
     def form_valid(self, form):
@@ -753,7 +785,10 @@ class TrabajadorEmpresaCreateView(TrabajadorEmpresaBaseMixin, CreateView):
         with transaction.atomic():
             self.object = form.save()
             for certificado_form in formset:
-                if certificado_form.cleaned_data and not certificado_form.cleaned_data.get('DELETE'):
+                if certificado_form.cleaned_data and all(
+                    certificado_form.cleaned_data.get(field)
+                    for field in ('curso', 'archivo', 'fecha_emision', 'fecha_vencimiento')
+                ):
                     certificado = certificado_form.save(commit=False)
                     certificado.trabajador = self.object
                     certificado.save()
@@ -765,7 +800,7 @@ class TrabajadorEmpresaUpdateView(TrabajadorEmpresaBaseMixin, UpdateView):
     model = Trabajador
     form_class = TrabajadorEmpresaForm
     template_name = 'control/trabajadores/form.html'
-    success_url = reverse_lazy('app_control:trabajador_empresa_lista')
+    success_url = reverse_lazy('app_control:trabajador_lista')
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -774,17 +809,21 @@ class TrabajadorEmpresaUpdateView(TrabajadorEmpresaBaseMixin, UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        initial = [
-            {
-                'tipo': Certificado.CURSOS,
-                'curso': certificado.curso,
-                'fecha_emision': certificado.fecha_emision.isoformat(),
-                'fecha_vencimiento': certificado.fecha_vencimiento.isoformat(),
-                'archivo': certificado.archivo,
-            }
+        certificados = {
+            certificado.curso: certificado
             for certificado in self.object.certificados.filter(tipo=Certificado.CURSOS)
-        ]
-        context.setdefault('certificado_formset', CertificadoCargaFormSet(initial=initial or None, prefix='certificados'))
+        }
+        initial = []
+        for curso, label in Certificado.CURSO_CHOICES:
+            certificado = certificados.get(curso)
+            initial.append({
+                'tipo': Certificado.CURSOS,
+                'curso': curso,
+                'fecha_emision': certificado.fecha_emision.isoformat() if certificado else '',
+                'fecha_vencimiento': certificado.fecha_vencimiento.isoformat() if certificado else '',
+                'archivo': certificado.archivo if certificado else '',
+            })
+        context.setdefault('certificado_formset', CertificadoCargaFormSet(initial=initial, prefix='certificados'))
         return context
 
     def form_valid(self, form):
@@ -797,11 +836,10 @@ class TrabajadorEmpresaUpdateView(TrabajadorEmpresaBaseMixin, UpdateView):
                 certificado.curso: certificado
                 for certificado in self.object.certificados.filter(tipo=Certificado.CURSOS)
             }
-            cursos_recibidos = set()
             for certificado_form in formset:
-                if certificado_form.cleaned_data and not certificado_form.cleaned_data.get('DELETE'):
+                if certificado_form.cleaned_data:
                     curso = certificado_form.cleaned_data.get('curso')
-                    if not curso:
+                    if not curso or not all(certificado_form.cleaned_data.get(field) for field in ('fecha_emision', 'fecha_vencimiento')):
                         continue
                     certificado = cursos_existentes.get(curso, Certificado())
                     certificado.tipo = Certificado.CURSOS
@@ -811,12 +849,10 @@ class TrabajadorEmpresaUpdateView(TrabajadorEmpresaBaseMixin, UpdateView):
                     archivo = certificado_form.cleaned_data.get('archivo')
                     if archivo:
                         certificado.archivo = archivo
+                    elif not certificado.pk:
+                        continue
                     certificado.trabajador = self.object
                     certificado.save()
-                    cursos_recibidos.add(curso)
-            for curso_id, certificado in cursos_existentes.items():
-                if curso_id not in cursos_recibidos:
-                    certificado.delete()
         messages.success(self.request, 'Trabajador actualizado correctamente.')
         return HttpResponseRedirect(self.get_success_url())
 
@@ -835,7 +871,7 @@ class TrabajadorEmpresaDeleteView(TrabajadorEmpresaBaseMixin, DeleteView):
     model = Trabajador
     template_name = 'control/trabajadores/confirm_delete.html'
     context_object_name = 'trabajador'
-    success_url = reverse_lazy('app_control:trabajador_empresa_lista')
+    success_url = reverse_lazy('app_control:trabajador_lista')
 
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()

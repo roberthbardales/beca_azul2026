@@ -17,7 +17,7 @@
             <aside aria-label="Empresa asignada" class="mb-4 rounded-lg bg-blue-50 px-4 py-2 text-sm text-blue-700"><span class="font-semibold">Empresa asignada:</span> {{ request.user.empresa.nombre }}</aside>
             {% endif %}
 
-            <form method="post" enctype="multipart/form-data" novalidate class="space-y-3">
+            <form method="post" enctype="multipart/form-data" novalidate class="space-y-3" data-max-pdf-size="2097152">
                 {% csrf_token %}
 
                 {% if form.non_field_errors %}
@@ -99,15 +99,13 @@
                        </tbody></table></div>
                  </fieldset>
                   <fieldset class="control-form-section border-t border-gray-100 pt-3"><legend class="mb-2 text-sm font-semibold text-[#0f172a]">Cursos</legend>
-                       <div class="app-table-wrap responsive-table"><table class="app-table w-full min-w-[620px]"><thead><tr><th>Tipo</th><th>Archivo PDF</th><th>Emisión</th><th>Vencimiento</th><th>Curso</th></tr></thead><tbody id="certificados-opcionales">
-                      {% for certificado_form in certificado_formset %}
-<tr data-certificado-form><td>Curso{{ certificado_form.tipo }}</td><td>{{ certificado_form.archivo }}{{ certificado_form.archivo.errors }}</td><td>{{ certificado_form.fecha_emision }}{{ certificado_form.fecha_emision.errors }}</td><td>{{ certificado_form.fecha_vencimiento }}{{ certificado_form.fecha_vencimiento.errors }}</td><td>{{ certificado_form.curso }}{{ certificado_form.curso.errors }}</td></tr>
-                      {% endfor %}
+                        <div class="app-table-wrap responsive-table"><table class="app-table w-full min-w-[620px]"><thead><tr><th>Curso</th><th>Archivo PDF</th><th>Emisión</th><th>Vencimiento</th></tr></thead><tbody id="certificados-opcionales">
+                       {% for certificado_form in certificado_formset %}
+ <tr data-certificado-form><td>{% if certificado_form.curso.value == 'CALIENTE' %}Caliente{% elif certificado_form.curso.value == 'ALTURA' %}Altura{% elif certificado_form.curso.value == 'ESPACIO_CONFINADO' %}Espacio confinado{% elif certificado_form.curso.value == 'ELECTRICO' %}Eléctrico{% elif certificado_form.curso.value == 'EXCAVACION' %}Excavación{% elif certificado_form.curso.value == 'IZAJE' %}Izaje{% endif %}{{ certificado_form.tipo }}{{ certificado_form.curso }}{{ certificado_form.curso.errors }}</td><td>{% if certificado_form.initial.archivo %}<a href="{{ certificado_form.initial.archivo.url }}" target="_blank" rel="noopener" class="text-xs text-blue-700 underline">PDF actual</a><br>{% endif %}{{ certificado_form.archivo }}{{ certificado_form.archivo.errors }}</td><td>{{ certificado_form.fecha_emision }}{{ certificado_form.fecha_emision.errors }}</td><td>{{ certificado_form.fecha_vencimiento }}{{ certificado_form.fecha_vencimiento.errors }}</td></tr>
+                       {% endfor %}
                        </tbody></table></div>
-<template id="certificado-form-template"><tr data-certificado-form><td>Curso{{ certificado_formset.empty_form.tipo }}</td><td>{{ certificado_formset.empty_form.archivo }}</td><td>{{ certificado_formset.empty_form.fecha_emision }}</td><td>{{ certificado_formset.empty_form.fecha_vencimiento }}</td><td>{{ certificado_formset.empty_form.curso }}</td></tr></template>
-                      {% if certificado_formset.non_form_errors %}<div class="text-xs text-red-600">{{ certificado_formset.non_form_errors }}</div>{% endif %}
-                      <button type="button" class="btn btn-secondary btn-sm" id="agregar-certificado-opcional">Agregar otro curso</button>
-                 </fieldset>
+                       {% if certificado_formset.non_form_errors %}<div class="text-xs text-red-600">{{ certificado_formset.non_form_errors }}</div>{% endif %}
+                  </fieldset>
                  {% endif %}
 
                 <footer class="control-action-bar flex flex-col-reverse gap-2 border-t border-gray-100 pt-3 sm:flex-row sm:items-center">
@@ -115,20 +113,26 @@
                         <svg class="h-4 w-4" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M5 4.5h11l3 3V19a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5.5a1 1 0 0 1 1-1Z"/><path stroke-linecap="round" d="M8 4.5v5h7v-5M8 20v-5h8v5"/></svg>
                         {% if object %}Actualizar{% else %}Registrar trabajador{% endif %}
                     </button>
-                    <a class="btn btn-secondary" href="{% if request.user.role == '3' %}{% url 'app_control:trabajador_empresa_lista' %}{% else %}{% url 'app_control:trabajador_lista' %}{% endif %}">Cancelar</a>
+                    <a class="btn btn-secondary" href="{% url 'app_control:trabajador_lista' %}">Cancelar</a>
                 </footer>
             </form>
             {% if request.user.role == '3' %}<script>
-                const total = document.getElementById('id_certificados-TOTAL_FORMS');
-                const container = document.getElementById('certificados-opcionales');
-                const addButton = document.getElementById('agregar-certificado-opcional');
-                const formTemplate = document.getElementById('certificado-form-template');
-                addButton.addEventListener('click', () => {
-                    const index = Number(total.value);
-                    const row = formTemplate.content.firstElementChild.cloneNode(true);
-                    row.innerHTML = row.innerHTML.replaceAll('__prefix__', index);
-                    container.appendChild(row);
-                    total.value = index + 1;
+                const maxPdfSize = 2 * 1024 * 1024;
+                document.querySelector('form[data-max-pdf-size]').addEventListener('submit', (event) => {
+                    const oversized = [...event.currentTarget.querySelectorAll('input[type="file"]')]
+                        .find((input) => input.files[0] && input.files[0].size > maxPdfSize);
+                    if (oversized) {
+                        event.preventDefault();
+                        oversized.setCustomValidity('El archivo PDF no puede superar los 2 MB.');
+                        oversized.reportValidity();
+                    }
+                });
+                document.querySelectorAll('input[type="file"]').forEach((input) => {
+                    input.addEventListener('change', () => input.setCustomValidity(
+                        input.files[0] && input.files[0].size > maxPdfSize
+                            ? 'El archivo PDF no puede superar los 2 MB.'
+                            : ''
+                    ));
                 });
             </script>{% endif %}
         </div>

@@ -1,49 +1,25 @@
 {% load static %}
 {% if request.user.is_authenticated %}
 <button id="sidebar-backdrop" type="button" aria-label="Cerrar menú" class="fixed inset-0 z-30 hidden bg-black/50 lg:hidden"></button>
-
 <aside id="sidebar" aria-label="Navegación principal" class="app-sidebar {% if request.user.is_superuser or request.user.role == '0' %}sidebar-role-admin{% elif request.user.role == '1' %}sidebar-role-beca{% elif request.user.role == '3' %}sidebar-role-empresa{% elif request.user.role == '2' %}sidebar-role-planta{% else %}sidebar-role-default{% endif %} fixed inset-y-0 left-0 z-40 flex w-64 -translate-x-full flex-col transition-transform duration-200 lg:translate-x-0">
-    <div class="brand-lockup flex items-center border-b px-5">
-        <img class="brand-logo" src="{% static 'images/Logo.jpeg' %}" alt="Beca Azul Ingenieros y Consultores">
-    </div>
-
+    <div class="brand-lockup flex items-center border-b px-5"><img class="brand-logo" src="{% static 'images/Logo.jpeg' %}" alt="Beca Azul Ingenieros y Consultores"></div>
     <nav class="flex-1 space-y-1 overflow-y-auto px-4 py-5" aria-label="Secciones del sistema">
         {% with url_name=request.resolver_match.url_name|default:'' %}
-
         <div class="sidebar-section px-3 pb-2 font-bold uppercase">Principal</div>
-
-        {% if request.user.role != '4' and request.user.role != '3' %}
-            <a href="{% url 'app_control:dashboard' %}" {% if url_name == 'dashboard' %}aria-current="page"{% endif %} class="sidebar-link flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors {% if url_name == 'dashboard' %}sidebar-link--active{% endif %}">
-                <svg class="nav-icon" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-                Dashboard
-            </a>
-        {% endif %}
-
-        <a href="{% url 'app_control:trabajador_buscar' %}" {% if url_name == 'trabajador_buscar' %}aria-current="page"{% endif %} class="sidebar-link flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors {% if url_name == 'trabajador_buscar' %}sidebar-link--active{% endif %}">
-            <svg class="nav-icon" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="11" cy="11" r="6"/><path stroke-linecap="round" d="m16 16 4 4"/></svg>
-            Buscar trabajador
-        </a>
-
-        {% if request.user.role == '0' or request.user.role == '1' or request.user.role == '2' or request.user.role == '4' %}
-            <a href="{% url 'app_control:empresa_buscar' %}" {% if url_name == 'empresa_buscar' %}aria-current="page"{% endif %} class="sidebar-link flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors {% if url_name == 'empresa_buscar' %}sidebar-link--active{% endif %}">
-                <svg class="nav-icon" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linejoin="round" d="M4 21V5l8-3 8 3v16"/><path stroke-linecap="round" d="M8 8h1m-1 4h1m6-4h1m-1 4h1M3 21h18M10 21v-4h4"/><path stroke-linecap="round" d="m18 18 3 3"/><circle cx="17" cy="17" r="3"/></svg>
-                Buscar empresa
-            </a>
-        {% endif %}
-
+        {% if request.user.role != '4' and request.user.role != '3' %}<a href="{% url 'app_control:dashboard' %}" class="sidebar-link flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm {% if url_name == 'dashboard' %}sidebar-link--active{% endif %}"><svg class="nav-icon" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Dashboard</a>{% endif %}
+        <a href="{% url 'app_control:trabajador_buscar' %}" class="sidebar-link flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm {% if url_name == 'trabajador_buscar' %}sidebar-link--active{% endif %}"><svg class="nav-icon" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="11" cy="11" r="6"/><path stroke-linecap="round" d="m16 16 4 4"/></svg>Buscar trabajador</a>
+        {% if request.user.role == '0' or request.user.role == '1' or request.user.role == '2' or request.user.role == '4' %}<a href="{% url 'app_control:empresa_buscar' %}" class="sidebar-link flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm {% if url_name == 'empresa_buscar' %}sidebar-link--active{% endif %}"><svg class="nav-icon" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linejoin="round" d="M4 21V5l8-3 8 3v16"/><path stroke-linecap="round" d="m18 18 3 3"/><circle cx="17" cy="17" r="3"/></svg>Buscar empresa</a>{% endif %}
         {% if request.user.is_superuser or request.user.role == '0' or request.user.role == '1' or request.user.role == '2' %}
         <div class="sidebar-section px-3 pt-5 pb-2 font-bold uppercase">Administración</div>
-        <a href="{% url 'app_users:usuario_lista' %}" {% if url_name in 'usuario_lista usuario_crear usuario_detalle usuario_editar usuario_toggle usuario_password usuario_eliminar' %}aria-current="page"{% endif %} class="sidebar-link flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors {% if url_name in 'usuario_lista usuario_crear usuario_detalle usuario_editar usuario_toggle usuario_password usuario_eliminar' %}sidebar-link--active{% endif %}"><svg class="nav-icon" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="9" cy="8" r="3"/><path stroke-linecap="round" d="M3 20c.6-3 2.6-5 6-5s5.4 2 6 5"/><path stroke-linecap="round" d="M16 10a3 3 0 0 1 0 6"/><path stroke-linecap="round" d="M17 15c2.2.2 3.5 1.8 4 3.5"/></svg>Usuarios</a>
-        <a href="{% url 'app_control:empresa_lista' %}" {% if url_name in 'empresa_lista empresa_crear empresa_detalle empresa_editar empresa_toggle empresa_eliminar' %}aria-current="page"{% endif %} class="sidebar-link flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors {% if url_name in 'empresa_lista empresa_crear empresa_detalle empresa_editar empresa_toggle empresa_eliminar' %}sidebar-link--active{% endif %}"><svg class="nav-icon" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linejoin="round" d="M4 21V5l8-3 8 3v16"/><path stroke-linecap="round" d="M8 8h1m-1 4h1m6-4h1m-1 4h1M3 21h18M10 21v-4h4v4"/></svg>Empresas</a>
-        <a href="{% url 'app_control:trabajador_lista' %}" {% if url_name in 'trabajador_lista trabajador_crear trabajador_editar trabajador_detalle trabajador_estado trabajador_toggle trabajador_eliminar' %}aria-current="page"{% endif %} class="sidebar-link flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors {% if url_name in 'trabajador_lista trabajador_crear trabajador_editar trabajador_detalle trabajador_estado trabajador_toggle trabajador_eliminar' %}sidebar-link--active{% endif %}"><svg class="nav-icon" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="7" r="3"/><path stroke-linecap="round" d="M5 21c.7-4 3-6 7-6s6.3 2 7 6"/></svg>Trabajadores</a>
+        <a href="{% url 'app_users:usuario_lista' %}" class="sidebar-link flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm {% if url_name == 'usuario_lista' %}sidebar-link--active{% endif %}"><svg class="nav-icon" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="9" cy="8" r="3"/><path stroke-linecap="round" d="M3 20c.6-3 2.6-5 6-5s5.4 2 6 5"/></svg>Usuarios</a>
+        <a href="{% url 'app_control:empresa_lista' %}" class="sidebar-link flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm {% if url_name == 'empresa_lista' %}sidebar-link--active{% endif %}"><svg class="nav-icon" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linejoin="round" d="M4 21V5l8-3 8 3v16"/></svg>Empresas</a>
+        <a href="{% url 'app_control:trabajador_lista' %}" class="sidebar-link flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm {% if url_name == 'trabajador_lista' %}sidebar-link--active{% endif %}"><svg class="nav-icon" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="7" r="3"/><path stroke-linecap="round" d="M5 21c.7-4 3-6 7-6s6.3 3 7 6"/></svg>Trabajadores</a>
         {% elif request.user.role == '3' %}
-         <div class="sidebar-section px-3 pt-5 pb-2 font-bold uppercase">Empresa</div>
-         <a href="{% url 'app_control:empresa_detalle' request.user.empresa_id %}" {% if url_name == 'empresa_detalle' %}aria-current="page"{% endif %} class="sidebar-link flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors {% if url_name == 'empresa_detalle' %}sidebar-link--active{% endif %}">Mi empresa</a>
-        <a href="{% url 'app_control:trabajador_empresa_lista' %}" {% if url_name in 'trabajador_empresa_lista' %}aria-current="page"{% endif %} class="sidebar-link flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors {% if url_name in 'trabajador_empresa_lista' %}sidebar-link--active{% endif %}"><svg class="nav-icon" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="7" r="3"/><path stroke-linecap="round" d="M5 21c.7-4 3-6 7-6s6.3 2 7 6"/></svg>Trabajadores</a>
+        <div class="sidebar-section px-3 pt-5 pb-2 font-bold uppercase">Empresa</div>
+        <a href="{% url 'app_control:empresa_detalle' request.user.empresa_id %}" class="sidebar-link flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm {% if url_name == 'empresa_detalle' %}sidebar-link--active{% endif %}">Mi empresa</a>
+        <a href="{% url 'app_control:trabajador_lista' %}" class="sidebar-link flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm {% if url_name == 'trabajador_lista' %}sidebar-link--active{% endif %}"><svg class="nav-icon" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="7" r="3"/><path stroke-linecap="round" d="M5 21c.7-4 3-6 7-6s6.3 3 7 6"/></svg>Trabajadores</a>
         {% endif %}
-
         {% endwith %}
     </nav>
-
 </aside>
 {% endif %}

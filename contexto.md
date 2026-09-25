@@ -300,11 +300,15 @@ tres gráficas Chart.js, trabajadores recientes y certificados por vencer. Sus
 componentes están divididos en parciales y Chart.js se sirve localmente. Los
 scripts comunes del layout se cargan desde `templates/include/layout_scripts.html`.
 El fixture `fixtures/seed.json` contiene 10 empresas, 20 trabajadores, tres
-categorías de cursos, 43 certificados y cinco usuarios, uno por rol. Cada
+categorías de cursos, 43 certificados y 14 usuarios: un administrador, un
+usuario Beca Azul, un usuario Planta, un usuario Garita y diez usuarios de
+empresa, asociados a las empresas de prueba. En el entorno de desarrollo, todos
+los usuarios del fixture utilizan la contraseña `admin`; debe cambiarse al
+cargar los datos en cualquier entorno compartido o de producción. Cada
 trabajador de prueba tiene Inducción y Aptitud médica; las empresas pueden
-tener SCTR y los trabajadores tienen además categorías de cursos. Las rutas de archivo de la
-fixture son rutas de demostración y requieren que los PDFs existan en `media/`
-para poder abrirlos.
+tener SCTR y los trabajadores tienen además categorías de cursos. Las rutas de
+archivo de la fixture son rutas de demostración y requieren que los PDFs existan
+en `media/` para poder abrirlos.
 
 En el entorno local usado para la última validación se utilizan Python `3.12.0` y
 Django `4.2.25`. `manage.py check`, `makemigrations --check`, `manage.py test` y

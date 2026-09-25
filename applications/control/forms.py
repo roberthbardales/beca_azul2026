@@ -4,10 +4,13 @@ from django.core.exceptions import ValidationError
 
 from .models import Certificado, Empresa, Incidencia, Trabajador
 
+MAX_PDF_SIZE = 2 * 1024 * 1024
 
 def validate_pdf(value):
     if not value.name.lower().endswith('.pdf'):
         raise ValidationError('El archivo debe estar en formato PDF.')
+    if value.size > MAX_PDF_SIZE:
+        raise ValidationError('El archivo PDF no puede superar los 2 MB.')
 
 
 class EmpresaForm(forms.ModelForm):
@@ -270,6 +273,10 @@ class CertificadoCargaForm(forms.ModelForm):
         self.fields['tipo'].widget = forms.HiddenInput()
         self.fields['tipo'].initial = Certificado.CURSOS
         self.fields['curso'].required = False
+        self.fields['curso'].widget = forms.HiddenInput()
+        self.fields['fecha_emision'].required = False
+        self.fields['fecha_vencimiento'].required = False
+        self.fields['archivo'].required = False
         self.fields['archivo'].validators.append(validate_pdf)
 
     def clean(self):
@@ -288,6 +295,14 @@ class CertificadoCargaForm(forms.ModelForm):
             self.cleaned_data['curso'] = curso
         emision = cleaned.get('fecha_emision')
         vencimiento = cleaned.get('fecha_vencimiento')
+        archivo = cleaned.get('archivo')
+        archivo_existente = bool(self.initial.get('archivo'))
+        if any((archivo, emision, vencimiento)) and not all((archivo or archivo_existente, emision, vencimiento)):
+            for field_name in ('archivo', 'fecha_emision', 'fecha_vencimiento'):
+                if field_name == 'archivo' and archivo_existente:
+                    continue
+                if not cleaned.get(field_name):
+                    self.add_error(field_name, 'Complete este campo para registrar el certificado.')
         if emision and vencimiento and vencimiento < emision:
             self.add_error('fecha_vencimiento', 'La fecha no puede ser anterior a la emisión.')
         return cleaned
@@ -310,4 +325,4 @@ class CertificadoCargaFormSetBase(forms.BaseFormSet):
             vistos.add(clave)
 
 
-CertificadoCargaFormSet = formset_factory(CertificadoCargaForm, formset=CertificadoCargaFormSetBase, extra=1)
+CertificadoCargaFormSet = formset_factory(CertificadoCargaForm, formset=CertificadoCargaFormSetBase, extra=0)

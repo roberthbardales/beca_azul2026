@@ -7,19 +7,28 @@
 <div class="list-page-header">
     <div>
         <h1 class="text-2xl font-bold text-[#0f172a]">Trabajadores</h1>
-        <p class="text-sm text-[#A5A5A5]">{{ empresa.nombre }} · RUC {{ empresa.ruc }}</p>
+        {% if es_empresa %}<p class="text-sm text-[#A5A5A5]">{{ empresa.nombre }} · RUC {{ empresa.ruc }}</p>{% endif %}
     </div>
+    {% if es_empresa %}
     <a class="btn btn-primary" href="{% url 'app_control:trabajador_empresa_crear' %}">
         <svg class="h-4 w-4" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" d="M12 5v14M5 12h14"/></svg>
         Nuevo trabajador
     </a>
+    {% endif %}
 </div>
 
-<form method="get" action="{% url 'app_control:trabajador_empresa_lista' %}" class="list-filter" role="search">
+<form method="get" action="{% url 'app_control:trabajador_lista' %}" class="list-filter" role="search">
     <div>
         <label class="sr-only" for="empresa-trabajadores-q">Buscar trabajadores</label>
         <input id="empresa-trabajadores-q" type="search" name="q" value="{{ q }}" placeholder="Buscar por DNI, nombre, cargo o área..." class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#0F6FC6] focus:outline-none">
     </div>
+    {% if not es_empresa %}<div>
+        <label class="sr-only" for="empresa-trabajadores-empresa">Empresa</label>
+        <select id="empresa-trabajadores-empresa" name="empresa" class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#0F6FC6] focus:outline-none">
+            <option value="">Todas las empresas</option>
+            {% for item in empresas %}<option value="{{ item.pk }}" {% if empresa_id == item.pk|stringformat:"s" %}selected{% endif %}>{{ item.nombre }}</option>{% endfor %}
+        </select>
+    </div>{% endif %}
     <div>
         <label class="sr-only" for="empresa-trabajadores-estado">Estado</label>
         <select id="empresa-trabajadores-estado" name="estado" class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#0F6FC6] focus:outline-none">
@@ -31,17 +40,17 @@
     </div>
     <div class="list-filter-actions">
         <button type="submit" class="btn btn-primary">Buscar</button>
-        <a class="btn btn-secondary" href="{% url 'app_control:trabajador_empresa_lista' %}">Limpiar</a>
+         <a class="btn btn-secondary" href="{% url 'app_control:trabajador_lista' %}">Limpiar</a>
     </div>
 </form>
 
-<div class="app-table-wrap list-table-wrap responsive-table">
-    <table class="app-table list-table responsive-table min-w-full divide-y divide-gray-200" aria-label="Trabajadores de {{ empresa.nombre }}">
+<div class="app-table-wrap list-table-wrap workers-list-table-wrap responsive-table">
+    <table class="app-table list-table workers-list-table responsive-table min-w-full divide-y divide-gray-200" aria-label="Trabajadores de {{ empresa.nombre }}">
         <thead class="bg-gray-50">
             <tr>
                 {% for key, label in sortable_columns.items %}
                 {% with current=sort current_dir=dir %}
-                <th class="px-3 py-1 text-left text-xs font-semibold text-[#A5A5A5]">
+                <th class="px-3 py-1 text-left text-xs font-semibold {% if key == 'induccion' or key == 'aptitud_medica' %}worker-requirement-header{% elif key == 'caliente' or key == 'altura' or key == 'espacio_confinado' or key == 'electrico' or key == 'excavacion' or key == 'izaje' %}worker-course-header{% endif %}">
                     <a class="inline-flex items-center gap-1 hover:text-[#0F6FC6]" href="?{% if query_string %}{{ query_string }}&{% endif %}sort={{ key }}&dir={% if current == key and current_dir == 'asc' %}desc{% else %}asc{% endif %}">
                         <span>{{ label }}</span>
                         {% if current == key %}
@@ -63,12 +72,15 @@
             <tr>
                 <td data-label="DNI" class="px-3 py-1 text-sm font-medium">{{ trabajador.dni }}</td>
                 <td data-label="Nombre" class="px-3 py-1 text-sm">{{ trabajador.apellidos }}, {{ trabajador.nombres }}</td>
-                <td data-label="Cargo" class="px-3 py-1 text-sm">
+                  {% if not es_empresa %}<td data-label="Empresa" class="px-3 py-1 text-sm">{{ trabajador.empresa.nombre }}</td>{% endif %}
+                  <td data-label="Cargo" class="px-3 py-1 text-sm">
                      {{ trabajador.cargo|default:'-' }}
                 </td>
                  <td data-label="Inducción" class="px-3 py-1 text-center">{% if trabajador.tiene_induccion %}<span class="inline-flex rounded-full p-1" title="Tiene inducción" aria-label="Tiene inducción"><svg style="width:1.05rem;height:1.05rem" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#16a34a"/><path fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="m7 12 3 3 7-7"/></svg></span>{% else %}<span class="inline-flex rounded-full p-1" title="No tiene inducción" aria-label="No tiene inducción"><svg style="width:1.05rem;height:1.05rem" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#dc2626"/><path fill="none" stroke="#fff" stroke-linecap="round" stroke-width="2.5" d="m8 8 8 8m0-8-8 8"/></svg></span>{% endif %}</td>
                  <td data-label="Aptitud médica" class="px-3 py-1 text-center">{% if trabajador.tiene_aptitud_medica %}<span class="inline-flex rounded-full p-1" title="Tiene aptitud médica" aria-label="Tiene aptitud médica"><svg style="width:1.05rem;height:1.05rem" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#16a34a"/><path fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="m7 12 3 3 7-7"/></svg></span>{% else %}<span class="inline-flex rounded-full p-1" title="No tiene aptitud médica" aria-label="No tiene aptitud médica"><svg style="width:1.05rem;height:1.05rem" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#dc2626"/><path fill="none" stroke="#fff" stroke-linecap="round" stroke-width="2.5" d="m8 8 8 8m0-8-8 8"/></svg></span>{% endif %}</td>
-                 <td data-label="Cursos" class="px-3 py-1 text-sm">{% if trabajador.tiene_cursos %}{% for curso in trabajador.cursos_lista %}{{ curso.get_curso_display }}{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %}</td>
+                  {% for codigo, label in cursos_columnas %}
+                  <td data-label="{{ label }}" class="px-3 py-1 text-center">{% if codigo == 'CALIENTE' and trabajador.tiene_curso_caliente or codigo == 'ALTURA' and trabajador.tiene_curso_altura or codigo == 'ESPACIO_CONFINADO' and trabajador.tiene_curso_espacio_confinado or codigo == 'ELECTRICO' and trabajador.tiene_curso_electrico or codigo == 'EXCAVACION' and trabajador.tiene_curso_excavacion or codigo == 'IZAJE' and trabajador.tiene_curso_izaje %}<span class="inline-flex rounded-full p-1" title="Certificado registrado" aria-label="Certificado registrado"><svg style="width:1.05rem;height:1.05rem" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#16a34a"/><path fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="m7 12 3 3 7-7"/></svg></span>{% else %}-{% endif %}</td>
+                  {% endfor %}
                 <td data-label="Estado" class="px-3 py-1 text-sm">
                     {% if trabajador.habilitado %}
                     <span class="inline-block rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">Homologado</span>
@@ -81,7 +93,7 @@
                 </td>
             </tr>
             {% empty %}
-            <tr class="list-empty-row"><td colspan="8" class="list-empty-state px-4 py-10 text-center text-sm text-[#A5A5A5]">{% if q %}No se encontraron trabajadores para "{{ q }}".{% else %}No hay trabajadores registrados.{% endif %}</td></tr>
+             <tr class="list-empty-row"><td colspan="{% if es_empresa %}13{% else %}14{% endif %}" class="list-empty-state px-4 py-10 text-center text-sm text-[#A5A5A5]">{% if q %}No se encontraron trabajadores para "{{ q }}".{% else %}No hay trabajadores registrados.{% endif %}</td></tr>
             {% endfor %}
         </tbody>
     </table>
