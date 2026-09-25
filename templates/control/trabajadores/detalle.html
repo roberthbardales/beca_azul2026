@@ -31,7 +31,7 @@
         <section class="border-b border-gray-200 p-5">
             <div class="app-table-wrap responsive-table">
                 <table class="app-table w-full" aria-label="Datos del trabajador">
-                    <thead><tr><th>Nombres</th><th>Apellidos</th><th>Empresa</th><th>Documento</th><th>Cargo</th><th>Certificados</th><th>Homologado</th></tr></thead>
+                    <thead><tr><th>Nombres</th><th>Apellidos</th><th>Empresa</th><th>Documento</th><th>Cargo</th><th>Certificados</th><th>Habilitado</th></tr></thead>
                     <tbody><tr><td>{{ trabajador.nombres }}</td><td>{{ trabajador.apellidos }}</td><td>{{ trabajador.empresa }}</td><td>{{ trabajador.get_tipo_documento_display }} {{ trabajador.dni }}</td><td>{{ trabajador.cargo|default:'-' }}</td><td>{{ certificados|length }}</td><td>{% if trabajador.habilitado %}<span class="rounded-full bg-green-100 px-2 py-1 text-xs text-green-700">Sí</span>{% else %}<span class="rounded-full bg-red-100 px-2 py-1 text-xs text-red-700">No</span>{% endif %}</td></tr></tbody>
                 </table>
             </div>

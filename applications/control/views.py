@@ -395,7 +395,7 @@ class TrabajadorListView(LoginRequiredMixin, ListView):
         kwargs.setdefault('dir', self.request.GET.get('dir', 'asc'))
         kwargs.setdefault('query_string', query_params.urlencode())
         kwargs.setdefault('empresas', Empresa.objects.order_by('nombre'))
-        kwargs.setdefault('estado_choices', ((1, 'Homologado'), (0, 'No homologado')))
+        kwargs.setdefault('estado_choices', ((1, 'Habilitado'), (0, 'No habilitado')))
         kwargs.setdefault('sortable_columns', {
             'dni': 'DNI',
             'nombre': 'Nombre completo',
@@ -722,7 +722,7 @@ class TrabajadorEmpresaListView(TrabajadorEmpresaPermisoMixin, ListView):
         kwargs.setdefault('sort', self.request.GET.get('sort', ''))
         kwargs.setdefault('dir', self.request.GET.get('dir', 'asc'))
         kwargs.setdefault('query_string', query_params.urlencode())
-        kwargs.setdefault('estado_choices', ((1, 'Homologado'), (0, 'No homologado')))
+        kwargs.setdefault('estado_choices', ((1, 'Habilitado'), (0, 'No habilitado')))
         kwargs.setdefault('sortable_columns', {
             'dni': 'DNI',
             'nombre': 'Nombre completo',
