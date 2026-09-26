@@ -1,8 +1,10 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
+from uuid import uuid4
 
 from django.conf import settings
+from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
 from django.db import models
-from django.db.models import Q
+from django.db.models import Case, CharField, Q, Value, When
 from django.utils import timezone
 from model_utils.models import TimeStampedModel
 
@@ -23,13 +25,42 @@ class CertificadoTipo(models.TextChoices):
     APTITUD_MEDICA = 'APTITUD_MEDICA', 'Aptitud médica'
 
 
+class TipoDocumento(models.TextChoices):
+    DNI = 'DNI', 'DNI'
+    CE = 'CE', 'Carné de extranjería'
+    PASAPORTE = 'PASAPORTE', 'Pasaporte'
+
+
+class CertificadoQuerySet(models.QuerySet):
+    def with_estado(self):
+        hoy = timezone.localdate()
+        return self.annotate(
+            estado_queryset=Case(
+                When(fecha_vencimiento__lt=hoy, then=Value('Vencido')),
+                When(fecha_vencimiento__lte=hoy + timedelta(days=30), then=Value('Próximo a vencer')),
+                default=Value('Vigente'),
+                output_field=CharField(),
+            )
+        )
+
+    def filter_estado(self, estado):
+        return self.with_estado().filter(estado_queryset=estado)
+
+
 def certificado_upload_path(instance, filename):
     extension = filename.rsplit('.', 1)[-1] if '.' in filename else ''
-    base = instance.trabajador.dni if instance.trabajador_id else instance.empresa.ruc
+    if instance.trabajador_id:
+        base = instance.trabajador.dni
+        empresa_id = instance.trabajador.empresa_id
+    elif instance.empresa_id:
+        base = instance.empresa.ruc
+        empresa_id = instance.empresa_id
+    else:
+        raise ValueError('El certificado debe pertenecer a una empresa o trabajador.')
+
     fecha = instance.fecha_emision
-    nombre = datetime.now().strftime('%d%m%Y%H%M%S')
+    nombre = uuid4().hex
     nombre_archivo = f'{base}_{nombre}.{extension}' if extension else f'{base}_{nombre}'
-    empresa_id = instance.trabajador.empresa_id if instance.trabajador_id else instance.empresa_id
     return f'certificados/empresa_{empresa_id}/{fecha:%Y}/{fecha:%m}/{nombre_archivo}'
 
 
@@ -50,7 +81,7 @@ class Empresa(TimeStampedModel):
         return self.nombre
 
     def actualizar_homologado(self):
-        trabajadores = self.trabajadores.all()
+        trabajadores = self.trabajadores.filter(activo=True)
         nuevo_valor = trabajadores.exists() and not trabajadores.filter(habilitado=False).exists()
         if self.homologado != nuevo_valor:
             self.homologado = nuevo_valor
@@ -58,14 +89,10 @@ class Empresa(TimeStampedModel):
 
 
 class Trabajador(TimeStampedModel):
-    DNI = 'DNI'
-    CE = 'CE'
-    PASAPORTE = 'PASAPORTE'
-    TIPO_DOCUMENTO_CHOICES = (
-        (DNI, 'DNI'),
-        (CE, 'Carné de extranjería'),
-        (PASAPORTE, 'Pasaporte'),
-    )
+    DNI = TipoDocumento.DNI
+    CE = TipoDocumento.CE
+    PASAPORTE = TipoDocumento.PASAPORTE
+    TIPO_DOCUMENTO_CHOICES = TipoDocumento.choices
 
     empresa = models.ForeignKey(Empresa, on_delete=models.PROTECT, related_name='trabajadores')
     tipo_documento = models.CharField(max_length=10, choices=TIPO_DOCUMENTO_CHOICES, default=DNI)
@@ -124,8 +151,9 @@ class Certificado(TimeStampedModel):
     tipo = models.CharField(max_length=20, choices=TIPO_CHOICES)
     curso = models.CharField(max_length=30, choices=CURSO_CHOICES, null=True, blank=True)
     fecha_emision = models.DateField()
-    fecha_vencimiento = models.DateField()
+    fecha_vencimiento = models.DateField(db_index=True)
     archivo = models.FileField(upload_to=certificado_upload_path)
+    objects = CertificadoQuerySet.as_manager()
 
     class Meta:
         ordering = ('-created',)
@@ -139,12 +167,39 @@ class Certificado(TimeStampedModel):
             ),
             models.UniqueConstraint(
                 fields=('trabajador', 'curso'),
-                condition=Q(trabajador__isnull=False, tipo='CURSOS', curso__isnull=False),
+                condition=Q(
+                    trabajador__isnull=False,
+                    tipo=CertificadoTipo.CURSOS,
+                    curso__isnull=False,
+                ),
                 name='certificado_unico_curso_trabajador',
             ),
-            models.UniqueConstraint(fields=('empresa', 'tipo'), condition=Q(empresa__isnull=False, tipo='SCTR'), name='certificado_unico_sctr_empresa'),
+            models.UniqueConstraint(
+                fields=('empresa', 'tipo'),
+                condition=Q(empresa__isnull=False, tipo=CertificadoTipo.SCTR),
+                name='certificado_unico_sctr_empresa',
+            ),
             models.CheckConstraint(
-                check=(Q(tipo='SCTR', empresa__isnull=False, trabajador__isnull=True, curso__isnull=True) | Q(tipo__in=('INDUCCION', 'APTITUD_MEDICA'), trabajador__isnull=False, empresa__isnull=True, curso__isnull=True) | Q(tipo='CURSOS', trabajador__isnull=False, empresa__isnull=True, curso__isnull=False)),
+                check=(
+                    Q(
+                        tipo=CertificadoTipo.SCTR,
+                        empresa__isnull=False,
+                        trabajador__isnull=True,
+                        curso__isnull=True,
+                    )
+                    | Q(
+                        tipo__in=(CertificadoTipo.INDUCCION, CertificadoTipo.APTITUD_MEDICA),
+                        trabajador__isnull=False,
+                        empresa__isnull=True,
+                        curso__isnull=True,
+                    )
+                    | Q(
+                        tipo=CertificadoTipo.CURSOS,
+                        trabajador__isnull=False,
+                        empresa__isnull=True,
+                        curso__isnull=False,
+                    )
+                ),
                 name='certificado_propietario_segun_tipo',
             ),
             models.CheckConstraint(
@@ -157,7 +212,35 @@ class Certificado(TimeStampedModel):
         curso = f' - {self.get_curso_display()}' if self.curso else ''
         return f'{self.get_tipo_display()}{curso} - {self.trabajador or self.empresa}'
 
+    def clean(self):
+        super().clean()
+        errores = {}
+
+        if self.tipo == self.SCTR:
+            if not self.empresa_id or self.trabajador_id or self.curso:
+                errores[NON_FIELD_ERRORS] = (
+                    'Un certificado SCTR debe pertenecer a una empresa y no tener trabajador ni curso.',
+                )
+        elif self.tipo:
+            if not self.trabajador_id or self.empresa_id:
+                errores[NON_FIELD_ERRORS] = (
+                    'Este tipo de certificado debe pertenecer a un trabajador y no a una empresa.',
+                )
+            elif self.tipo == self.CURSOS and not self.curso:
+                errores['curso'] = ('Un certificado de cursos debe especificar un curso.',)
+            elif self.tipo != self.CURSOS and self.curso:
+                errores['curso'] = ('Este tipo de certificado no puede tener un curso.',)
+
+        if self.fecha_emision and self.fecha_vencimiento and self.fecha_vencimiento < self.fecha_emision:
+            errores['fecha_vencimiento'] = (
+                'La fecha de vencimiento no puede ser anterior a la fecha de emisión.',
+            )
+
+        if errores:
+            raise ValidationError(errores)
+
     def save(self, *args, **kwargs):
+        self.full_clean()
         archivo_anterior = None
         if self.pk:
             archivo_anterior = Certificado.objects.filter(pk=self.pk).values_list('archivo', flat=True).first()
@@ -165,16 +248,10 @@ class Certificado(TimeStampedModel):
         if archivo_anterior and archivo_anterior != self.archivo.name:
             self._eliminar_archivo(archivo_anterior)
 
-    def delete(self, *args, **kwargs):
-        archivo = self.archivo.name
-        result = super().delete(*args, **kwargs)
-        if archivo:
-            self._eliminar_archivo(archivo)
-        return result
-
     @staticmethod
     def _eliminar_archivo(nombre):
         from django.core.files.storage import default_storage
+
         if default_storage.exists(nombre):
             default_storage.delete(nombre)
 

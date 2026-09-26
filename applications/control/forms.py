@@ -1,16 +1,37 @@
 from django import forms
-from django.forms import formset_factory
 from django.core.exceptions import ValidationError
+from django.db import transaction
+from django.forms import formset_factory
 
 from .models import Certificado, Empresa, Incidencia, Trabajador
 
 MAX_PDF_SIZE = 2 * 1024 * 1024
+PDF_SIGNATURE = b'%PDF-'
+DATE_RANGE_ERROR = 'La fecha no puede ser anterior a la emisión.'
+CERTIFICATE_DATE_RANGE_ERROR = 'La fecha de vencimiento no puede ser anterior a la fecha de emisión.'
+DNI_ERROR = 'El DNI debe contener exactamente 8 dígitos numéricos.'
+DUPLICATE_WORKER_ERROR = 'Ya existe un trabajador con este documento en la empresa seleccionada.'
+
+
+def add_date_range_error(form, cleaned_data, emission_field, expiration_field, message):
+    emission = cleaned_data.get(emission_field)
+    expiration = cleaned_data.get(expiration_field)
+    if emission and expiration and expiration < emission:
+        form.add_error(expiration_field, message)
+
 
 def validate_pdf(value):
     if not value.name.lower().endswith('.pdf'):
         raise ValidationError('El archivo debe estar en formato PDF.')
     if value.size > MAX_PDF_SIZE:
         raise ValidationError('El archivo PDF no puede superar los 2 MB.')
+    position = value.tell()
+    try:
+        value.seek(0)
+        if value.read(len(PDF_SIGNATURE)) != PDF_SIGNATURE:
+            raise ValidationError('El archivo no contiene un PDF válido.')
+    finally:
+        value.seek(position)
 
 
 class EmpresaForm(forms.ModelForm):
@@ -35,15 +56,22 @@ class EmpresaForm(forms.ModelForm):
 
     def clean(self):
         cleaned = super().clean()
-        emision, vencimiento = cleaned.get('sctr_fecha_emision'), cleaned.get('sctr_fecha_vencimiento')
+        emision = cleaned.get('sctr_fecha_emision')
+        vencimiento = cleaned.get('sctr_fecha_vencimiento')
         if cleaned.get('sctr_archivo') and not emision:
             self.add_error('sctr_fecha_emision', 'La fecha de emisión es obligatoria.')
         if cleaned.get('sctr_archivo') and not vencimiento:
             self.add_error('sctr_fecha_vencimiento', 'La fecha de vencimiento es obligatoria.')
-        if emision and vencimiento and vencimiento < emision:
-            self.add_error('sctr_fecha_vencimiento', 'La fecha no puede ser anterior a la emisión.')
+        add_date_range_error(
+            self,
+            cleaned,
+            'sctr_fecha_emision',
+            'sctr_fecha_vencimiento',
+            DATE_RANGE_ERROR,
+        )
         return cleaned
 
+    @transaction.atomic
     def save(self, commit=True):
         empresa = super().save(commit=commit)
         archivo = self.cleaned_data.get('sctr_archivo')
@@ -84,8 +112,13 @@ class SCTRForm(forms.ModelForm):
         cleaned = super().clean()
         if not self.instance.pk and not cleaned.get('archivo'):
             self.add_error('archivo', 'El archivo SCTR es obligatorio.')
-        if cleaned.get('fecha_emision') and cleaned.get('fecha_vencimiento') and cleaned['fecha_vencimiento'] < cleaned['fecha_emision']:
-            self.add_error('fecha_vencimiento', 'La fecha no puede ser anterior a la emisión.')
+        add_date_range_error(
+            self,
+            cleaned,
+            'fecha_emision',
+            'fecha_vencimiento',
+            DATE_RANGE_ERROR,
+        )
         return cleaned
 
     def save(self, commit=True):
@@ -93,6 +126,8 @@ class SCTRForm(forms.ModelForm):
         certificado.empresa = self.empresa
         certificado.trabajador = None
         certificado.tipo = Certificado.SCTR
+        if not self.cleaned_data.get('archivo') and certificado.pk:
+            certificado.archivo = Certificado.objects.get(pk=certificado.pk).archivo
         if commit:
             certificado.save()
         return certificado
@@ -117,13 +152,13 @@ class TrabajadorForm(forms.ModelForm):
         empresa = self.cleaned_data.get('empresa')
         tipo_documento = self.cleaned_data.get('tipo_documento')
         if tipo_documento == Trabajador.DNI and not (dni.isdigit() and len(dni) == 8):
-            raise forms.ValidationError('El DNI debe contener exactamente 8 dígitos numéricos.')
+            raise forms.ValidationError(DNI_ERROR)
         if dni and empresa:
             qs = Trabajador.objects.filter(empresa=empresa, dni__iexact=dni, activo=True)
             if self.instance.pk:
                 qs = qs.exclude(pk=self.instance.pk)
             if qs.exists():
-                raise forms.ValidationError('Ya existe un trabajador con este documento en la empresa seleccionada.')
+                raise forms.ValidationError(DUPLICATE_WORKER_ERROR)
         return dni
 
 class TrabajadorEmpresaForm(forms.ModelForm):
@@ -160,25 +195,50 @@ class TrabajadorEmpresaForm(forms.ModelForm):
         dni = self.cleaned_data.get('dni', '').strip()
         tipo_documento = self.cleaned_data.get('tipo_documento')
         if tipo_documento == Trabajador.DNI and not (dni.isdigit() and len(dni) == 8):
-            raise forms.ValidationError('El DNI debe contener exactamente 8 dígitos numéricos.')
+            raise forms.ValidationError(DNI_ERROR)
         empresa = self.empresa or getattr(self.instance, 'empresa', None)
         if dni and empresa:
             qs = Trabajador.objects.filter(empresa=empresa, dni__iexact=dni, activo=True)
             if self.instance.pk:
                 qs = qs.exclude(pk=self.instance.pk)
             if qs.exists():
-                raise forms.ValidationError('Ya existe un trabajador con este documento en la empresa seleccionada.')
+                raise forms.ValidationError(DUPLICATE_WORKER_ERROR)
         return dni
 
     def clean(self):
         cleaned = super().clean()
         for prefix in ('induccion', 'aptitud_medica'):
-            emision = cleaned.get(f'{prefix}_fecha_emision')
-            vencimiento = cleaned.get(f'{prefix}_fecha_vencimiento')
-            if emision and vencimiento and vencimiento < emision:
-                self.add_error(f'{prefix}_fecha_vencimiento', 'La fecha no puede ser anterior a la emisión.')
+            archivo = cleaned.get(f'{prefix}_archivo')
+            fecha_emision = cleaned.get(f'{prefix}_fecha_emision')
+            fecha_vencimiento = cleaned.get(f'{prefix}_fecha_vencimiento')
+            certificado_existente = (
+                self.instance.certificados.filter(tipo=prefix.upper()).first()
+                if self.instance.pk
+                else None
+            )
+            if not certificado_existente and any((archivo, fecha_emision, fecha_vencimiento)):
+                for field_name, value in (
+                    (f'{prefix}_archivo', archivo),
+                    (f'{prefix}_fecha_emision', fecha_emision),
+                    (f'{prefix}_fecha_vencimiento', fecha_vencimiento),
+                ):
+                    if not value:
+                        self.add_error(field_name, 'Complete archivo y fechas para registrar el certificado.')
+            elif certificado_existente and (fecha_emision or fecha_vencimiento):
+                if not fecha_emision:
+                    self.add_error(f'{prefix}_fecha_emision', 'La fecha de emisión es obligatoria.')
+                if not fecha_vencimiento:
+                    self.add_error(f'{prefix}_fecha_vencimiento', 'La fecha de vencimiento es obligatoria.')
+            add_date_range_error(
+                self,
+                cleaned,
+                f'{prefix}_fecha_emision',
+                f'{prefix}_fecha_vencimiento',
+                DATE_RANGE_ERROR,
+            )
         return cleaned
 
+    @transaction.atomic
     def save(self, commit=True):
         trabajador = super().save(commit=False)
         if self.empresa:
@@ -190,20 +250,19 @@ class TrabajadorEmpresaForm(forms.ModelForm):
                 (Certificado.APTITUD_MEDICA, 'aptitud_medica'),
             ):
                 archivo = self.cleaned_data.get(f'{prefix}_archivo')
+                fecha_emision = self.cleaned_data.get(f'{prefix}_fecha_emision')
+                fecha_vencimiento = self.cleaned_data.get(f'{prefix}_fecha_vencimiento')
+                certificado = Certificado.objects.filter(trabajador=trabajador, tipo=tipo).first()
+                if certificado and not any((archivo, fecha_emision, fecha_vencimiento)):
+                    continue
+                if not certificado and not all((archivo, fecha_emision, fecha_vencimiento)):
+                    continue
+                certificado = certificado or Certificado(trabajador=trabajador, tipo=tipo)
+                certificado.fecha_emision = fecha_emision
+                certificado.fecha_vencimiento = fecha_vencimiento
                 if archivo:
-                    certificado = Certificado.objects.filter(trabajador=trabajador, tipo=tipo).first()
-                    if certificado:
-                        certificado.fecha_emision = self.cleaned_data[f'{prefix}_fecha_emision']
-                        certificado.fecha_vencimiento = self.cleaned_data[f'{prefix}_fecha_vencimiento']
-                        certificado.archivo = archivo
-                        certificado.save()
-                    else:
-                        Certificado.objects.create(
-                            trabajador=trabajador, tipo=tipo,
-                            fecha_emision=self.cleaned_data[f'{prefix}_fecha_emision'],
-                            fecha_vencimiento=self.cleaned_data[f'{prefix}_fecha_vencimiento'],
-                            archivo=archivo,
-                        )
+                    certificado.archivo = archivo
+                certificado.save()
         return trabajador
 
 
@@ -252,10 +311,13 @@ class CertificadoForm(forms.ModelForm):
                 qs = qs.exclude(pk=self.instance.pk)
             if qs.exists() and tipo != Certificado.CURSOS:
                 self.add_error('tipo', 'Ya existe un certificado para este requisito.')
-        emision = cleaned.get('fecha_emision')
-        vencimiento = cleaned.get('fecha_vencimiento')
-        if emision and vencimiento and vencimiento < emision:
-            self.add_error('fecha_vencimiento', 'La fecha de vencimiento no puede ser anterior a la fecha de emisión.')
+        add_date_range_error(
+            self,
+            cleaned,
+            'fecha_emision',
+            'fecha_vencimiento',
+            CERTIFICATE_DATE_RANGE_ERROR,
+        )
         return cleaned
 
 
@@ -303,8 +365,13 @@ class CertificadoCargaForm(forms.ModelForm):
                     continue
                 if not cleaned.get(field_name):
                     self.add_error(field_name, 'Complete este campo para registrar el certificado.')
-        if emision and vencimiento and vencimiento < emision:
-            self.add_error('fecha_vencimiento', 'La fecha no puede ser anterior a la emisión.')
+        add_date_range_error(
+            self,
+            cleaned,
+            'fecha_emision',
+            'fecha_vencimiento',
+            DATE_RANGE_ERROR,
+        )
         return cleaned
 
 

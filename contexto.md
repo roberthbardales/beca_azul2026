@@ -333,6 +333,21 @@ Pendientes documentados en `mejoras.md`:
 - Alertas de DNI duplicado entre empresas.
 - Ampliación de pruebas automatizadas para reglas de negocio.
 
+Correcciones técnicas pendientes documentadas en `corregir.md`:
+
+- Revisar y unificar los permisos de las vistas administrativas de trabajadores
+  y certificados.
+- Hacer seguro el reemplazo de certificados: conservar el archivo anterior si
+  falla el guardado del nuevo y usar `transaction.atomic()`.
+- Validar conflictos de categoría antes de cambiar un certificado de curso.
+- Sustituir comparaciones literales de roles por las constantes de `User`.
+- Reducir la lógica repetida de las listas de trabajadores.
+- Revisar la cantidad de consultas independientes del dashboard cuando crezca
+  el volumen de datos.
+- Definir el tratamiento de trabajadores inactivos al editar o agregar
+  certificados.
+- Dividir `applications/control/views.py` si continúa creciendo.
+
 El registro público `/users/register/` todavía permite seleccionar roles
 privilegiados. Antes de producción debe restringirse a un rol seguro o
 eliminarse la posibilidad de crear cuentas administrativas desde esa ruta.
@@ -342,6 +357,7 @@ eliminarse la posibilidad de crear cuentas administrativas desde esa ruta.
 - `README.md`: actualmente contiene solo el nombre del proyecto.
 - `avance.md`: detalle de permisos implementados y verificaciones realizadas.
 - `mejoras.md`: plan de mejoras y funcionalidades implementadas.
+- `corregir.md`: correcciones técnicas pendientes, ordenadas por prioridad.
 - `beca_azul2026/settings.py`: configuración, base de datos y seguridad.
 - `applications/users/models.py`: usuarios y roles.
 - `applications/control/models.py`: empresas, trabajadores y certificados.

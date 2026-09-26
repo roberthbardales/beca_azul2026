@@ -1,5 +1,6 @@
 from datetime import date, timedelta
 
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
 
@@ -34,6 +35,7 @@ class DashboardViewTests(TestCase):
             curso=CursoTipo.ALTURA if tipo == Certificado.CURSOS else None,
             fecha_emision=date.today() - timedelta(days=30),
             fecha_vencimiento=vencimiento,
+            archivo=SimpleUploadedFile('certificado.pdf', b'%PDF-1.4 test'),
         )
 
     def test_clasifica_todos_los_estados_de_certificados(self):

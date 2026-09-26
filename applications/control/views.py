@@ -1,4 +1,4 @@
-from datetime import date, timedelta
+from datetime import timedelta
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -9,6 +9,7 @@ from django.db.models.functions import TruncDate
 from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
+from django.utils import timezone
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView, View
 
 from applications.users.mixins import (
@@ -23,7 +24,15 @@ from applications.users.mixins import (
 )
 from applications.users.models import User
 
-from .forms import CertificadoCargaFormSet, CertificadoForm, EmpresaForm, IncidenciaForm, SCTRForm, TrabajadorEmpresaForm, TrabajadorForm
+from .forms import (
+    CertificadoCargaFormSet,
+    CertificadoForm,
+    EmpresaForm,
+    IncidenciaForm,
+    SCTRForm,
+    TrabajadorEmpresaForm,
+    TrabajadorForm,
+)
 from .models import Certificado, Empresa, Incidencia, Trabajador
 
 class DashboardView(LoginRequiredMixin, View):
@@ -32,9 +41,9 @@ class DashboardView(LoginRequiredMixin, View):
     def get(self, request):
         if request.user.role == User.GARITA:
             raise PermissionDenied
-        if request.user.role == '3':
+        if request.user.role == User.USUARIO_EMPRESA:
             return redirect('app_control:trabajador_lista')
-        hoy = date.today()
+        hoy = timezone.localdate()
         limite_30 = hoy + timedelta(days=30)
         limite_60 = hoy + timedelta(days=60)
 
@@ -318,7 +327,7 @@ class EmpresaDeleteView(AdministrarEmpresasMixin, DeleteView):
         return HttpResponseRedirect(self.get_success_url())
 
 
-class TrabajadorListView(LoginRequiredMixin, ListView):
+class TrabajadorListView(VerTrabajadoresMixin, ListView):
     model = Trabajador
     template_name = 'control/trabajadores/lista_empresa.html'
     context_object_name = 'trabajadores'
@@ -410,12 +419,11 @@ class TrabajadorListView(LoginRequiredMixin, ListView):
         kwargs.setdefault('es_empresa', self.request.user.role == User.USUARIO_EMPRESA)
         if kwargs['es_empresa']:
             kwargs['sortable_columns'].pop('empresa', None)
-        kwargs.setdefault('empresas', Empresa.objects.order_by('nombre'))
         kwargs.setdefault('empresa', getattr(self.request.user, 'empresa', None))
         return super().get_context_data(**kwargs)
 
 
-class TrabajadorBuscarView(LoginRequiredMixin, View):
+class TrabajadorBuscarView(VerTrabajadoresMixin, View):
     template_name = 'control/trabajadores/buscar.html'
 
     def get(self, request):
@@ -485,9 +493,14 @@ class TrabajadorDetailView(VerTrabajadorDetalleMixin, DetailView):
         return queryset
 
     def get_context_data(self, **kwargs):
-        kwargs.setdefault('certificados', self.object.certificados.all().order_by('-fecha_emision'))
-        certificados = {certificado.tipo: certificado for certificado in self.object.certificados.all()}
-        cursos = {certificado.curso: certificado for certificado in self.object.certificados.filter(tipo=Certificado.CURSOS)}
+        certificados_lista = list(self.object.certificados.all().order_by('-fecha_emision'))
+        certificados = {certificado.tipo: certificado for certificado in certificados_lista}
+        cursos = {
+            certificado.curso: certificado
+            for certificado in certificados_lista
+            if certificado.tipo == Certificado.CURSOS
+        }
+        kwargs.setdefault('certificados', certificados_lista)
         kwargs.setdefault('certificados_requeridos', [
             {'tipo': Certificado.INDUCCION, 'label': 'Inducción', 'objeto': certificados.get(Certificado.INDUCCION)},
             {'tipo': Certificado.APTITUD_MEDICA, 'label': 'Aptitud médica', 'objeto': certificados.get(Certificado.APTITUD_MEDICA)},
@@ -507,7 +520,6 @@ class TrabajadorHomologacionView(BecaAzulRequiredMixin, View):
             return redirect('app_control:trabajador_detalle', pk=trabajador.pk)
         trabajador.habilitado = estado == '1'
         trabajador.save(update_fields=['habilitado'])
-        messages.success(self.request, f'El estado del trabajador "{trabajador}" fue actualizado.')
         return redirect('app_control:trabajador_detalle', pk=trabajador.pk)
 
 
@@ -552,14 +564,16 @@ class CertificadoCreateView(AdministrarTrabajadoresMixin, CreateView):
     def form_valid(self, form):
         self.trabajador = self.get_trabajador()
         form.instance.trabajador = self.trabajador
-        if form.cleaned_data.get('tipo') == Certificado.CURSOS:
-            Certificado.objects.filter(
-                trabajador=self.trabajador,
-                tipo=Certificado.CURSOS,
-                curso=form.cleaned_data.get('curso'),
-            ).delete()
+        with transaction.atomic():
+            if form.cleaned_data.get('tipo') == Certificado.CURSOS:
+                Certificado.objects.filter(
+                    trabajador=self.trabajador,
+                    tipo=Certificado.CURSOS,
+                    curso=form.cleaned_data.get('curso'),
+                ).delete()
+            response = super().form_valid(form)
         messages.success(self.request, 'Certificado registrado correctamente.')
-        return super().form_valid(form)
+        return response
 
     def get_success_url(self):
         return reverse('app_control:trabajador_detalle', args=[self.trabajador.pk])
@@ -901,20 +915,23 @@ class CertificadoEmpresaCreateView(TrabajadorEmpresaBaseMixin, CreateView):
 
     def get_initial(self):
         initial = super().get_initial()
-        initial['tipo'] = self.request.GET.get('tipo', Certificado.CURSOS)
+        initial['tipo'] = Certificado.CURSOS
         initial['curso'] = self.request.GET.get('curso', '')
         return initial
 
     def form_valid(self, form):
         self.trabajador = self.get_trabajador()
         form.instance.trabajador = self.trabajador
-        Certificado.objects.filter(
-            trabajador=self.trabajador,
-            tipo=Certificado.CURSOS,
-            curso=form.cleaned_data.get('curso'),
-        ).delete()
+        form.instance.tipo = Certificado.CURSOS
+        with transaction.atomic():
+            Certificado.objects.filter(
+                trabajador=self.trabajador,
+                tipo=Certificado.CURSOS,
+                curso=form.cleaned_data.get('curso'),
+            ).delete()
+            response = super().form_valid(form)
         messages.success(self.request, 'Curso registrado correctamente.')
-        return super().form_valid(form)
+        return response
 
     def get_success_url(self):
         return reverse('app_control:trabajador_empresa_detalle', args=[self.trabajador.pk])

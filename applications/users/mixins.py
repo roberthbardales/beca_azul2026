@@ -45,7 +45,7 @@ class AdministrarEmpresasMixin(BaseRolePermisoMixin):
 
 
 class VerTrabajadoresMixin(BaseRolePermisoMixin):
-    required_roles = (User.ADMINISTRADOR, User.BECA_AZUL, User.GARITA)
+    required_roles = (User.ADMINISTRADOR, User.BECA_AZUL, User.PLANTA)
 
 
 class VerTrabajadorDetalleMixin(BaseRolePermisoMixin):
@@ -53,8 +53,7 @@ class VerTrabajadorDetalleMixin(BaseRolePermisoMixin):
 
 
 class AdministrarTrabajadoresMixin(BaseRolePermisoMixin):
-    # Worker CRUD is handled through the company-scoped views.
-    required_roles = ()
+    required_roles = (User.BECA_AZUL,)
 
 
 class GestionarIncidenciasMixin(BaseRolePermisoMixin):
