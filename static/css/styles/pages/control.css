@@ -19,6 +19,9 @@ main .worker-form-card.rounded-xl.bg-white { border-radius: .5rem !important; }
 .worker-form-card .form-control:has(+ .text-red-600) { border-color: #e53935 !important; box-shadow: 0 0 0 2px rgba(229, 57, 53, .1) !important; }
 .worker-form-card .control-action-bar { margin-top: .15rem !important; padding-top: .85rem !important; }
 .control-form-page { background: var(--ink-50); }
+.company-sctr-card--registered { border-color: #a7f3d0 !important; background: rgba(236, 253, 245, .55) !important; }
+.company-sctr-card--pending { border-color: #fecaca !important; background: rgba(254, 242, 242, .65) !important; }
+.company-identity { column-gap: .75rem; row-gap: .25rem; }
 @media (min-width: 640px) {
     .worker-form-card { padding: 1.35rem !important; }
 }

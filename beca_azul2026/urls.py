@@ -10,5 +10,7 @@ urlpatterns = [
     path('', include('applications.control.urls')),
 ]
 
+handler403 = 'applications.home.views.permission_denied'
+
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

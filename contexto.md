@@ -48,9 +48,14 @@ beca_azul2026/
 - `/users/`: login, registro, dashboard, perfil, cambio y restablecimiento de
   contraseña, además de la gestión de usuarios.
 - `/empresas/`: listado y administración de empresas.
+- `/empresas/<id>/`: detalle de empresa para Administrador, Beca Azul y Planta; el
+  Usuario Empresa solo puede consultar la empresa asociada.
+- `/empresas/<id>/sctr/editar/`: registro o consulta del SCTR de la empresa.
 - `/trabajadores/`: listado, búsqueda y administración de trabajadores.
-- `/trabajadores/empresa/`: vista restringida a los trabajadores de la empresa
-  asociada al usuario.
+- `/trabajadores/`: listado único de trabajadores. Los usuarios empresa ven solo
+  los trabajadores de su empresa; los roles administrativos pueden filtrar por empresa.
+- `/trabajadores/empresa/crear/`: creación de trabajadores exclusivamente para
+  usuarios con rol `USUARIO_EMPRESA`.
 - `/certificados/`: gestión de certificados.
 - `/admin/`: administración nativa de Django.
 
@@ -59,11 +64,16 @@ Las rutas se registran en `beca_azul2026/urls.py`,
 
 ### Presentación de `/empresas/`
 
-- Para `PLANTA`, `/empresas/` muestra la consulta de empresas y trabajadores autorizados, con filtro por empresa, búsqueda de trabajador, DNI, estado y acceso al detalle.
-- Para `ADMINISTRADOR` y `BECA_AZUL`, `/empresas/` mantiene el listado administrativo de empresas con RUC, SCTR, fechas de emisión y vencimiento, estado, trabajadores, homologación y acciones.
-- El listado incluye un botón para consultar directamente las empresas desactivadas y un botón para crear nuevas empresas.
+- `/empresas/` muestra el listado común de empresas para Administrador, Beca Azul y Planta, con búsqueda, filtro de estado y filtro de homologación.
+- Administrador y Beca Azul pueden crear y administrar empresas; Planta solo puede consultar.
+- El listado muestra RUC, SCTR, fechas de emisión y vencimiento, estado, trabajadores, homologación y acceso al detalle.
+- El detalle muestra acciones de administración únicamente para Administrador y Beca Azul.
 - La tabla utiliza las clases reutilizables `.app-table-wrap` y `.app-table`, definidas en `static/css/styles/components/tables.css`, con columnas adaptables al contenido y comportamiento responsive.
 - La presentación visual mantiene la información y rutas existentes; los cambios de esta vista son de composición, tipografía, colores, bordes, iconos y comportamiento responsive.
+- El detalle de empresa utiliza un panel compacto tipo tablero: encabezado con identidad y acciones, métricas horizontales y resumen documental del SCTR.
+- El badge de homologación usa iconos de estado y colores semánticos suaves. Para usuarios empresa se muestra en el área de acciones del encabezado.
+- El detalle `/empresas/<id>/` permite `ADMINISTRADOR`, `BECA_AZUL`, `PLANTA` y `USUARIO_EMPRESA`. Usuario Empresa queda restringido por backend a su empresa asignada; Planta tiene acceso de solo lectura.
+- El formulario de SCTR usa una tarjeta documental compacta, separa el archivo actual de la carga de reemplazo y ofrece un enlace `Ver PDF` cuando existe un archivo.
 
 ### Dashboard `/panel/`
 
@@ -128,6 +138,18 @@ siguen el mismo estilo visual que `/trabajadores/`.
 - `.worker-form-card`, definido en `static/css/styles/pages/control.css`, controla
   la tarjeta visual del formulario de creación/edición de trabajadores.
 
+### Toasts
+
+- El componente global está en `templates/include/messages.html` y se incluye desde
+  `templates/base.html`.
+- Usa `django.contrib.messages` y soporta `success`, `error`, `warning` e `info`.
+- Los toast aparecen arriba a la derecha, debajo del topbar para usuarios autenticados,
+  incluyen cierre manual y desaparecen automáticamente después de cuatro segundos.
+- Los mensajes de trabajadores tienen colores específicos: creación verde,
+  actualización azul, activación/desactivación naranja y eliminación rojo.
+- El comportamiento vanilla está integrado en `templates/include/layout_scripts.html` y
+  los estilos en `static/css/styles/components/toasts.css`.
+
 ### Paleta
 
 Los colores globales están centralizados en
@@ -175,11 +197,12 @@ cargo, `habilitado` y `activo`. El DNI/documento activo debe ser único dentro d
 la empresa. Los requisitos documentales no se almacenan como estados en el
 trabajador; se gestionan mediante la relación `certificados`.
 
- Al registrar un trabajador desde el portal de empresa se deben guardar únicamente
- sus datos básicos. Los certificados y cursos se agregan posteriormente desde el
-  detalle del trabajador. Inducción y Aptitud médica admiten un certificado por
-  trabajador y Cursos admite varios. El SCTR pertenece a la empresa y existe un
-  único SCTR por empresa.
+ Al registrar un trabajador desde el portal de empresa se guardan sus datos básicos,
+ un certificado obligatorio de Inducción y uno obligatorio de Aptitud médica. Los
+ cursos son opcionales durante la creación; si se completa un curso, debe incluir
+ archivo y fechas. Inducción y Aptitud médica admiten un certificado por trabajador
+ y Cursos admite varios, uno por categoría. El SCTR pertenece a la empresa y existe
+ un único SCTR por empresa.
 
 ### Certificado
 
@@ -187,11 +210,11 @@ Pertenece a una empresa o a un trabajador y registra `tipo`, fecha de emisión,
 fecha de vencimiento y archivo PDF. Los tipos disponibles son `SCTR`,
 `INDUCCION`, `CURSOS` y `APTITUD_MEDICA`. SCTR admite un solo certificado por
 empresa. Inducción y Aptitud médica admiten un solo certificado por trabajador.
-Cursos admite varios certificados, uno por cada `CategoriaCurso`.
+Cursos admite varios certificados, uno por cada categoría definida en `CursoTipo`.
 
-`CategoriaCurso` contiene el nombre y el indicador `activo` de cada categoría.
-Las categorías se crean, editan o desactivan desde Django Admin. La combinación
-trabajador/categoría es única para los certificados de cursos. Las fechas de
+Las categorías de cursos se definen mediante `CursoTipo` (`TextChoices`) en
+`applications/control/models.py`; no existe un modelo `CategoriaCurso`. La
+combinación trabajador/categoría es única para los certificados de cursos. Las fechas de
 vencimiento no pueden ser anteriores a las fechas de emisión. El estado se
 calcula como `Vigente`, `Próximo a vencer` (30 días) o `Vencido`.
 
@@ -203,10 +226,10 @@ trabajador es independiente del estado de los certificados.
 
 | Rol | Usuarios | Empresas | Trabajadores |
 |---|---|---|---|
-| Administrador | Gestiona usuarios de administración | Solo lectura | Solo lectura; puede ver y descargar certificados |
-| Beca Azul | Gestiona usuarios empresa | CRUD | CRUD de trabajadores; puede ver y descargar certificados |
-| Usuario Empresa | Sin acceso | Sin acceso | CRUD solo de su empresa; puede cargar, editar, reemplazar y eliminar certificados |
-| Planta | Consulta de usuarios, sin crear/editar/eliminar ni activar/desactivar | Sin acceso | Consulta trabajadores y certificados |
+| Administrador | Ve y gestiona todos los tipos de usuario permitidos | CRUD, igual que Beca Azul | Solo lectura; puede ver y descargar certificados |
+| Beca Azul | Gestiona usuarios Planta, Empresa y Garita | CRUD | CRUD de trabajadores; puede ver y descargar certificados |
+| Usuario Empresa | Sin acceso | Consulta de su empresa y gestión de su SCTR | CRUD solo de su empresa; puede cargar, editar, reemplazar y eliminar certificados |
+| Planta | Consulta de usuarios, sin crear/editar/eliminar ni activar/desactivar | Solo lectura | Consulta trabajadores y certificados |
 | Garita | Sin acceso | Sin acceso | Sin acceso a paneles |
 
 Las restricciones se implementan principalmente en
@@ -214,20 +237,35 @@ Las restricciones se implementan principalmente en
 `applications/control/`. La autorización debe validarse siempre en backend;
 ocultar botones en las plantillas no es suficiente.
 
+### Gestión de usuarios
+
+- En `/users/gestion/`, los usuarios con rol `BECA_AZUL` visualizan usuarios de
+  tipo `PLANTA`, `USUARIO_EMPRESA` y `GARITA`.
+- El filtro `usuarios-rol` muestra únicamente `PLANTA`, `USUARIO_EMPRESA` y
+  `GARITA` para evitar seleccionar `BECA_AZUL` o `ADMINISTRADOR`.
+- En `/users/gestion/crear/`, el combo `id_role` de un usuario Beca Azul permite
+  crear únicamente usuarios Planta, Empresa y Garita.
+- `ADMINISTRADOR` no se ofrece como tipo seleccionable y `superuser` no es un
+  rol del modelo, sino una condición separada (`is_superuser`); ninguno puede
+  ser creado desde este formulario.
+
 ### Restricciones específicas de certificados
 
 - Solo `USUARIO_EMPRESA` puede crear, editar, reemplazar o eliminar certificados
   desde la aplicación, siempre dentro de su propia empresa.
 - `ADMINISTRADOR`, `BECA_AZUL` y `PLANTA` pueden visualizar y descargar los
   certificados desde el detalle del trabajador.
-- Las categorías de cursos solo se administran desde Django Admin.
+- Las categorías de cursos se mantienen en código mediante `CursoTipo`; no se
+  administran desde Django Admin.
 - Estas restricciones se aplican tanto ocultando acciones en las plantillas como
   bloqueando las vistas mediante mixins y filtros por empresa.
 
-### Detalle del trabajador
+### Detalle de empresa y trabajador
 
-- El detalle de empresa muestra el estado y vigencia del SCTR. El detalle del
-  trabajador muestra filas para Inducción, Aptitud médica y Cursos.
+- El detalle de empresa muestra métricas, homologación y estado/vigencia del SCTR, sin listar trabajadores.
+  El usuario empresa puede acceder únicamente a su propia empresa y consultar o editar el SCTR desde
+  `/empresas/<id>/sctr/editar/`. El detalle del trabajador muestra filas para
+  Inducción, Aptitud médica y Cursos.
 - Los cursos registrados aparecen como filas adicionales; si no existe ninguno,
   se muestra una fila vacía con la acción para añadirlo.
 - Los certificados faltantes se muestran como filas vacías con una acción `Añadir`
@@ -241,6 +279,11 @@ ocultar botones en las plantillas no es suficiente.
 - `PLANTA` no puede crear, editar, eliminar, restablecer contraseñas ni
   activar/desactivar usuarios.
 - `PLANTA` no puede activar/desactivar trabajadores ni modificar certificados.
+- Todos los usuarios autenticados pueden utilizar `/trabajadores/buscar/`. Los
+  usuarios de empresa se limitan a trabajadores de su propia empresa.
+- `Usuario Empresa` utiliza `/trabajadores/` y queda limitado automáticamente a su
+  empresa. El botón de creación solo aparece para este rol; los roles administrativos
+  consultan el mismo template sin esa acción.
 
 ## Configuración requerida
 
@@ -311,8 +354,8 @@ archivo de la fixture son rutas de demostración y requieren que los PDFs exista
 en `media/` para poder abrirlos.
 
 En el entorno local usado para la última validación se utilizan Python `3.12.0` y
-Django `4.2.25`. `manage.py check`, `makemigrations --check`, `manage.py test` y
-`git diff --check` finalizaron correctamente. Las pruebas ejecutaron 3 casos y
+Django `4.2.25`. `manage.py check`, `manage.py test applications.control.tests`
+y `git diff --check` finalizaron correctamente. Las pruebas ejecutaron 17 casos y
 terminaron en estado OK. Si `psycopg2-binary` presenta un error de módulo nativo,
 reinstalarlo dentro del entorno virtual con:
 
@@ -348,9 +391,9 @@ Correcciones técnicas pendientes documentadas en `corregir.md`:
   certificados.
 - Dividir `applications/control/views.py` si continúa creciendo.
 
-El registro público `/users/register/` todavía permite seleccionar roles
-privilegiados. Antes de producción debe restringirse a un rol seguro o
-eliminarse la posibilidad de crear cuentas administrativas desde esa ruta.
+El registro público `/users/register/` solo permite crear usuarios con rol
+`USUARIO_EMPRESA`; los roles privilegiados se gestionan desde el módulo protegido
+de usuarios.
 
 ## Archivos de referencia
 

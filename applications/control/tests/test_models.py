@@ -54,3 +54,26 @@ class CertificadoModelTests(TestCase):
 
         with self.assertRaises(ValueError):
             certificado_upload_path(certificado, 'certificado.pdf')
+
+
+class TrabajadorSignalTests(TestCase):
+    def test_cambiar_empresa_actualiza_la_homologacion_de_ambas(self):
+        empresa_anterior = Empresa.objects.create(nombre='Anterior', ruc='20123456789')
+        empresa_nueva = Empresa.objects.create(nombre='Nueva', ruc='20987654321')
+        trabajador = Trabajador.objects.create(
+            empresa=empresa_anterior,
+            dni='12345678',
+            nombres='Ana',
+            apellidos='Prueba',
+            habilitado=True,
+        )
+        empresa_anterior.refresh_from_db()
+        self.assertTrue(empresa_anterior.homologado)
+
+        trabajador.empresa = empresa_nueva
+        trabajador.save()
+
+        empresa_anterior.refresh_from_db()
+        empresa_nueva.refresh_from_db()
+        self.assertFalse(empresa_anterior.homologado)
+        self.assertTrue(empresa_nueva.homologado)

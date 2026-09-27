@@ -56,7 +56,7 @@ class LoginUser(FormView):
 
 
 class LogoutView(LoginRequiredMixin, View):
-    def get(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         services.logout_user(request)
         return HttpResponseRedirect(reverse('app_users:login'))
 
@@ -112,8 +112,12 @@ class UsuarioListView(ConsultaUsuariosPermisoMixin, ListView):
 
     def get_queryset(self):
         user = self.request.user
-        if user.role == User.BECA_AZUL:
-            queryset = User.objects.filter(role=User.USUARIO_EMPRESA).order_by('first_name', 'last_name')
+        if user.is_superuser or user.role == User.ADMINISTRADOR:
+            queryset = User.objects.all().order_by('role', 'first_name', 'last_name')
+        elif user.role == User.BECA_AZUL:
+            queryset = User.objects.filter(
+                role__in=[User.PLANTA, User.USUARIO_EMPRESA, User.GARITA]
+            ).order_by('first_name', 'last_name')
         else:
             queryset = User.objects.filter(
                 role__in=[User.BECA_AZUL, User.PLANTA, User.GARITA]
@@ -138,18 +142,16 @@ class UsuarioListView(ConsultaUsuariosPermisoMixin, ListView):
         kwargs.setdefault('q', self.request.GET.get('q', ''))
         kwargs.setdefault('rol', self.request.GET.get('rol', ''))
         kwargs.setdefault('estado', self.request.GET.get('estado', ''))
-        if user.role == User.BECA_AZUL:
-            kwargs.setdefault('roles', [(User.USUARIO_EMPRESA, 'Usuario Empresa')])
-        elif user.is_superuser or user.role == User.ADMINISTRADOR:
-            kwargs.setdefault(
-                'roles',
-                [(v, l) for v, l in User.ROLE_CHOICES if v != User.ADMINISTRADOR],
-            )
-        else:
-            kwargs.setdefault(
-                'roles',
-                [(v, l) for v, l in User.ROLE_CHOICES if v in (User.BECA_AZUL, User.PLANTA, User.GARITA)],
-            )
+        kwargs.setdefault(
+            'roles',
+            list(User.ROLE_CHOICES)
+            if user.is_superuser or user.role == User.ADMINISTRADOR
+            else [
+                (value, label)
+                for value, label in User.ROLE_CHOICES
+                if value not in (User.ADMINISTRADOR, User.BECA_AZUL)
+            ],
+        )
         return super().get_context_data(**kwargs)
 
 

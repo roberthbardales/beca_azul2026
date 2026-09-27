@@ -4,7 +4,7 @@ from uuid import uuid4
 from django.conf import settings
 from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
 from django.db import models
-from django.db.models import Case, CharField, Q, Value, When
+from django.db.models import Q
 from django.utils import timezone
 from model_utils.models import TimeStampedModel
 
@@ -29,22 +29,6 @@ class TipoDocumento(models.TextChoices):
     DNI = 'DNI', 'DNI'
     CE = 'CE', 'Carné de extranjería'
     PASAPORTE = 'PASAPORTE', 'Pasaporte'
-
-
-class CertificadoQuerySet(models.QuerySet):
-    def with_estado(self):
-        hoy = timezone.localdate()
-        return self.annotate(
-            estado_queryset=Case(
-                When(fecha_vencimiento__lt=hoy, then=Value('Vencido')),
-                When(fecha_vencimiento__lte=hoy + timedelta(days=30), then=Value('Próximo a vencer')),
-                default=Value('Vigente'),
-                output_field=CharField(),
-            )
-        )
-
-    def filter_estado(self, estado):
-        return self.with_estado().filter(estado_queryset=estado)
 
 
 def certificado_upload_path(instance, filename):
@@ -153,8 +137,6 @@ class Certificado(TimeStampedModel):
     fecha_emision = models.DateField()
     fecha_vencimiento = models.DateField(db_index=True)
     archivo = models.FileField(upload_to=certificado_upload_path)
-    objects = CertificadoQuerySet.as_manager()
-
     class Meta:
         ordering = ('-created',)
         verbose_name = 'Certificado'

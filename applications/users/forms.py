@@ -9,7 +9,11 @@ class UserRegisterForm(forms.Form):
     email = forms.EmailField(label='Correo electrónico')
     first_name = forms.CharField(label='Nombres', max_length=50)
     last_name = forms.CharField(label='Apellidos', max_length=50)
-    role = forms.ChoiceField(label='Rol', choices=User.ROLE_CHOICES)
+    # El registro público no debe permitir crear cuentas privilegiadas.
+    role = forms.ChoiceField(
+        label='Rol',
+        choices=((User.USUARIO_EMPRESA, 'Usuario Empresa'),),
+    )
     gender = forms.ChoiceField(label='Género', choices=User.GENDER_CHOICES)
     phone = forms.CharField(label='Celular', max_length=15, required=False)
     date_birth = forms.DateField(label='Fecha de nacimiento', required=False)
@@ -88,6 +92,7 @@ class UsuarioGestionForm(forms.ModelForm):
             choices = [
                 (User.BECA_AZUL, 'Beca Azul'),
                 (User.PLANTA, 'Usuario Planta'),
+                (User.USUARIO_EMPRESA, 'Usuario Empresa'),
                 (User.GARITA, 'Usuario Garita'),
             ]
         else:

@@ -117,6 +117,15 @@
                 </footer>
             </form>
             {% if request.user.role == '3' %}<script>
+                {% if not object %}
+                const today = new Date();
+                const todayValue = [today.getFullYear(), String(today.getMonth() + 1).padStart(2, '0'), String(today.getDate()).padStart(2, '0')].join('-');
+                ['id_induccion_fecha_emision', 'id_aptitud_medica_fecha_emision'].forEach((fieldId) => {
+                    const field = document.getElementById(fieldId);
+                    if (field && !field.value) field.value = todayValue;
+                });
+                {% endif %}
+
                 const maxPdfSize = 2 * 1024 * 1024;
                 document.querySelector('form[data-max-pdf-size]').addEventListener('submit', (event) => {
                     const oversized = [...event.currentTarget.querySelectorAll('input[type="file"]')]

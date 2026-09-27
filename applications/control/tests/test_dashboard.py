@@ -84,3 +84,61 @@ class DashboardViewTests(TestCase):
 
         self.assertEqual(empresas['labels'][-1], 'Otros')
         self.assertEqual(empresas['data'][-1], 2)
+
+
+class TrabajadorEmpresaCreateViewTests(TestCase):
+    def test_usuario_empresa_puede_crear_trabajador(self):
+        empresa = Empresa.objects.create(nombre='Empresa', ruc='20123456789')
+        user = User.objects.create_user(
+            email='empresa@example.com',
+            password='test-password',
+            first_name='Usuario',
+            last_name='Empresa',
+            role=User.USUARIO_EMPRESA,
+            empresa=empresa,
+        )
+        self.client.force_login(user)
+        data = {
+            'tipo_documento': Trabajador.DNI,
+            'dni': '12345678',
+            'nombres': 'Ana',
+            'apellidos': 'Prueba',
+            'cargo': 'Operadora',
+            'induccion_fecha_emision': date.today().isoformat(),
+            'induccion_fecha_vencimiento': (date.today() + timedelta(days=30)).isoformat(),
+            'aptitud_medica_fecha_emision': date.today().isoformat(),
+            'aptitud_medica_fecha_vencimiento': (date.today() + timedelta(days=30)).isoformat(),
+            'certificados-TOTAL_FORMS': '6',
+            'certificados-INITIAL_FORMS': '0',
+            'certificados-MIN_NUM_FORMS': '0',
+            'certificados-MAX_NUM_FORMS': '1000',
+        }
+        for index, curso in enumerate((
+            CursoTipo.CALIENTE,
+            CursoTipo.ALTURA,
+            CursoTipo.ESPACIO_CONFINADO,
+            CursoTipo.ELECTRICO,
+            CursoTipo.EXCAVACION,
+            CursoTipo.IZAJE,
+        )):
+            data[f'certificados-{index}-tipo'] = Certificado.CURSOS
+            data[f'certificados-{index}-curso'] = curso
+        files = {
+            'induccion_archivo': SimpleUploadedFile('induccion.pdf', b'%PDF-1.4 test'),
+            'aptitud_medica_archivo': SimpleUploadedFile('aptitud.pdf', b'%PDF-1.4 test'),
+        }
+
+        response = self.client.post(
+            reverse('app_control:trabajador_empresa_crear'),
+            {**data, **files},
+        )
+
+        if response.status_code == 200:
+            self.fail(
+                f'Formulario inválido: {response.context["form"].errors}; '
+                f'formset: {response.context["certificado_formset"].errors}'
+            )
+        self.assertRedirects(response, reverse('app_control:trabajador_lista'))
+        trabajador = Trabajador.objects.get(dni='12345678')
+        self.assertEqual(trabajador.empresa, empresa)
+        self.assertEqual(trabajador.certificados.count(), 2)

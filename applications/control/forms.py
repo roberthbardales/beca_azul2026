@@ -104,8 +104,8 @@ class SCTRForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         if self.instance.pk:
             self.initial.update(
-                fecha_emision=self.instance.fecha_emision,
-                fecha_vencimiento=self.instance.fecha_vencimiento,
+                fecha_emision=self.instance.fecha_emision.isoformat(),
+                fecha_vencimiento=self.instance.fecha_vencimiento.isoformat(),
             )
 
     def clean(self):
@@ -373,6 +373,22 @@ class CertificadoCargaForm(forms.ModelForm):
             DATE_RANGE_ERROR,
         )
         return cleaned
+
+    def _post_clean(self):
+        # El trabajador se asigna después de validar el formset en la vista.
+        # La validación de propietario del modelo se ejecutará al guardar.
+        pass
+
+    def save(self, commit=True):
+        certificado = super().save(commit=False)
+        certificado.tipo = self.cleaned_data.get('tipo')
+        certificado.curso = self.cleaned_data.get('curso')
+        certificado.fecha_emision = self.cleaned_data.get('fecha_emision')
+        certificado.fecha_vencimiento = self.cleaned_data.get('fecha_vencimiento')
+        certificado.archivo = self.cleaned_data.get('archivo')
+        if commit:
+            certificado.save()
+        return certificado
 
 
 class CertificadoCargaFormSetBase(forms.BaseFormSet):

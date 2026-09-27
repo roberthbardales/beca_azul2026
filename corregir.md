@@ -42,11 +42,7 @@ Deben usar las constantes del modelo:
 request.user.role == User.USUARIO_EMPRESA
 ```
 
-## 6. Lógica repetida en las listas de trabajadores
-
-`TrabajadorListView` y `TrabajadorEmpresaListView` repiten anotaciones, filtros y ordenamiento. Conviene extraer esta lógica a un queryset o mixin reutilizable.
-
-## 7. Muchas consultas independientes en el dashboard
+## 6. Muchas consultas independientes en el dashboard
 
 El dashboard realiza varias consultas separadas para contadores, trabajadores, empresas y certificados. Puede optimizarse agrupando agregaciones cuando aumente el volumen de datos.
 

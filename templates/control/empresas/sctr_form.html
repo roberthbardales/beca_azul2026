@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar SCTR | {{ empresa.nombre }}{% endblock %}
+
+{% block content %}
+<main class="mx-auto w-full max-w-3xl px-4 py-5 sm:px-6">
+    <div class="company-sctr-form rounded-xl border border-gray-100 bg-white p-5 shadow-sm sm:p-7">
+        <header class="mb-5 flex flex-col gap-3 border-b border-gray-100 pb-4 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+                <h1 class="mt-1 text-2xl font-bold tracking-tight text-[var(--ink-900)]">SCTR - {{ empresa.nombre }} </h1>
+            </div>
+            <span class="inline-flex h-fit w-fit rounded-full px-3 py-1 text-xs font-semibold {% if sctr.pk %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">{% if sctr.pk %}Registrado{% else %}Pendiente{% endif %}</span>
+        </header>
+
+        {% if sctr.pk and sctr.archivo %}
+        <div class="mb-5 flex flex-col gap-3 rounded-lg border border-[var(--primary-100)] bg-[var(--primary-50)] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+            <div class="min-w-0"><p class="text-xs font-semibold uppercase tracking-wide text-[var(--primary-700)]">Archivo actual</p><p class="mt-1 truncate text-sm font-medium text-[var(--ink-900)]">{{ sctr.archivo.name|cut:'certificados/' }}</p></div>
+            <a class="btn btn-secondary btn-sm shrink-0" href="{{ sctr.archivo.url }}" target="_blank" rel="noopener">Ver PDF</a>
+        </div>
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data" class="space-y-5">
+            {% csrf_token %}
+            <section class="space-y-3" aria-labelledby="sctr-documento-heading">
+                <div><h2 id="sctr-documento-heading" class="text-sm font-semibold text-[var(--ink-900)]">Documento</h2><p class="mt-1 text-xs text-[var(--ink-500)]">{% if sctr.pk %}Reemplaza el archivo solo si necesitas actualizarlo.{% else %}Adjunta el documento SCTR en formato PDF.{% endif %}</p></div>
+                <div>
+                    <label for="{{ form.archivo.id_for_label }}" class="mb-1 block text-sm font-medium text-[var(--ink-900)]">{{ form.archivo.label }}</label>
+                    <input type="file" name="{{ form.archivo.html_name }}" id="{{ form.archivo.id_for_label }}" class="form-control" accept="application/pdf">
+                    {% for error in form.archivo.errors %}<p class="mt-1 text-xs text-red-600">{{ error }}</p>{% endfor %}
+                </div>
+            </section>
+
+            <section class="space-y-3 border-t border-gray-100 pt-4" aria-labelledby="sctr-vigencia-heading">
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <div><label for="{{ form.fecha_emision.id_for_label }}" class="mb-1 block text-sm font-medium text-[var(--ink-900)]">{{ form.fecha_emision.label }}</label>{{ form.fecha_emision }}{% for error in form.fecha_emision.errors %}<p class="mt-1 text-xs text-red-600">{{ error }}</p>{% endfor %}</div>
+                    <div><label for="{{ form.fecha_vencimiento.id_for_label }}" class="mb-1 block text-sm font-medium text-[var(--ink-900)]">{{ form.fecha_vencimiento.label }}</label>{{ form.fecha_vencimiento }}{% for error in form.fecha_vencimiento.errors %}<p class="mt-1 text-xs text-red-600">{{ error }}</p>{% endfor %}</div>
+                </div>
+            </section>
+
+            <div class="flex flex-col-reverse gap-3 border-t border-gray-100 pt-4 sm:flex-row sm:justify-end">
+                <a class="btn btn-secondary" href="{% url 'app_control:empresa_detalle' empresa.pk %}">Volver</a>
+                <button type="submit" class="btn btn-primary">Guardar SCTR</button>
+            </div>
+        </form>
+    </div>
+</main>
+{% endblock %}

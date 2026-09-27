@@ -32,7 +32,10 @@
             </summary>
             <div class="topbar-menu absolute right-0 z-30 mt-2 w-52 overflow-hidden rounded-xl border bg-white py-1.5">
                 <a class="block px-4 py-2.5 text-sm font-medium text-[var(--ink-900)] transition-colors hover:bg-[var(--primary-50)] hover:text-[var(--primary-700)]" href="{% url 'app_users:mi_perfil' %}">Mi perfil</a>
-                <a class="block px-4 py-2.5 text-sm font-medium text-[var(--ink-900)] transition-colors hover:bg-[var(--primary-50)] hover:text-[var(--primary-700)]" href="{% url 'app_users:logout' %}">Cerrar sesión</a>
+                <form method="post" action="{% url 'app_users:logout' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="block w-full px-4 py-2.5 text-left text-sm font-medium text-[var(--ink-900)] transition-colors hover:bg-[var(--primary-50)] hover:text-[var(--primary-700)]">Cerrar sesión</button>
+                </form>
             </div>
         </details>
     </div>
