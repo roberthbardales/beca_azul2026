@@ -2,12 +2,15 @@ from datetime import timedelta
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.conf import settings
 from django.core.exceptions import PermissionDenied
+from django.core.mail import EmailMultiAlternatives
 from django.db import transaction
 from django.db.models import Count, Exists, OuterRef, Prefetch, Q
 from django.db.models.functions import TruncDate
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.template.loader import render_to_string
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView, View
@@ -137,12 +140,38 @@ class ReportesView(LoginRequiredMixin, View):
     reportes = ('vencimientos', 'vencimientos_empresa', 'trabajadores', 'empresas')
 
     def get(self, request):
+        context = self._get_context(request)
+        return render(request, self.template_name, context)
+
+    def post(self, request):
+        if request.user.role != User.BECA_AZUL:
+            raise PermissionDenied
+
+        context = self._get_context(request)
+        titulo = dict((clave, titulo) for clave, titulo, _ in context['reportes'])[context['reporte_actual']]
+        html = render_to_string('control/reportes_email.html', context, request=request)
+        email = EmailMultiAlternatives(
+            subject=f'Reporte: {titulo}',
+            body=f'Reporte: {titulo}. Este correo contiene una versión HTML del reporte.',
+            from_email=None,
+            to=[settings.REPORTES_EMAIL],
+        )
+        email.attach_alternative(html, 'text/html')
+        try:
+            email.send()
+        except Exception:
+            messages.error(request, 'No se pudo enviar el reporte por correo.')
+        else:
+            messages.success(request, 'Reporte enviado correctamente por correo.')
+        return redirect(f'{reverse("app_control:reportes")}?reporte={context["reporte_actual"]}')
+
+    def _get_context(self, request):
         if not request.user.is_superuser and request.user.role not in (
             User.ADMINISTRADOR, User.BECA_AZUL, User.PLANTA, User.USUARIO_EMPRESA
         ):
             raise PermissionDenied
 
-        reporte = request.GET.get('reporte', 'vencimientos')
+        reporte = request.POST.get('reporte') or request.GET.get('reporte', 'vencimientos')
         if reporte not in self.reportes:
             reporte = 'vencimientos'
 
@@ -201,7 +230,7 @@ class ReportesView(LoginRequiredMixin, View):
             context['filas'] = trabajadores.order_by('empresa__nombre', 'apellidos', 'nombres')
         elif reporte == 'empresas':
             context['filas'] = empresas.order_by('nombre')
-        return render(request, self.template_name, context)
+        return context
 
 
 class EmpresaListView(VerEmpresasMixin, ListView):

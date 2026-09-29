@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Login | Sistema de Control{% endblock %}
 
@@ -6,9 +7,12 @@
 <div class="auth-page py-6 sm:py-10">
     <div class="auth-composition mx-auto flex w-full max-w-md flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
         <section class="auth-composition__form p-6 sm:p-8 lg:p-10" aria-labelledby="login-title">
-            <div class="mb-8">
-                <h1 id="login-title" class="text-2xl font-bold text-[#0f172a]">Ingresar</h1>
-                <p class="mt-2 text-sm text-[#616161]">Accede al sistema de control de Beca Azul.</p>
+            <div class="login-brand-panel mb-8">
+                <img class="mx-auto mb-7 h-auto w-56 object-contain" src="{% static 'images/logo.png' %}" alt="Beca Azul Ingenieros y Consultores">
+            </div>
+            <div class="mb-8 text-center">
+                <h1 id="login-title" class="text-3xl font-bold leading-tight text-[#0f172a]">Iniciar sesión</h1>
+                <p class="mx-auto mt-3 max-w-xs text-sm leading-relaxed text-[#616161]">Accede al sistema de control de Beca Azul.</p>
             </div>
             <form method="post" novalidate class="space-y-5">
                 {% csrf_token %}

@@ -39,7 +39,16 @@
 
     <div class="reports-controls mb-3 flex items-center justify-between gap-3">
         <h2 class="text-lg font-bold">Detalle: {{ reporte_actual|title }}</h2>
-        <button type="button" class="btn btn-primary" onclick="window.print()">Exportar a PDF</button>
+        <div class="flex gap-2">
+            <button type="button" class="btn btn-primary" onclick="window.print()">Exportar a PDF</button>
+            {% if request.user.role == '1' %}
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="reporte" value="{{ reporte_actual }}">
+                <button type="submit" class="btn btn-secondary">Enviar por correo</button>
+            </form>
+            {% endif %}
+        </div>
     </div>
     <div class="app-table-wrap list-table-wrap responsive-table">
         <table class="app-table list-table companies-list-table reports-list-table responsive-table min-w-full divide-y divide-gray-200" aria-label="Detalle del reporte">

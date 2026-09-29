@@ -1,6 +1,6 @@
-<header class="app-topbar fixed inset-x-0 top-0 z-50 flex h-12 shrink-0 items-center justify-between px-3 sm:px-5 lg:px-6">
+<header class="app-topbar fixed inset-x-0 top-0 z-50 flex h-10 shrink-0 items-center justify-between px-3 sm:px-5 lg:px-6">
     <div class="flex min-w-0 items-center gap-2 sm:gap-3">
-        <button id="sidebar-toggle" type="button" class="inline-flex min-h-10 min-w-10 items-center justify-center rounded-lg text-white/90 transition-colors hover:bg-white/10 lg:hidden" aria-label="Abrir menú" aria-controls="sidebar" aria-expanded="false">
+        <button id="sidebar-toggle" type="button" class="inline-flex min-h-9 min-w-9 items-center justify-center rounded-lg text-white/90 transition-colors hover:bg-white/10 lg:hidden" aria-label="Abrir menú" aria-controls="sidebar" aria-expanded="false">
             <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
@@ -23,9 +23,9 @@
     </div>
     <div class="relative">
         <details class="group">
-            <summary class="flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-lg px-2 py-1 text-[var(--ink-900)] transition-colors hover:bg-[var(--ink-50)] [&::-webkit-details-marker]:hidden">
+            <summary class="flex min-h-9 cursor-pointer list-none items-center gap-2 rounded-lg px-2 py-1 text-[var(--ink-900)] transition-colors hover:bg-[var(--ink-50)] [&::-webkit-details-marker]:hidden">
                 <span class="hidden text-right sm:block"><span class="block text-sm font-medium text-white">{{ request.user.get_full_name|default:request.user.email }}</span><span class="block text-xs text-white/60">{{ request.user.get_role_display }}</span></span>
-                <span class="user-avatar flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold text-white" aria-hidden="true">{{ request.user.first_name|default:request.user.email|slice:":1"|upper }}</span>
+                <span class="user-avatar flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold text-white" aria-hidden="true">{{ request.user.first_name|default:request.user.email|slice:":1"|upper }}</span>
                 <svg class="h-4 w-4 text-white/70 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                 </svg>
