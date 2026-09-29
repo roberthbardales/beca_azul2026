@@ -154,7 +154,7 @@ class ReportesView(LoginRequiredMixin, View):
             subject=f'Reporte: {titulo}',
             body=f'Reporte: {titulo}. Este correo contiene una versión HTML del reporte.',
             from_email=None,
-            to=[settings.REPORTES_EMAIL],
+            to=settings.REPORTES_EMAILS,
         )
         email.attach_alternative(html, 'text/html')
         try:

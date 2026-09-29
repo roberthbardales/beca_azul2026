@@ -177,6 +177,11 @@ EMAIL_USE_TLS = env.bool('EMAIL_USE_TLS', default=True)
 EMAIL_USE_SSL = env.bool('EMAIL_USE_SSL', default=False)
 DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default=EMAIL_HOST_USER)
 REPORTES_EMAIL = env('REPORTES_EMAIL', default=EMAIL_HOST_USER)
+REPORTES_EMAILS = [
+    email.strip()
+    for email in env('REPORTES_EMAILS', default=REPORTES_EMAIL).split(',')
+    if email.strip()
+]
 
 LOGIN_URL = 'app_users:login'
 LOGIN_REDIRECT_URL = 'app_users:dashboard'

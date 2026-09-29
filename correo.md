@@ -40,7 +40,7 @@ EMAIL_HOST_PASSWORD=tu_contraseña_de_aplicacion
 EMAIL_USE_TLS=True
 EMAIL_USE_SSL=False
 DEFAULT_FROM_EMAIL=tu_correo@gmail.com
-REPORTES_EMAIL=tu_correo_destino@gmail.com
+REPORTES_EMAILS=correo1@ejemplo.com,correo2@ejemplo.com
 ```
 
 La contraseña no debe escribirse directamente en `settings.py` ni subirse al repositorio.
