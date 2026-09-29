@@ -51,6 +51,23 @@ class DashboardViewTests(TestCase):
         self.assertEqual(response.context['dashboard_charts']['cumplimiento'], [1, 2, 1])
         self.assertEqual(response.context['certificados_sin_vencimiento'], 0)
 
+    def test_usuario_garita_no_puede_ver_reportes(self):
+        self.user.role = User.GARITA
+        self.user.save(update_fields=['role'])
+
+        response = self.client.get(reverse('app_control:reportes'))
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_usuario_garita_no_ve_reportes_en_el_sidebar(self):
+        self.user.role = User.GARITA
+        self.user.save(update_fields=['role'])
+
+        response = self.client.get(reverse('app_control:trabajador_buscar'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, 'Reportes')
+
     def test_agrupa_empresas_fuera_del_top_diez(self):
         for index in range(11):
             Empresa.objects.create(nombre=f'Empresa {index:02d}', ruc=f'20{index:09d}')

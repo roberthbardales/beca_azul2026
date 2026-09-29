@@ -28,7 +28,7 @@
                     </div>
                 {% endif %}
 
-                <fieldset class="control-form-section space-y-2" aria-label="Datos personales"><div class="grid gap-2 sm:grid-cols-2">
+                <fieldset class="control-form-section space-y-2" aria-label="Datos personales"><div class="grid gap-2 sm:grid-cols-2 {% if request.user.role == '3' %}sm:grid-cols-3{% endif %}">
                     <div>
                         <label for="{{ form.nombres.id_for_label }}" class="mb-0.5 block text-[11px] font-medium text-[#0f172a]">Nombres</label>
                         <input type="text" name="{{ form.nombres.html_name }}" id="{{ form.nombres.id_for_label }}" value="{{ form.nombres.value|default:'' }}" class="form-control" required>
@@ -39,6 +39,17 @@
                         <input type="text" name="{{ form.apellidos.html_name }}" id="{{ form.apellidos.id_for_label }}" value="{{ form.apellidos.value|default:'' }}" class="form-control" required>
                         {% for error in form.apellidos.errors %}<div class="mt-1 text-xs text-red-600">{{ error }}</div>{% endfor %}
                     </div>
+                    {% if request.user.role == '3' %}
+                    <div>
+                        <label for="{{ form.tipo_documento.id_for_label }}" class="mb-0.5 block text-[11px] font-medium text-[#0f172a]">Tipo de documento</label>
+                        <select name="{{ form.tipo_documento.html_name }}" id="{{ form.tipo_documento.id_for_label }}" class="form-control">
+                            {% for value, label in form.fields.tipo_documento.choices %}
+                                <option value="{{ value }}" {% if form.tipo_documento.value|stringformat:"s" == value|stringformat:"s" %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                        {% for error in form.tipo_documento.errors %}<div class="mt-1 text-xs text-red-600">{{ error }}</div>{% endfor %}
+                    </div>
+                    {% endif %}
                 </div></fieldset>
 
                 <fieldset class="control-form-section space-y-2" aria-label="Documento y empresa"><div class="grid gap-2 sm:grid-cols-3">
@@ -53,7 +64,7 @@
                         {% for error in form.empresa.errors %}<div class="mt-1 text-xs text-red-600">{{ error }}</div>{% endfor %}
                     </div>
                     {% endif %}
-                    <div>
+                    {% if request.user.role != '3' %}<div>
                         <label for="{{ form.tipo_documento.id_for_label }}" class="mb-0.5 block text-[11px] font-medium text-[#0f172a]">Tipo de documento</label>
                         <select name="{{ form.tipo_documento.html_name }}" id="{{ form.tipo_documento.id_for_label }}" class="form-control">
                             {% for value, label in form.fields.tipo_documento.choices %}
@@ -61,45 +72,29 @@
                             {% endfor %}
                         </select>
                         {% for error in form.tipo_documento.errors %}<div class="mt-1 text-xs text-red-600">{{ error }}</div>{% endfor %}
-                    </div>
+                    </div>{% endif %}
                     <div>
                         <label for="{{ form.dni.id_for_label }}" class="mb-0.5 block text-[11px] font-medium text-[#0f172a]">N° de documento</label>
                         <input type="text" name="{{ form.dni.html_name }}" id="{{ form.dni.id_for_label }}" value="{{ form.dni.value|default:'' }}" class="form-control" required>
                         {% for error in form.dni.errors %}<div class="mt-1 text-xs text-red-600">{{ error }}</div>{% endfor %}
                     </div>
-                </div></fieldset>
-
-                <fieldset class="control-form-section space-y-2 border-t border-gray-100 pt-3" aria-label="Datos laborales y contacto"><div class="grid gap-2 sm:grid-cols-3">
                     <div>
                         <label for="{{ form.cargo.id_for_label }}" class="mb-0.5 block text-[11px] font-medium text-[#0f172a]">Cargo</label>
                         <input type="text" name="{{ form.cargo.html_name }}" id="{{ form.cargo.id_for_label }}" value="{{ form.cargo.value|default:'' }}" class="form-control">
                         {% for error in form.cargo.errors %}<div class="mt-1 text-xs text-red-600">{{ error }}</div>{% endfor %}
                     </div>
-                    {% for field in form %}
-                    {% if field.name != 'empresa' and field.name != 'tipo_documento' and field.name != 'dni' and field.name != 'nombres' and field.name != 'apellidos' and field.name != 'cargo' and 'archivo' not in field.name and 'fecha_' not in field.name %}
-                    <div>
-                        <label for="{{ field.id_for_label }}" class="mb-0.5 block text-[11px] font-medium text-[#0f172a]">{{ field.label }}</label>
-                        <select name="{{ field.html_name }}" id="{{ field.id_for_label }}" class="form-control">
-                            {% for value, label in field.field.choices %}<option value="{{ value }}" {% if field.value == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
-                        </select>
-                        {% for error in field.errors %}<div class="mt-1 text-xs text-red-600">{{ error }}</div>{% endfor %}
-                    </div>
-                    {% endif %}
-                    {% endfor %}
-                </div>
-
-                </fieldset>
+                </div></fieldset>
 
                  {% if request.user.role == '3' %}
                   <fieldset class="control-form-section border-t border-gray-100 pt-3"><legend class="mb-2 text-sm font-semibold text-[#0f172a]">Certificados</legend>
                       {{ certificado_formset.management_form }}
-                       <div class="app-table-wrap responsive-table"><table class="app-table w-full min-w-[520px]"><thead><tr><th>Tipo</th><th>Archivo PDF</th><th>Emisión</th><th>Vencimiento</th></tr></thead><tbody id="certificados-fijos">
+                        <div class="app-table-wrap responsive-table"><table class="app-table worker-data-table w-full min-w-[520px]"><thead><tr><th>Tipo</th><th>Archivo PDF</th><th>Emisión</th><th>Vencimiento</th></tr></thead><tbody id="certificados-fijos">
                           <tr><td>Inducción</td><td>{{ form.induccion_archivo }}{% for error in form.induccion_archivo.errors %}<div class="text-xs text-red-600">{{ error }}</div>{% endfor %}</td><td>{{ form.induccion_fecha_emision }}{{ form.induccion_fecha_emision.errors }}</td><td>{{ form.induccion_fecha_vencimiento }}{{ form.induccion_fecha_vencimiento.errors }}</td></tr>
                           <tr><td>Aptitud médica</td><td>{{ form.aptitud_medica_archivo }}{% for error in form.aptitud_medica_archivo.errors %}<div class="text-xs text-red-600">{{ error }}</div>{% endfor %}</td><td>{{ form.aptitud_medica_fecha_emision }}{{ form.aptitud_medica_fecha_emision.errors }}</td><td>{{ form.aptitud_medica_fecha_vencimiento }}{{ form.aptitud_medica_fecha_vencimiento.errors }}</td></tr>
                        </tbody></table></div>
                  </fieldset>
                   <fieldset class="control-form-section border-t border-gray-100 pt-3"><legend class="mb-2 text-sm font-semibold text-[#0f172a]">Cursos</legend>
-                        <div class="app-table-wrap responsive-table"><table class="app-table w-full min-w-[620px]"><thead><tr><th>Curso</th><th>Archivo PDF</th><th>Emisión</th><th>Vencimiento</th></tr></thead><tbody id="certificados-opcionales">
+                         <div class="app-table-wrap responsive-table"><table class="app-table worker-data-table w-full min-w-[620px]"><thead><tr><th>Curso</th><th>Archivo PDF</th><th>Emisión</th><th>Vencimiento</th></tr></thead><tbody id="certificados-opcionales">
                        {% for certificado_form in certificado_formset %}
  <tr data-certificado-form><td>{% if certificado_form.curso.value == 'CALIENTE' %}Caliente{% elif certificado_form.curso.value == 'ALTURA' %}Altura{% elif certificado_form.curso.value == 'ESPACIO_CONFINADO' %}Espacio confinado{% elif certificado_form.curso.value == 'ELECTRICO' %}Eléctrico{% elif certificado_form.curso.value == 'EXCAVACION' %}Excavación{% elif certificado_form.curso.value == 'IZAJE' %}Izaje{% endif %}{{ certificado_form.tipo }}{{ certificado_form.curso }}{{ certificado_form.curso.errors }}</td><td>{% if certificado_form.initial.archivo %}<a href="{{ certificado_form.initial.archivo.url }}" target="_blank" rel="noopener" class="text-xs text-blue-700 underline">PDF actual</a><br>{% endif %}{{ certificado_form.archivo }}{{ certificado_form.archivo.errors }}</td><td>{{ certificado_form.fecha_emision }}{{ certificado_form.fecha_emision.errors }}</td><td>{{ certificado_form.fecha_vencimiento }}{{ certificado_form.fecha_vencimiento.errors }}</td></tr>
                        {% endfor %}

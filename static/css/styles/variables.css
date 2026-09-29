@@ -8,7 +8,7 @@
 
 :root {
     --sidebar-width: 16rem;
-    --topbar-height: 3rem;
+    --topbar-height: 3.5rem;
     --primary-50: #eff6ff; --primary-100: #dbe8fe; --primary-200: #bcd0fd;
     --primary-500: #3361f1; --primary-600: #1557c0; --primary-700: #1a39b4;
     --secondary-500: #1d7bf2; --secondary-600: #1768cf;

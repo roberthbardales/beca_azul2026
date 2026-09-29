@@ -31,7 +31,7 @@
 
     <div class="reports-controls mb-6 flex flex-wrap justify-center gap-2" role="tablist" aria-label="Tipos de reporte">
         {% for clave, titulo, descripcion in reportes %}
-        <a href="?reporte={{ clave }}" role="tab" aria-selected="{% if reporte_actual == clave %}true{% else %}false{% endif %}" class="rounded-lg border px-4 py-2.5 text-sm font-semibold shadow-sm transition hover:-translate-y-0.5 hover:shadow {% if reporte_actual == clave %}border-[var(--primary-600)] bg-[var(--primary-600)] text-white{% else %}border-slate-200 bg-white text-slate-700 hover:border-[var(--primary-300)]{% endif %}">
+        <a href="?reporte={{ clave }}" role="tab" aria-selected="{% if reporte_actual == clave %}true{% else %}false{% endif %}" class="btn {% if reporte_actual == clave %}btn-primary{% else %}btn-secondary{% endif %}">
             {{ titulo }}
         </a>
         {% endfor %}

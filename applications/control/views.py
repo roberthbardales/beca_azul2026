@@ -474,7 +474,7 @@ class TrabajadorListView(VerTrabajadoresMixin, ListView):
                 )
                 for codigo, label in Certificado.CURSO_CHOICES
             },
-        ).order_by('habilitado', 'apellidos', 'nombres')
+        ).order_by('apellidos', 'nombres', '-habilitado')
         if self.request.user.role == User.USUARIO_EMPRESA:
             queryset = queryset.filter(empresa=self.request.user.empresa)
         q = self.request.GET.get('q', '').strip()
@@ -492,31 +492,14 @@ class TrabajadorListView(VerTrabajadoresMixin, ListView):
         empresa_id = self.request.GET.get('empresa', '').strip()
         if self.request.user.role != User.USUARIO_EMPRESA and empresa_id.isdigit():
             queryset = queryset.filter(empresa_id=empresa_id)
-        sort = self.request.GET.get('sort', '').strip()
-        direction = self.request.GET.get('dir', 'asc').strip().lower()
-        if direction not in ('asc', 'desc'):
-            direction = 'asc'
-        order_fields = self.sortable_columns.get(sort)
-        if not order_fields:
-            course_codes = {codigo.lower() for codigo, label in Certificado.CURSO_CHOICES}
-            if sort in course_codes:
-                order_fields = (f'tiene_curso_{sort}', 'apellidos', 'nombres')
-        if order_fields:
-            if direction == 'desc':
-                order_fields = tuple(f'-{field}' for field in order_fields)
-            queryset = queryset.order_by(*order_fields)
         return queryset
 
     def get_context_data(self, **kwargs):
         query_params = self.request.GET.copy()
         query_params.pop('page', None)
-        query_params.pop('sort', None)
-        query_params.pop('dir', None)
         kwargs.setdefault('q', self.request.GET.get('q', ''))
         kwargs.setdefault('estado', self.request.GET.get('estado', ''))
         kwargs.setdefault('empresa_id', self.request.GET.get('empresa', ''))
-        kwargs.setdefault('sort', self.request.GET.get('sort', ''))
-        kwargs.setdefault('dir', self.request.GET.get('dir', 'asc'))
         kwargs.setdefault('query_string', query_params.urlencode())
         kwargs.setdefault('empresas', Empresa.objects.order_by('nombre'))
         kwargs.setdefault('estado_choices', ((1, 'Habilitado'), (0, 'No habilitado')))

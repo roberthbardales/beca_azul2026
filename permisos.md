@@ -28,7 +28,8 @@ si se modifican, deben actualizarse de forma coordinada.
 | Gestión de empresas | `/empresas/` |
 | Listado de trabajadores | `/trabajadores/` |
 | Búsqueda de trabajadores | `/trabajadores/buscar/` |
-| Gestión de usuarios | `/usuarios/gestion/` |
+| Gestión de usuarios | `/users/gestion/` |
+| Reportes | `/reportes/` |
 
 Las rutas de gestión de trabajadores y certificados tienen dos variantes: una para
 Beca Azul y otra específica para Usuario Empresa. Las vistas específicas de empresa
@@ -41,9 +42,9 @@ comprueban que el registro pertenezca a la empresa asignada al usuario.
 - Puede acceder al listado de usuarios.
 - Puede ver en el listado usuarios de todos los roles, incluidos Administradores y Beca Azul.
 - Puede consultar el detalle, editar, activar, desactivar, eliminar y restablecer la contraseña de usuarios permitidos por la vista.
-- No puede crear usuarios desde la gestión normal; la creación está reservada a Beca Azul.
+- Puede crear usuarios desde la gestión normal.
 - No puede editar ni eliminar cuentas con rol Administrador desde las vistas normales de detalle, edición y eliminación.
-- Puede gestionar usuarios de los roles Beca Azul, Planta, Empresa y Garita, según los filtros de cada vista.
+- Puede gestionar usuarios de los roles permitidos por las vistas, incluidos Beca Azul, Planta, Empresa y Garita.
 
 ### Empresas
 
@@ -69,6 +70,10 @@ comprueban que el registro pertenezca a la empresa asignada al usuario.
 
 - Puede acceder al dashboard general.
 - El dashboard muestra métricas globales de empresas, trabajadores y certificados.
+
+### Reportes
+
+- Puede acceder a `/reportes/` y consultar los reportes globales.
 
 ## Beca Azul
 
@@ -112,6 +117,10 @@ comprueban que el registro pertenezca a la empresa asignada al usuario.
 
 - Puede acceder al dashboard general con información global del sistema.
 
+### Reportes
+
+- Puede acceder a `/reportes/` y consultar los reportes globales.
+
 ## Usuario Planta
 
 ### Usuarios
@@ -145,6 +154,11 @@ comprueban que el registro pertenezca a la empresa asignada al usuario.
 
 - Puede acceder al dashboard general.
 - El dashboard se muestra con información global, no limitada a una empresa.
+
+### Reportes
+
+- Puede acceder a `/reportes/`.
+- Los reportes se limitan a su empresa y a sus trabajadores.
 
 ## Usuario Empresa
 
@@ -258,6 +272,7 @@ comprueban que el registro pertenezca a la empresa asignada al usuario.
 | Gestionar certificados | No | Sí | No | Propios | No |
 | Gestionar incidencias | No | Sí | No | No | No |
 | Gestionar SCTR | No | No | No | Propio | No |
+| Consultar reportes | Sí | Sí | Sí | Propios | No |
 
 El dashboard está disponible exclusivamente para Administrador, Beca Azul y Usuario Planta.
 Usuario Empresa y Usuario Garita reciben `403` tanto en la ruta principal `/panel/` como en

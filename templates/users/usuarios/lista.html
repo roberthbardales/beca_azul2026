@@ -4,12 +4,12 @@
 
 {% block content %}
 <div class="list-page">
-<div class="list-page-header">
-    <h1 class="text-2xl font-bold text-[#0f172a]">Usuarios</h1>
+<div class="list-page-header list-page-header--filter-compact">
+                <h1 class="page-title">Usuarios</h1>
     {% if request.user.role == '1' %}<a class="btn btn-primary" href="{% url 'app_users:usuario_crear' %}"><svg class="h-4 w-4" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M12 5v14M5 12h14"/></svg>Nuevo usuario</a>{% endif %}
 </div>
 
-<form method="get" action="{% url 'app_users:usuario_lista' %}" class="list-filter users-list-filter" role="search">
+<form method="get" action="{% url 'app_users:usuario_lista' %}" class="list-filter list-filter--plain list-filter--filter-compact users-list-filter" role="search">
     <div class="sm:col-span-2">
         <label class="sr-only" for="usuarios-q">Buscar usuarios</label>
         <input id="usuarios-q" type="search" name="q" value="{{ q }}" placeholder="Buscar por nombre o email..." class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#0F6FC6] focus:outline-none">

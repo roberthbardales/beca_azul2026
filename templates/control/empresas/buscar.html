@@ -4,11 +4,11 @@
 
 {% block content %}
 <section class="list-page" aria-labelledby="buscar-empresa-title">
-    <div class="list-page-header">
-        <h1 id="buscar-empresa-title" class="text-2xl font-bold text-[#0f172a]">Buscar empresa</h1>
+    <div class="list-page-header list-page-header--filter-compact">
+        <h1 id="buscar-empresa-title" class="page-title">Buscar empresa</h1>
     </div>
 
-    {% if not es_garita %}<form method="get" class="list-filter companies-list-filter" role="search">
+    {% if not es_garita %}<form method="get" class="list-filter list-filter--plain list-filter--filter-compact companies-list-filter" role="search">
         <div class="sm:col-span-2">
             <label class="sr-only" for="empresas-buscar-q">Buscar empresa</label>
             <input id="empresas-buscar-q" type="search" name="q" value="{{ q }}" placeholder="Nombre, RUC o correo" autofocus autocomplete="off" class="w-full lg:w-3/4 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#0F6FC6] focus:outline-none">

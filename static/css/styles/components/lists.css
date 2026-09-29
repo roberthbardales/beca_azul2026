@@ -15,7 +15,7 @@
 }
 
 .list-page-header--borderless {
-    border-bottom: 0;
+    border: none !important;
 }
 
 .list-page-header--compact {
@@ -57,9 +57,43 @@
     box-shadow: none !important;
 }
 
+.workers-list-filter--compact {
+    padding: 0;
+}
+
+.companies-list-filter--compact {
+    margin-bottom: 0;
+}
+
+.companies-list-page-header--compact {
+    margin-bottom: 0;
+}
+
+.list-page-header--filter-compact {
+    margin-bottom: 0;
+}
+
+.list-filter--filter-compact {
+    margin-bottom: 0;
+}
+
 .list-filter.list-filter--plain input:not([type="checkbox"]):not([type="radio"]),
 .list-filter.list-filter--plain select {
     border-color: var(--ink-400) !important;
+}
+
+#empresa-trabajadores-q {
+    border-color: #b8c0cc !important;
+}
+
+#empresa-trabajadores-empresa,
+#empresa-trabajadores-estado {
+    border-color: #b8c0cc !important;
+}
+
+#empresa-trabajadores-empresa:focus,
+#empresa-trabajadores-estado:focus {
+    border-color: var(--primary-500) !important;
 }
 
 .list-filter > div {
@@ -84,6 +118,10 @@
 .list-filter select:focus {
     border-color: var(--primary-500) !important;
     box-shadow: 0 0 0 3px var(--primary-100) !important;
+}
+
+#empresa-trabajadores-q:focus {
+    border-color: var(--primary-500) !important;
 }
 
 .list-filter-actions {
@@ -139,8 +177,6 @@
 }
 
 .list-table th {
-    height: 3.25rem;
-    padding: .65rem 1rem !important;
     border-bottom: 1px solid var(--ink-200) !important;
     background: var(--ink-50) !important;
     color: var(--ink-700) !important;
@@ -149,8 +185,6 @@
 }
 
 .list-table td {
-    height: 3.2rem;
-    padding: .55rem 1rem !important;
     border-bottom: 1px solid var(--ink-100) !important;
     color: var(--ink-900) !important;
     font-size: .875rem;
@@ -287,5 +321,129 @@
 
     .list-table-wrap {
         overflow-x: auto;
+    }
+}
+
+/* Shared table style: keep every table consistent and scrollable on small screens. */
+main .app-table-wrap {
+    overflow-x: auto !important;
+    border: 0 !important;
+    border-radius: .25rem !important;
+    box-shadow: none !important;
+}
+
+main table.app-table {
+    border: 1px solid #b8c0cc !important;
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+    border-radius: .25rem !important;
+    overflow: hidden !important;
+}
+
+main table.app-table th {
+    padding: .65rem .375rem !important;
+    border-color: #b8c0cc !important;
+    background: #f1f4f6 !important;
+    color: #1e40af !important;
+    font-size: .9rem !important;
+    font-weight: 700 !important;
+    line-height: 1.35;
+}
+
+main table.app-table td {
+    padding: .5rem .375rem !important;
+    border-color: #b8c0cc !important;
+    color: #111827 !important;
+    font-size: .875rem !important;
+    line-height: 1.35;
+    vertical-align: middle;
+}
+
+main table.app-table th:not(:last-child),
+main table.app-table td:not(:last-child) {
+    border-right: 1px solid #b8c0cc !important;
+}
+
+main table.app-table tbody tr:hover {
+    background: #fafcfe !important;
+}
+
+/* Compact spacing for worker certificate and course tables. */
+main table.app-table.worker-data-table th,
+main table.app-table.worker-data-table td {
+    height: auto !important;
+    padding: 3px !important;
+    line-height: 1.2;
+}
+
+main table.worker-data-table th {
+    padding: 8px 3px !important;
+}
+
+main table.app-table.worker-data-table tr {
+    height: auto !important;
+}
+
+main table.app-table.worker-data-table td input,
+main table.app-table.worker-data-table td select {
+    min-height: 0 !important;
+    padding: 3px !important;
+    line-height: 1.2;
+}
+
+.control-form-page table.worker-data-table th:nth-child(1),
+.control-form-page table.worker-data-table td:nth-child(1) { width: 16%; }
+
+.control-form-page table.worker-data-table th:nth-child(2),
+.control-form-page table.worker-data-table td:nth-child(2) { width: 44%; }
+
+.control-form-page table.worker-data-table th:nth-child(3),
+.control-form-page table.worker-data-table td:nth-child(3),
+.control-form-page table.worker-data-table th:nth-child(4),
+.control-form-page table.worker-data-table td:nth-child(4) { width: 20%; }
+
+main .list-filter input:not([type="checkbox"]):not([type="radio"]),
+main .list-filter select {
+    border-color: #b8c0cc !important;
+}
+
+main .list-filter input:not([type="checkbox"]):not([type="radio"]):focus,
+main .list-filter select:focus {
+    border-color: var(--primary-500) !important;
+}
+
+@media (max-width: 640px) {
+    main .responsive-table {
+        overflow-x: auto !important;
+    }
+
+    main .responsive-table table.app-table {
+        display: table !important;
+        width: 100%;
+        min-width: 42rem;
+    }
+
+    main .responsive-table table.app-table thead {
+        position: static !important;
+        width: auto !important;
+        height: auto !important;
+        overflow: visible !important;
+        clip: auto !important;
+        white-space: normal !important;
+    }
+
+    main .responsive-table table.app-table tbody,
+    main .responsive-table table.app-table tr,
+    main .responsive-table table.app-table td {
+        display: table-row-group !important;
+        width: auto !important;
+    }
+
+    main .responsive-table table.app-table tr {
+        display: table-row !important;
+    }
+
+    main .responsive-table table.app-table td {
+        display: table-cell !important;
     }
 }

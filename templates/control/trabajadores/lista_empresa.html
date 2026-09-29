@@ -6,7 +6,7 @@
 <div class="list-page">
 <div class="list-page-header">
     <div>
-        <h1 class="text-2xl font-bold text-[#0f172a]">Trabajadores</h1>
+        <h1 class="page-title">Trabajadores</h1>
         {% if empresa %}<p class="text-sm text-[#A5A5A5]">{{ empresa.nombre }} · RUC {{ empresa.ruc }}</p>{% endif %}
     </div>
     {% if es_empresa %}
@@ -17,21 +17,21 @@
     {% endif %}
 </div>
 
-{% if not es_garita %}<form method="get" action="{% url 'app_control:trabajador_lista' %}" class="list-filter" role="search">
+{% if not es_garita %}<form method="get" action="{% url 'app_control:trabajador_lista' %}" class="list-filter list-filter--plain workers-list-filter--compact" role="search">
     <div>
         <label class="sr-only" for="empresa-trabajadores-q">Buscar trabajadores</label>
-        <input id="empresa-trabajadores-q" type="search" name="q" value="{{ q }}" placeholder="Buscar por DNI, nombre, cargo o área..." class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#0F6FC6] focus:outline-none">
+        <input id="empresa-trabajadores-q" type="search" name="q" value="{{ q }}" placeholder="Buscar por DNI, nombre, cargo o área..." class="w-full rounded-md border border-[#b8c0cc] px-3 py-2 text-sm focus:border-[#3361f1] focus:outline-none">
     </div>
     {% if not es_empresa %}<div>
         <label class="sr-only" for="empresa-trabajadores-empresa">Empresa</label>
-        <select id="empresa-trabajadores-empresa" name="empresa" class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#0F6FC6] focus:outline-none">
+        <select id="empresa-trabajadores-empresa" name="empresa" class="w-full rounded-md border border-[#b8c0cc] px-3 py-2 text-sm focus:border-[#3361f1] focus:outline-none">
             <option value="">Todas las empresas</option>
             {% for item in empresas %}<option value="{{ item.pk }}" {% if empresa_id == item.pk|stringformat:"s" %}selected{% endif %}>{{ item.nombre }}</option>{% endfor %}
         </select>
     </div>{% endif %}
     <div>
         <label class="sr-only" for="empresa-trabajadores-estado">Estado</label>
-        <select id="empresa-trabajadores-estado" name="estado" class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#0F6FC6] focus:outline-none">
+        <select id="empresa-trabajadores-estado" name="estado" class="w-full rounded-md border border-[#b8c0cc] px-3 py-2 text-sm focus:border-[#3361f1] focus:outline-none">
         <option value="">Todos los estados</option>
         {% for value, label in estado_choices %}
             <option value="{{ value }}" {% if estado == value %}selected{% endif %}>{{ label }}</option>
@@ -49,33 +49,18 @@
         <thead class="bg-gray-50">
             <tr>
                 {% for key, label in sortable_columns.items %}
-                {% with current=sort current_dir=dir %}
-                <th class="px-3 py-1 text-left text-xs font-semibold {% if key == 'induccion' or key == 'aptitud_medica' %}worker-requirement-header{% elif key == 'caliente' or key == 'altura' or key == 'espacio_confinado' or key == 'electrico' or key == 'excavacion' or key == 'izaje' %}worker-course-header{% endif %}">
-                    {% if es_garita %}
-                        <span>{{ label }}</span>
-                    {% else %}
-                        <a class="inline-flex items-center gap-1 hover:text-[#0F6FC6]" href="?{% if query_string %}{{ query_string }}&{% endif %}sort={{ key }}&dir={% if current == key and current_dir == 'asc' %}desc{% else %}asc{% endif %}">
-                            <span>{{ label }}</span>
-                            {% if current == key %}
-                                {% if current_dir == 'desc' %}
-                                    <span>↓</span>
-                                {% else %}
-                                    <span>↑</span>
-                                {% endif %}
-                            {% endif %}
-                        </a>
-                    {% endif %}
+                <th class="workers-list-header px-3 py-1 text-left text-xs font-semibold {% if key == 'induccion' or key == 'aptitud_medica' %}worker-requirement-header{% elif key == 'caliente' or key == 'altura' or key == 'espacio_confinado' or key == 'electrico' or key == 'excavacion' or key == 'izaje' %}worker-course-header{% endif %}">
+                    <span>{{ label }}</span>
                 </th>
-                {% endwith %}
                 {% endfor %}
-                {% if not es_garita %}<th class="px-3 py-1 text-right text-xs font-semibold text-[#A5A5A5]">Acciones</th>{% endif %}
+                {% if not es_garita %}<th class="workers-list-header px-3 py-1 text-right text-xs font-semibold text-[#1e40af]">Acciones</th>{% endif %}
             </tr>
         </thead>
         <tbody class="divide-y divide-gray-100">
             {% for trabajador in trabajadores %}
             <tr>
                 <td data-label="DNI" class="px-3 py-1 text-sm font-medium">{{ trabajador.dni }}</td>
-                <td data-label="Nombre" class="px-3 py-1 text-sm">{{ trabajador.apellidos }}, {{ trabajador.nombres }}</td>
+                <td data-label="Nombre" class="px-3 py-1 text-sm font-semibold">{{ trabajador.apellidos }}, {{ trabajador.nombres }}</td>
                   {% if not es_empresa %}<td data-label="Empresa" class="px-3 py-1 text-sm">{{ trabajador.empresa.nombre }}</td>{% endif %}
                   <td data-label="Cargo" class="px-3 py-1 text-sm">
                      {{ trabajador.cargo|default:'-' }}
@@ -85,11 +70,11 @@
                   {% for codigo, label in cursos_columnas %}
                   <td data-label="{{ label }}" class="px-3 py-1 text-center">{% if codigo == 'CALIENTE' and trabajador.tiene_curso_caliente or codigo == 'ALTURA' and trabajador.tiene_curso_altura or codigo == 'ESPACIO_CONFINADO' and trabajador.tiene_curso_espacio_confinado or codigo == 'ELECTRICO' and trabajador.tiene_curso_electrico or codigo == 'EXCAVACION' and trabajador.tiene_curso_excavacion or codigo == 'IZAJE' and trabajador.tiene_curso_izaje %}<span class="inline-flex rounded-full p-1" title="Certificado registrado" aria-label="Certificado registrado"><svg style="width:1.05rem;height:1.05rem" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#16a34a"/><path fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="m7 12 3 3 7-7"/></svg></span>{% else %}-{% endif %}</td>
                   {% endfor %}
-                <td data-label="Estado" class="px-3 py-1 text-sm">
+                 <td data-label="Estado" class="px-3 py-1 text-sm font-semibold">
                     {% if trabajador.habilitado %}
-                     <span class="inline-block rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">Habilitado</span>
+                      <span class="inline-block rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-700">Habilitado</span>
                     {% else %}
-                     <span class="inline-block rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">No habilitado</span>
+                      <span class="inline-block rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-700">No habilitado</span>
                     {% endif %}
                 </td>
                 {% if not es_garita %}<td data-label="Acciones" class="px-3 py-1 text-right text-sm">
@@ -108,7 +93,7 @@
         </p>
         <div class="pagination-links flex flex-wrap items-center gap-1">
             {% if page_obj.has_previous %}
-            <a class="rounded-md border border-gray-200 px-3 py-1.5 text-xs font-medium text-[#0F6FC6] hover:bg-gray-50" href="?{% if query_string %}{{ query_string }}&{% endif %}{% if sort %}sort={{ sort }}&dir={{ dir }}&{% endif %}page={{ page_obj.previous_page_number }}">Anterior</a>
+            <a class="rounded-md border border-gray-200 px-3 py-1.5 text-xs font-medium text-[#0F6FC6] hover:bg-gray-50" href="?{% if query_string %}{{ query_string }}&{% endif %}page={{ page_obj.previous_page_number }}">Anterior</a>
             {% else %}
             <span class="rounded-md border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-300">Anterior</span>
             {% endif %}
@@ -116,11 +101,11 @@
                 {% if num == page_obj.number %}
                 <span class="rounded-md bg-[#0F6FC6] px-3 py-1.5 text-xs font-medium text-white">{{ num }}</span>
                 {% else %}
-                <a class="rounded-md border border-gray-200 px-3 py-1.5 text-xs font-medium text-[#0F6FC6] hover:bg-gray-50" href="?{% if query_string %}{{ query_string }}&{% endif %}{% if sort %}sort={{ sort }}&dir={{ dir }}&{% endif %}page={{ num }}">{{ num }}</a>
+                <a class="rounded-md border border-gray-200 px-3 py-1.5 text-xs font-medium text-[#0F6FC6] hover:bg-gray-50" href="?{% if query_string %}{{ query_string }}&{% endif %}page={{ num }}">{{ num }}</a>
                 {% endif %}
             {% endfor %}
             {% if page_obj.has_next %}
-            <a class="rounded-md border border-gray-200 px-3 py-1.5 text-xs font-medium text-[#0F6FC6] hover:bg-gray-50" href="?{% if query_string %}{{ query_string }}&{% endif %}{% if sort %}sort={{ sort }}&dir={{ dir }}&{% endif %}page={{ page_obj.next_page_number }}">Siguiente</a>
+            <a class="rounded-md border border-gray-200 px-3 py-1.5 text-xs font-medium text-[#0F6FC6] hover:bg-gray-50" href="?{% if query_string %}{{ query_string }}&{% endif %}page={{ page_obj.next_page_number }}">Siguiente</a>
             {% else %}
             <span class="rounded-md border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-300">Siguiente</span>
             {% endif %}

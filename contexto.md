@@ -45,6 +45,7 @@ beca_azul2026/
 
 - `/`: inicio.
 - `/panel/`: dashboard general para roles autorizados.
+- `/reportes/`: reportes de vencimientos, trabajadores y empresas para roles autorizados.
 - `/users/`: login, registro, dashboard, perfil, cambio y restablecimiento de
   contraseña, además de la gestión de usuarios.
 - `/empresas/`: listado y administración de empresas.
@@ -64,6 +65,9 @@ beca_azul2026/
 
 Las rutas se registran en `beca_azul2026/urls.py`,
 `applications/users/urls.py` y `applications/control/urls.py`.
+
+La gestión de usuarios usa la ruta `/users/gestion/`; `/usuarios/gestion/` no es
+una ruta válida del proyecto.
 
 ### Presentación de `/empresas/`
 
@@ -235,7 +239,7 @@ trabajador es independiente del estado de los certificados.
 
 | Rol | Usuarios | Empresas | Trabajadores |
 |---|---|---|---|
-| Administrador | Ve y gestiona todos los tipos de usuario permitidos | CRUD, igual que Beca Azul | Solo lectura; puede ver y descargar certificados |
+| Administrador | Ve y gestiona usuarios permitidos, incluido crear usuarios | CRUD, igual que Beca Azul | Solo lectura; puede ver y descargar certificados |
 | Beca Azul | Gestiona usuarios Planta, Empresa y Garita | CRUD | CRUD de trabajadores; puede ver y descargar certificados |
 | Usuario Empresa | Sin acceso | Consulta de su empresa y gestión de su SCTR y homologación | CRUD solo de su empresa; puede cargar, editar, reemplazar y eliminar certificados |
 | Planta | Consulta de usuarios, sin crear/editar/eliminar ni activar/desactivar | Solo lectura | Consulta trabajadores y certificados |
@@ -260,6 +264,8 @@ ocultar botones en las plantillas no es suficiente.
 
 - En `/users/gestion/`, los usuarios con rol `BECA_AZUL` visualizan usuarios de
   tipo `PLANTA`, `USUARIO_EMPRESA` y `GARITA`.
+- En `/users/gestion/`, `ADMINISTRADOR` puede consultar y gestionar usuarios de
+  todos los roles permitidos por las vistas, incluido crear usuarios.
 - El filtro `usuarios-rol` muestra únicamente `PLANTA`, `USUARIO_EMPRESA` y
   `GARITA` para evitar seleccionar `BECA_AZUL` o `ADMINISTRADOR`.
 - En `/users/gestion/crear/`, el combo `id_role` de un usuario Beca Azul permite
@@ -267,6 +273,13 @@ ocultar botones en las plantillas no es suficiente.
 - `ADMINISTRADOR` no se ofrece como tipo seleccionable y `superuser` no es un
   rol del modelo, sino una condición separada (`is_superuser`); ninguno puede
   ser creado desde este formulario.
+
+### Reportes
+
+- `/reportes/` está disponible para `ADMINISTRADOR`, `BECA_AZUL`, `PLANTA` y
+  `USUARIO_EMPRESA`.
+- Usuario Empresa recibe únicamente información de su empresa y sus trabajadores.
+- Garita no tiene acceso a reportes ni al dashboard.
 
 ### Restricciones específicas de certificados
 

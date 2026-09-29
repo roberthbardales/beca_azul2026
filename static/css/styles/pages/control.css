@@ -1,4 +1,16 @@
 .control-page-header { border-color: var(--ink-200) !important; } .control-page-header > div > p, .control-form-section > p { color: var(--ink-500) !important; } .control-summary-grid > div { border: 1px solid var(--ink-100); background: var(--ink-50) !important; } .control-detail-section > h2 { margin-bottom: .65rem; color: var(--ink-500) !important; } .control-detail-section > div, .control-detail-section > form { border-color: var(--ink-200) !important; box-shadow: var(--shadow-card); } .control-form-section { border-color: var(--ink-100) !important; } .control-form-section legend { padding-right: .5rem; } .control-action-bar { border-color: var(--ink-200) !important; } .control-confirmation-header { border-color: #fecaca !important; } .control-confirmation-header h1 { color: var(--danger-700) !important; }
+.company-form-card input:not([type="checkbox"]):not([type="radio"]) { min-height: 2.25rem !important; }
+.company-form-card { padding: .5rem !important; }
+.company-form-card .control-page-header { margin-bottom: .5rem !important; padding-bottom: .5rem !important; }
+.company-form-card input:not([type="checkbox"]):not([type="radio"]) { padding: .125rem .5rem !important; }
+.company-form-card .control-action-bar { padding-top: .5rem !important; }
+.company-form-card form { display: flex; flex-direction: column; gap: .5rem; }
+.company-form-card .control-form-section { margin: 0 !important; }
+.company-form-card .control-form-section > div { margin-top: .35rem !important; }
+.company-form-card .control-action-bar { margin-top: 0 !important; }
+@media (min-width: 640px) {
+    .company-form-card { padding: .75rem !important; }
+}
 .worker-form-card { border-color: #d9dee5 !important; border-radius: .4rem !important; background: #fff !important; box-shadow: 0 2px 8px rgba(16, 24, 40, .06) !important; }
 main .worker-form-card.rounded-xl.bg-white { border-radius: .5rem !important; }
 .worker-form-card .control-page-header { border-color: #d9dee5 !important; }
@@ -18,12 +30,23 @@ main .worker-form-card.rounded-xl.bg-white { border-radius: .5rem !important; }
 .worker-form-card .text-red-600 { color: #c62828 !important; font-size: .75rem !important; font-weight: 500; }
 .worker-form-card .form-control:has(+ .text-red-600) { border-color: #e53935 !important; box-shadow: 0 0 0 2px rgba(229, 57, 53, .1) !important; }
 .worker-form-card .control-action-bar { margin-top: .15rem !important; padding-top: .85rem !important; }
+.worker-form-card { padding: .5rem !important; }
+.worker-form-card .control-page-header { margin-bottom: .5rem !important; padding-bottom: .5rem !important; }
+.worker-form-card > aside { margin-bottom: .5rem !important; padding: .375rem .5rem !important; }
+.worker-form-card form { gap: .5rem !important; }
+.worker-form-card form > * + * { margin-top: .5rem !important; }
+.worker-form-card .control-form-section { gap: .35rem !important; }
+.worker-form-card .control-form-section > * + * { margin-top: .35rem !important; }
+.worker-form-card .control-form-section.border-t { padding-top: .5rem !important; }
+.worker-form-card .control-form-section + .control-form-section { margin-top: .5rem !important; }
+.worker-form-card .form-control { min-height: 2.25rem !important; padding: .25rem .5rem !important; }
+.worker-form-card .control-action-bar { margin-top: 0 !important; padding-top: .5rem !important; }
 .control-form-page { background: var(--ink-50); }
 .company-sctr-card--registered { border-color: #a7f3d0 !important; background: rgba(236, 253, 245, .55) !important; }
 .company-sctr-card--pending { border-color: #fecaca !important; background: rgba(254, 242, 242, .65) !important; }
 .company-identity { column-gap: .75rem; row-gap: .25rem; }
 @media (min-width: 640px) {
-    .worker-form-card { padding: 1.35rem !important; }
+    .worker-form-card { padding: .75rem !important; }
 }
 @media (max-width: 639px) {
     .worker-form-card .control-action-bar { align-items: stretch; }

@@ -1,7 +1,7 @@
 {% extends 'base.html' %}{% block title %}Buscar trabajador | Control{% endblock %}{% block content %}
 <div class="control-search-page flex justify-center"><div class="w-full max-w-2xl space-y-6">
 <section class="search-panel rounded-xl border border-gray-100 bg-white p-6 shadow-sm sm:p-8" aria-labelledby="buscar-trabajador-title">
-<div class="mb-4 border-b border-gray-100 pb-3"><h1 id="buscar-trabajador-title" class="text-2xl font-bold text-[#0f172a]">Buscar trabajador</h1></div>
+<div class="mb-4 border-b border-gray-100 pb-3"><h1 id="buscar-trabajador-title" class="page-title">Buscar trabajador</h1></div>
 <form method="get" class="flex flex-col gap-3 sm:flex-row" role="search">
 <label class="sr-only" for="buscar-trabajador-q">DNI o nombre del trabajador</label>
 <input id="buscar-trabajador-q" type="text" name="q" value="{{ q }}" placeholder="DNI o nombre del trabajador..." autofocus

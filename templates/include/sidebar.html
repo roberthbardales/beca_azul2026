@@ -2,7 +2,7 @@
 {% if request.user.is_authenticated %}
 <button id="sidebar-backdrop" type="button" aria-label="Cerrar menú" class="fixed inset-0 z-30 hidden bg-black/50 lg:hidden"></button>
 <aside id="sidebar" aria-label="Navegación principal" class="app-sidebar {% if request.user.is_superuser or request.user.role == '0' %}sidebar-role-admin{% elif request.user.role == '1' %}sidebar-role-beca{% elif request.user.role == '3' %}sidebar-role-empresa{% elif request.user.role == '2' %}sidebar-role-planta{% else %}sidebar-role-default{% endif %} fixed inset-y-0 left-0 z-40 flex w-64 -translate-x-full flex-col transition-transform duration-200 lg:translate-x-0">
-    <div class="brand-lockup flex items-center px-5"><img class="brand-logo" src="{% static 'images/Logo.jpeg' %}" alt="Beca Azul Ingenieros y Consultores"></div>
+    <div class="brand-lockup flex items-center px-5"><img class="brand-logo" src="{% static 'images/logo.png' %}" alt="Beca Azul Ingenieros y Consultores"></div>
     <nav class="flex-1 space-y-1 overflow-y-auto px-4 py-5" aria-label="Secciones del sistema">
         {% with url_name=request.resolver_match.url_name|default:'' %}
         {% if request.user.is_superuser or request.user.role == '0' or request.user.role == '1' or request.user.role == '2' %}<a href="{% url 'app_control:dashboard' %}" class="sidebar-link flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm {% if url_name == 'dashboard' %}sidebar-link--active{% endif %}"><svg class="nav-icon" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Dashboard</a>{% endif %}

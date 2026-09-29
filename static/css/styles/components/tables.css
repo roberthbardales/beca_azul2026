@@ -2,10 +2,17 @@ main table { color: var(--ink-700); } main thead, main [class*="bg-gray-50"] { b
 
 .list-table th.worker-requirement-header { background: #dbeafe !important; color: #1e40af !important; }
 .list-table th.worker-course-header { background: #cffafe !important; color: #155e75 !important; }
+.workers-list-table th.workers-list-header { color: #1e40af !important; }
+.workers-list-filter input,
+.workers-list-filter select,
+.workers-list-filter--compact input,
+.workers-list-filter--compact select { border-color: #f8fafc !important; }
+main .workers-list-filter--compact input,
+main .workers-list-filter--compact select { border-color: #f8fafc !important; }
 
 .app-table-wrap {
     overflow: hidden;
-    border: 1px solid #d9dee5;
+    border: 1px solid #b8c0cc !important;
     border-radius: .4rem;
     background: #fff;
     box-shadow: 0 1px 4px rgba(25, 35, 50, .045);
@@ -24,8 +31,8 @@ main table { color: var(--ink-700); } main thead, main [class*="bg-gray-50"] { b
 
 .app-table th {
     height: 3.25rem;
-    padding: .65rem 1rem !important;
-    border-bottom: 1px solid #d9dee5;
+    padding: .65rem .375rem !important;
+    border-bottom: 1px solid #b8c0cc !important;
     color: #111827 !important;
     font-size: .9rem !important;
     font-weight: 700 !important;
@@ -34,13 +41,13 @@ main table { color: var(--ink-700); } main thead, main [class*="bg-gray-50"] { b
 
 .app-table th:not(:last-child),
 .app-table td:not(:last-child) {
-    border-right: 1px solid #d9dee5;
+    border-right: 1px solid #b8c0cc !important;
 }
 
 .app-table td {
     height: 3.2rem;
-    padding: .45rem 1rem !important;
-    border-bottom: 1px solid #d9dee5;
+    padding: .5rem .375rem !important;
+    border-bottom: 1px solid #b8c0cc !important;
     color: #111827 !important;
     vertical-align: middle;
     font-size: .95rem;
@@ -53,6 +60,37 @@ main table { color: var(--ink-700); } main thead, main [class*="bg-gray-50"] { b
 .app-table tbody tr:hover {
     background: #fafcfe;
 }
+
+/* Shared table baseline for worker certificate and course data. */
+.worker-data-table {
+    width: 100%;
+    border-collapse: collapse;
+    color: #252a32;
+    font-size: .95rem;
+}
+
+.worker-data-table thead { background: #f1f4f6 !important; }
+.worker-data-table th {
+    height: 3.25rem;
+    padding: .65rem .375rem !important;
+    border-bottom: 1px solid #b8c0cc !important;
+    color: #111827 !important;
+    font-size: .9rem !important;
+    font-weight: 700 !important;
+    text-align: left;
+}
+.worker-data-table td {
+    height: 3.2rem;
+    padding: .5rem .375rem !important;
+    border-bottom: 1px solid #b8c0cc !important;
+    color: #111827 !important;
+    vertical-align: middle;
+    font-size: .95rem;
+}
+.worker-data-table th:not(:last-child),
+.worker-data-table td:not(:last-child) { border-right: 1px solid #b8c0cc !important; }
+.worker-data-table tbody tr:last-child td { border-bottom: 0; }
+.worker-data-table tbody tr:hover { background: #fafcfe; }
 
 @media (max-width: 640px) {
     .app-table-wrap {

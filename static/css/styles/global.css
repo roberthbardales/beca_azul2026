@@ -10,6 +10,8 @@ body { min-width: 320px; background: var(--ink-50) !important; color: var(--ink-
 .app-content.has-topbar { padding-top: 3rem; }
 .page-main { padding: .5rem 0 2.5rem; }
 .page-container { width: min(100% - 2rem, 80rem); margin-inline: auto; }
+.page-title { margin: 0; padding: 0; font-size: 1.5rem; line-height: 1.25; font-weight: 700; }
+.list-page-header .page-title { align-self: flex-start; }
 .skip-link { position: fixed; z-index: 100; top: .75rem; left: .75rem; padding: .65rem .85rem; border-radius: .5rem; background: var(--primary-700); color: #fff; transform: translateY(-180%); transition: transform .16s ease; }
 .skip-link:focus { transform: translateY(0); }
 .public-header { min-height: 4rem; border-color: var(--ink-200) !important; background: rgba(255, 255, 255, .94) !important; backdrop-filter: blur(12px); }
