@@ -1,10 +1,11 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import PermissionDenied
 from django.db.models import Q
 from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
-from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView, View
+from django.views.generic import CreateView, DeleteView, DetailView, ListView, TemplateView, UpdateView, View
 from django.views.generic.edit import FormView
 
 from .forms import (
@@ -50,8 +51,12 @@ class LoginUser(FormView):
         if user is None:
             form.add_error(None, 'Email o contraseña incorrectos.')
             return self.form_invalid(form)
+        if user.is_superuser:
+            return super().form_valid(form)
+        if user.role == User.USUARIO_EMPRESA:
+            return redirect('app_control:trabajador_lista')
         if user.role == User.GARITA:
-            return redirect('app_control:empresa_buscar')
+            return redirect('app_control:trabajador_buscar')
         return super().form_valid(form)
 
 
@@ -86,13 +91,29 @@ class UpdatePasswordView(LoginRequiredMixin, FormView):
 
 class DashboardView(LoginRequiredMixin, View):
     def get(self, request):
+        if not request.user.is_superuser and request.user.role not in (
+            User.ADMINISTRADOR,
+            User.BECA_AZUL,
+            User.PLANTA,
+        ):
+            raise PermissionDenied
         return HttpResponseRedirect(reverse('app_control:dashboard'))
 
 
-class MiPerfilView(LoginRequiredMixin, UpdateView):
+class MiPerfilView(LoginRequiredMixin, TemplateView):
+    template_name = 'users/perfil.html'
+    login_url = reverse_lazy('app_users:login')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['object'] = self.request.user
+        return context
+
+
+class EditarPerfilView(LoginRequiredMixin, UpdateView):
     model = User
     form_class = PerfilForm
-    template_name = 'users/perfil.html'
+    template_name = 'users/editar_perfil.html'
     success_url = reverse_lazy('app_users:mi_perfil')
     login_url = reverse_lazy('app_users:login')
 

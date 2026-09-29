@@ -51,7 +51,10 @@ beca_azul2026/
 - `/empresas/<id>/`: detalle de empresa para Administrador, Beca Azul y Planta; el
   Usuario Empresa solo puede consultar la empresa asociada.
 - `/empresas/<id>/sctr/editar/`: registro o consulta del SCTR de la empresa.
+- `/empresas/<id>/homologacion/editar/`: registro o consulta del certificado de homologación de la empresa.
 - `/trabajadores/`: listado, búsqueda y administración de trabajadores.
+- `/empresas/<id>/trabajadores/`: listado de trabajadores de una empresa para el rol
+  `GARITA`; permite consulta de la lista, sin acciones de detalle o edición.
 - `/trabajadores/`: listado único de trabajadores. Los usuarios empresa ven solo
   los trabajadores de su empresa; los roles administrativos pueden filtrar por empresa.
 - `/trabajadores/empresa/crear/`: creación de trabajadores exclusivamente para
@@ -66,14 +69,14 @@ Las rutas se registran en `beca_azul2026/urls.py`,
 
 - `/empresas/` muestra el listado común de empresas para Administrador, Beca Azul y Planta, con búsqueda, filtro de estado y filtro de homologación.
 - Administrador y Beca Azul pueden crear y administrar empresas; Planta solo puede consultar.
-- El listado muestra RUC, SCTR, fechas de emisión y vencimiento, estado, trabajadores, homologación y acceso al detalle.
+- El listado muestra RUC, estado del SCTR mediante icono, fechas de emisión y vencimiento, estado del certificado de homologación mediante icono, estado, trabajadores, homologación y acceso al detalle.
 - El detalle muestra acciones de administración únicamente para Administrador y Beca Azul.
 - La tabla utiliza las clases reutilizables `.app-table-wrap` y `.app-table`, definidas en `static/css/styles/components/tables.css`, con columnas adaptables al contenido y comportamiento responsive.
 - La presentación visual mantiene la información y rutas existentes; los cambios de esta vista son de composición, tipografía, colores, bordes, iconos y comportamiento responsive.
-- El detalle de empresa utiliza un panel compacto tipo tablero: encabezado con identidad y acciones, métricas horizontales y resumen documental del SCTR.
+- El detalle de empresa utiliza un panel compacto tipo tablero: encabezado con identidad y acciones, métricas horizontales y resumen documental del SCTR y la homologación.
 - El badge de homologación usa iconos de estado y colores semánticos suaves. Para usuarios empresa se muestra en el área de acciones del encabezado.
 - El detalle `/empresas/<id>/` permite `ADMINISTRADOR`, `BECA_AZUL`, `PLANTA` y `USUARIO_EMPRESA`. Usuario Empresa queda restringido por backend a su empresa asignada; Planta tiene acceso de solo lectura.
-- El formulario de SCTR usa una tarjeta documental compacta, separa el archivo actual de la carga de reemplazo y ofrece un enlace `Ver PDF` cuando existe un archivo.
+- Los formularios de SCTR y homologación usan una tarjeta documental compacta, separan el archivo actual de la carga de reemplazo y ofrecen un enlace `Ver PDF` cuando existe un archivo.
 
 ### Dashboard `/panel/`
 
@@ -184,6 +187,11 @@ Roles disponibles:
 | `3` | `USUARIO_EMPRESA` |
 | `4` | `GARITA` |
 
+Los códigos numéricos de rol son valores establecidos del sistema y se mantienen
+estables. Las plantillas pueden utilizarlos directamente para controlar la
+visualización de acciones; cualquier cambio de estos códigos requiere actualizar
+también las plantillas relacionadas.
+
 ### Empresa
 
 Incluye nombre, RUC único, `homologado` y `activo`. La homologación se actualiza
@@ -201,15 +209,16 @@ trabajador; se gestionan mediante la relación `certificados`.
  un certificado obligatorio de Inducción y uno obligatorio de Aptitud médica. Los
  cursos son opcionales durante la creación; si se completa un curso, debe incluir
  archivo y fechas. Inducción y Aptitud médica admiten un certificado por trabajador
- y Cursos admite varios, uno por categoría. El SCTR pertenece a la empresa y existe
- un único SCTR por empresa.
+ y Cursos admite varios, uno por categoría. El SCTR y la homologación pertenecen a
+ la empresa y existe un único certificado de cada tipo por empresa.
 
 ### Certificado
 
 Pertenece a una empresa o a un trabajador y registra `tipo`, fecha de emisión,
 fecha de vencimiento y archivo PDF. Los tipos disponibles son `SCTR`,
-`INDUCCION`, `CURSOS` y `APTITUD_MEDICA`. SCTR admite un solo certificado por
-empresa. Inducción y Aptitud médica admiten un solo certificado por trabajador.
+`HOMOLOGACION`, `INDUCCION`, `CURSOS` y `APTITUD_MEDICA`. SCTR y Homologación
+admiten un solo certificado por empresa. Inducción y Aptitud médica admiten un
+solo certificado por trabajador.
 Cursos admite varios certificados, uno por cada categoría definida en `CursoTipo`.
 
 Las categorías de cursos se definen mediante `CursoTipo` (`TextChoices`) en
@@ -228,14 +237,24 @@ trabajador es independiente del estado de los certificados.
 |---|---|---|---|
 | Administrador | Ve y gestiona todos los tipos de usuario permitidos | CRUD, igual que Beca Azul | Solo lectura; puede ver y descargar certificados |
 | Beca Azul | Gestiona usuarios Planta, Empresa y Garita | CRUD | CRUD de trabajadores; puede ver y descargar certificados |
-| Usuario Empresa | Sin acceso | Consulta de su empresa y gestión de su SCTR | CRUD solo de su empresa; puede cargar, editar, reemplazar y eliminar certificados |
+| Usuario Empresa | Sin acceso | Consulta de su empresa y gestión de su SCTR y homologación | CRUD solo de su empresa; puede cargar, editar, reemplazar y eliminar certificados |
 | Planta | Consulta de usuarios, sin crear/editar/eliminar ni activar/desactivar | Solo lectura | Consulta trabajadores y certificados |
-| Garita | Sin acceso | Sin acceso | Sin acceso a paneles |
+| Garita | Sin acceso | Búsqueda de empresas y consulta por empresa | Listas por empresa; sin detalle individual ni modificaciones |
 
 Las restricciones se implementan principalmente en
 `applications/users/mixins.py` y en las vistas de `applications/users/` y
 `applications/control/`. La autorización debe validarse siempre en backend;
 ocultar botones en las plantillas no es suficiente.
+
+### Consulta de trabajadores para Garita
+
+- Garita puede buscar empresas en `/empresas/buscar/`.
+- La tabla muestra la columna `Acciones` únicamente para Garita, con un botón
+  compacto `Ver lista` que dirige a `/empresas/<id>/trabajadores/`.
+- La lista por empresa reutiliza `templates/control/trabajadores/lista_empresa.html`
+  y muestra trabajadores activos e inactivos.
+- En esa lista Garita no ve la columna `Acciones`.
+- El acceso directo a `/trabajadores/<id>/` devuelve `403 Forbidden` para Garita.
 
 ### Gestión de usuarios
 
@@ -262,9 +281,9 @@ ocultar botones en las plantillas no es suficiente.
 
 ### Detalle de empresa y trabajador
 
-- El detalle de empresa muestra métricas, homologación y estado/vigencia del SCTR, sin listar trabajadores.
-  El usuario empresa puede acceder únicamente a su propia empresa y consultar o editar el SCTR desde
-  `/empresas/<id>/sctr/editar/`. El detalle del trabajador muestra filas para
+- El detalle de empresa muestra métricas, el estado independiente `Empresa.homologado` y el estado/vigencia del SCTR y la homologación, sin listar trabajadores.
+  El usuario empresa puede acceder únicamente a su propia empresa y consultar o editar ambos certificados desde
+  `/empresas/<id>/sctr/editar/` y `/empresas/<id>/homologacion/editar/`. El detalle del trabajador muestra filas para
   Inducción, Aptitud médica y Cursos.
 - Los cursos registrados aparecen como filas adicionales; si no existe ninguno,
   se muestra una fila vacía con la acción para añadirlo.

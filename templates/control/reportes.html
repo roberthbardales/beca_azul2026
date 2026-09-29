@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block title %}Reportes | Sistema de Control{% endblock %}
+
+{% block extra_css %}
+<style>
+    @media print {
+        .app-topbar, .app-sidebar, .reports-controls, .list-page-header { display: none !important; }
+        .app-content { margin-left: 0 !important; }
+        .page-main, .page-container { padding: 0 !important; }
+        .list-table-wrap { overflow: visible !important; box-shadow: none !important; }
+        .list-table { font-size: 10pt !important; }
+    }
+    @page { size: A4 landscape; margin: 1cm; }
+    .reports-list-table { width: auto; table-layout: auto; }
+    .reports-list-table .status-nowrap { white-space: nowrap; }
+    {% if es_pdf %}
+    .app-topbar, .app-sidebar, .reports-controls, .list-page-header { display: none !important; }
+    .app-content { margin-left: 0 !important; }
+    .page-main, .page-container { padding: 0 !important; }
+    .list-table-wrap { overflow: visible !important; box-shadow: none !important; }
+    {% endif %}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="list-page">
+    <div class="list-page-header">
+        <h1 id="reports-title">Reportes</h1>
+    </div>
+
+    <div class="reports-controls mb-6 flex flex-wrap justify-center gap-2" role="tablist" aria-label="Tipos de reporte">
+        {% for clave, titulo, descripcion in reportes %}
+        <a href="?reporte={{ clave }}" role="tab" aria-selected="{% if reporte_actual == clave %}true{% else %}false{% endif %}" class="rounded-lg border px-4 py-2.5 text-sm font-semibold shadow-sm transition hover:-translate-y-0.5 hover:shadow {% if reporte_actual == clave %}border-[var(--primary-600)] bg-[var(--primary-600)] text-white{% else %}border-slate-200 bg-white text-slate-700 hover:border-[var(--primary-300)]{% endif %}">
+            {{ titulo }}
+        </a>
+        {% endfor %}
+    </div>
+
+    <div class="reports-controls mb-3 flex items-center justify-between gap-3">
+        <h2 class="text-lg font-bold">Detalle: {{ reporte_actual|title }}</h2>
+        <button type="button" class="btn btn-primary" onclick="window.print()">Exportar a PDF</button>
+    </div>
+    <div class="app-table-wrap list-table-wrap responsive-table">
+        <table class="app-table list-table companies-list-table reports-list-table responsive-table min-w-full divide-y divide-gray-200" aria-label="Detalle del reporte">
+            <thead class="bg-gray-50">
+                {% if reporte_actual == 'vencimientos' or reporte_actual == 'vencimientos_empresa' %}
+                 <tr><th class="px-3 py-1 text-left text-xs font-semibold text-[#A5A5A5]">Trabajador</th><th class="px-3 py-1 text-left text-xs font-semibold text-[#A5A5A5]">Empresa</th><th class="px-3 py-1 text-left text-xs font-semibold text-[#A5A5A5]">Certificado</th><th class="px-3 py-1 text-left text-xs font-semibold text-[#A5A5A5]">Vencimiento</th><th class="px-3 py-1 text-left text-xs font-semibold text-[#A5A5A5]">Estado</th></tr>
+                {% elif reporte_actual == 'trabajadores' %}
+                <tr><th class="px-3 py-1 text-left text-xs font-semibold text-[#A5A5A5]">Trabajador</th><th class="px-3 py-1 text-left text-xs font-semibold text-[#A5A5A5]">Documento</th><th class="px-3 py-1 text-left text-xs font-semibold text-[#A5A5A5]">Empresa</th><th class="px-3 py-1 text-left text-xs font-semibold text-[#A5A5A5]">Cargo</th><th class="px-3 py-1 text-left text-xs font-semibold text-[#A5A5A5]">Estado</th></tr>
+                {% else %}
+                <tr><th class="px-3 py-1 text-left text-xs font-semibold text-[#A5A5A5]">Empresa</th><th class="px-3 py-1 text-left text-xs font-semibold text-[#A5A5A5]">RUC</th><th class="px-3 py-1 text-left text-xs font-semibold text-[#A5A5A5]">Trabajadores</th><th class="px-3 py-1 text-left text-xs font-semibold text-[#A5A5A5]">Homologación</th><th class="px-3 py-1 text-left text-xs font-semibold text-[#A5A5A5]">Estado</th></tr>
+                {% endif %}
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                {% if reporte_actual == 'vencimientos' or reporte_actual == 'vencimientos_empresa' %}
+                 {% for fila in vencimientos_vencidos %}
+                 <tr><td data-label="Trabajador" class="px-5 py-3 text-sm font-medium">{% if fila.trabajador %}{{ fila.trabajador }}{% else %}{{ fila.empresa }}{% endif %}</td><td data-label="Empresa" class="px-5 py-3 text-sm">{% if fila.trabajador %}{{ fila.trabajador.empresa }}{% else %}{{ fila.empresa }}{% endif %}</td><td data-label="Certificado" class="px-5 py-3 text-sm">{{ fila.get_tipo_display }}{% if fila.curso %} - {{ fila.get_curso_display }}{% endif %}</td><td data-label="Vencimiento" class="px-5 py-3 text-sm">{{ fila.fecha_vencimiento|date:'d/m/Y' }}</td><td data-label="Estado" class="px-5 py-3 text-sm"><span class="inline-block rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">Vencido</span></td></tr>
+                {% endfor %}
+                 {% for fila in vencimientos_proximos %}
+                   <tr><td data-label="Trabajador" class="px-5 py-3 text-sm font-medium">{% if fila.trabajador %}{{ fila.trabajador }}{% else %}{{ fila.empresa }}{% endif %}</td><td data-label="Empresa" class="px-5 py-3 text-sm">{% if fila.trabajador %}{{ fila.trabajador.empresa }}{% else %}{{ fila.empresa }}{% endif %}</td><td data-label="Certificado" class="px-5 py-3 text-sm">{{ fila.get_tipo_display }}{% if fila.curso %} - {{ fila.get_curso_display }}{% endif %}</td><td data-label="Vencimiento" class="px-5 py-3 text-sm">{{ fila.fecha_vencimiento|date:'d/m/Y' }}</td><td data-label="Estado" class="px-5 py-3 text-sm"><span class="status-nowrap inline-block rounded-full bg-yellow-100 px-2 py-0.5 text-xs font-medium text-yellow-700">{{ fila.estado }}</span></td></tr>
+                 {% endfor %}
+                 {% elif reporte_actual == 'trabajadores' %}
+                 {% for fila in filas %}
+                  <tr><td data-label="Trabajador" class="px-5 py-3 text-sm font-medium">{{ fila }}</td><td data-label="Documento" class="px-5 py-3 text-sm">{{ fila.dni }}</td><td data-label="Empresa" class="px-5 py-3 text-sm">{{ fila.empresa }}</td><td data-label="Cargo" class="px-5 py-3 text-sm">{{ fila.cargo|default:'-' }}</td><td data-label="Estado" class="px-5 py-3 text-sm">{% if fila.habilitado %}<span class="inline-block rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">Habilitado</span>{% else %}<span class="inline-block rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">No habilitado</span>{% endif %}</td></tr>
+                 {% endfor %}
+                 {% else %}
+                 {% for fila in filas %}
+                  <tr><td data-label="Empresa" class="px-5 py-3 text-sm font-medium">{{ fila.nombre }}</td><td data-label="RUC" class="px-5 py-3 text-sm">{{ fila.ruc }}</td><td data-label="Trabajadores" class="px-5 py-3 text-sm">{{ fila.total_trabajadores }}</td><td data-label="Homologación" class="px-5 py-3 text-sm">{% if fila.homologado %}Homologada{% else %}Pendiente{% endif %}</td><td data-label="Estado" class="px-5 py-3 text-sm">{% if fila.activo %}<span class="inline-block rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">Activa</span>{% else %}<span class="inline-block rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">Inactiva</span>{% endif %}</td></tr>
+                 {% endfor %}
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

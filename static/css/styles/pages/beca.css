@@ -1,3 +1,8 @@
-.hero-card { background: var(--primary-700); border: 1px solid rgba(255, 255, 255, .12); box-shadow: 0 18px 42px -24px rgba(20, 29, 69, .58); } .hero-card h1 { color: #fff !important; letter-spacing: -.035em; } .hero-card p { color: rgba(255, 255, 255, .78) !important; } .hero-card [class*="bg-white"][class*="text-[#0f172a]"] { border: 1px solid var(--ink-200); border-radius: 1rem; box-shadow: 0 8px 18px -12px rgba(16, 24, 40, .25); }
-.beca-hero { position: relative; isolation: isolate; background: var(--primary-700); } .beca-hero::after { position: absolute; z-index: -1; right: -8rem; bottom: -10rem; width: 26rem; height: 26rem; border: 1px solid rgba(255, 255, 255, .14); border-radius: 50%; content: ""; }
+.hero-card { border: 1px solid rgba(255, 255, 255, .12); box-shadow: 0 18px 42px -24px rgba(20, 29, 69, .58); }
+.hero-card h1 { color: #fff !important; letter-spacing: -.035em; }
+.beca-hero { position: relative; isolation: isolate; background: linear-gradient(125deg, var(--primary-700), var(--primary-600)); }
+.beca-hero::after { position: absolute; z-index: -1; right: -12rem; bottom: -14rem; width: 28rem; height: 28rem; border: 1px solid rgba(255, 255, 255, .1); border-radius: 50%; content: ""; }
+.beca-eyebrow { color: #a9caff; font-size: .72rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+.beca-hero__link { gap: .65rem; }
+.beca-hero__link:focus-visible { outline: 3px solid #fff; outline-offset: 4px; }
 @media (max-width: 640px) { .beca-hero::after { right: -12rem; bottom: -12rem; } }

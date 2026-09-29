@@ -167,6 +167,13 @@ class PerfilForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ('first_name', 'last_name', 'gender', 'phone', 'date_birth')
+        widgets = {
+            'first_name': forms.TextInput(attrs={'class': 'profile-input', 'autocomplete': 'given-name'}),
+            'last_name': forms.TextInput(attrs={'class': 'profile-input', 'autocomplete': 'family-name'}),
+            'gender': forms.Select(attrs={'class': 'profile-input'}),
+            'phone': forms.TextInput(attrs={'class': 'profile-input', 'autocomplete': 'tel'}),
+            'date_birth': forms.DateInput(attrs={'class': 'profile-input', 'type': 'date'}),
+        }
 
     def clean_date_birth(self):
         date_birth = self.cleaned_data.get('date_birth')

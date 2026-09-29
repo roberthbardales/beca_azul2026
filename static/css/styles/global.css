@@ -27,6 +27,9 @@ main [class*="bg-green-100"] { background: var(--success-50) !important; } main 
 main [class*="bg-yellow-100"] { background: var(--warning-50) !important; } main [class*="text-yellow-700"], main [class*="text-yellow-600"] { color: var(--warning-700) !important; }
 main [class*="bg-red-100"], main [class*="bg-red-50"] { background: var(--danger-50) !important; } main [class*="text-red-700"], main [class*="text-red-600"], main [class*="text-red-500"] { color: var(--danger-700) !important; }
 main [class*="bg-blue-100"] { background: var(--primary-50) !important; } main [class*="text-blue-700"] { color: var(--primary-700) !important; }
+.profile-input { width: 100%; min-height: 2.65rem; border: 1px solid var(--ink-200); border-radius: .5rem; background: #fff; padding: .6rem .75rem; color: var(--ink-900); font-size: .875rem; }
+.profile-input:focus { border-color: var(--primary-500); outline: 2px solid var(--primary-100); outline-offset: 0; }
+.profile-input option { color: var(--ink-900); }
 @media (max-width: 1023px) { .page-container { width: min(100% - 1.5rem, 80rem); } }
 @media (max-width: 640px) { .page-main { padding-top: 1rem; } main h1 { font-size: 1.375rem !important; } main table { font-size: .8125rem; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; } }

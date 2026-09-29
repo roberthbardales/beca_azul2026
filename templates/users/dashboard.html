@@ -9,10 +9,6 @@
     {% include 'users/dashboard/metric_cards.html' %}
     {% include 'users/dashboard/charts.html' %}
 
-    <div class="dashboard-feeds mt-5 grid items-start gap-5 xl:grid-cols-2">
-        {% include 'users/dashboard/recent_workers.html' %}
-        {% include 'users/dashboard/expiring_certificates.html' %}
-    </div>
 </section>
 
 {{ dashboard_charts|json_script:"dashboard-charts-data" }}

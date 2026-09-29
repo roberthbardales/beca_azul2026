@@ -6,7 +6,7 @@ from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.db.models import Count, Exists, OuterRef, Prefetch, Q
 from django.db.models.functions import TruncDate
-from django.http import HttpResponseRedirect, JsonResponse
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
@@ -18,6 +18,7 @@ from applications.users.mixins import (
     BecaAzulRequiredMixin,
     GestionarIncidenciasMixin,
     TrabajadorEmpresaPermisoMixin,
+    UsuarioGaritaRequiredMixin,
     VerEmpresasMixin,
     VerTrabajadorDetalleMixin,
     VerTrabajadoresMixin,
@@ -30,6 +31,7 @@ from .forms import (
     EmpresaForm,
     IncidenciaForm,
     SCTRForm,
+    HomologacionForm,
     TrabajadorEmpresaForm,
     TrabajadorForm,
 )
@@ -39,10 +41,12 @@ class DashboardView(LoginRequiredMixin, View):
     template_name = 'users/dashboard.html'
 
     def get(self, request):
-        if request.user.role == User.GARITA:
+        if not request.user.is_superuser and request.user.role not in (
+            User.ADMINISTRADOR,
+            User.BECA_AZUL,
+            User.PLANTA,
+        ):
             raise PermissionDenied
-        if request.user.role == User.USUARIO_EMPRESA:
-            return redirect('app_control:trabajador_lista')
         hoy = timezone.localdate()
         limite_30 = hoy + timedelta(days=30)
         limite_60 = hoy + timedelta(days=60)
@@ -124,17 +128,79 @@ class DashboardView(LoginRequiredMixin, View):
                     'data': [altas_por_dia.get(dia, 0) for dia in dias_semana],
                 },
             },
-            'trabajadores_recientes': (
-                Trabajador.objects.select_related('empresa').order_by('-created')[:5]
-            ),
-            'certificados_por_vencer': (
-                Certificado.objects.select_related('trabajador__empresa').filter(
-                    trabajador__isnull=False,
-                    fecha_vencimiento__gte=hoy,
-                    fecha_vencimiento__lte=limite_30,
-                ).order_by('fecha_vencimiento')[:5]
-            ),
         }
+        return render(request, self.template_name, context)
+
+
+class ReportesView(LoginRequiredMixin, View):
+    template_name = 'control/reportes.html'
+    reportes = ('vencimientos', 'vencimientos_empresa', 'trabajadores', 'empresas')
+
+    def get(self, request):
+        if not request.user.is_superuser and request.user.role not in (
+            User.ADMINISTRADOR, User.BECA_AZUL, User.PLANTA, User.USUARIO_EMPRESA
+        ):
+            raise PermissionDenied
+
+        reporte = request.GET.get('reporte', 'vencimientos')
+        if reporte not in self.reportes:
+            reporte = 'vencimientos'
+
+        hoy = timezone.localdate()
+        limite_30 = hoy + timedelta(days=30)
+        certificados = Certificado.objects.select_related('empresa', 'trabajador__empresa')
+        trabajadores = Trabajador.objects.select_related('empresa')
+        empresas = Empresa.objects.annotate(total_trabajadores=Count('trabajadores', distinct=True))
+
+        if request.user.role == User.USUARIO_EMPRESA:
+            certificados = certificados.filter(
+                Q(empresa_id=request.user.empresa_id) | Q(trabajador__empresa_id=request.user.empresa_id)
+            )
+            trabajadores = trabajadores.filter(empresa_id=request.user.empresa_id)
+            empresas = empresas.filter(id=request.user.empresa_id)
+
+        if reporte == 'vencimientos':
+            certificados = certificados.filter(
+                tipo__in=(Certificado.INDUCCION, Certificado.APTITUD_MEDICA)
+            )
+        elif reporte == 'vencimientos_empresa':
+            certificados = certificados.filter(
+                tipo__in=(Certificado.HOMOLOGACION, Certificado.SCTR)
+            )
+
+        context = {
+            'reporte_actual': reporte,
+            'reportes': (
+                ('vencimientos', 'Aptitud médica e inducción', 'Vencimientos de aptitud médica e inducción'),
+                ('vencimientos_empresa', 'Homologación y SCTR', 'Vencimientos de homologación y SCTR'),
+                ('trabajadores', 'Trabajadores', 'Estado del personal registrado'),
+                ('empresas', 'Empresas', 'Empresas y cantidad de trabajadores'),
+            ),
+            'total_trabajadores': trabajadores.count(),
+            'total_empresas': empresas.count(),
+            'total_certificados': certificados.count(),
+            'vencidos': certificados.filter(fecha_vencimiento__lt=hoy).count(),
+            'por_vencer': certificados.filter(
+                fecha_vencimiento__gte=hoy, fecha_vencimiento__lte=limite_30
+            ).count(),
+            'trabajadores_no_habilitados': trabajadores.filter(habilitado=False).count(),
+            'empresas_pendientes': empresas.filter(homologado=False).count(),
+        }
+
+        if reporte in ('vencimientos', 'vencimientos_empresa'):
+            context['vencimientos_vencidos'] = certificados.filter(
+                fecha_vencimiento__lt=hoy
+            ).order_by('fecha_vencimiento')
+            context['vencimientos_proximos'] = certificados.filter(
+                fecha_vencimiento__gte=hoy, fecha_vencimiento__lte=limite_30
+            ).order_by('fecha_vencimiento')
+            context['filas'] = list(context['vencimientos_vencidos']) + list(
+                context['vencimientos_proximos']
+            )
+        elif reporte == 'trabajadores':
+            context['filas'] = trabajadores.order_by('empresa__nombre', 'apellidos', 'nombres')
+        elif reporte == 'empresas':
+            context['filas'] = empresas.order_by('nombre')
         return render(request, self.template_name, context)
 
 
@@ -149,7 +215,8 @@ class EmpresaListView(VerEmpresasMixin, ListView):
             total_trabajadores=Count('trabajadores', distinct=True),
             total_usuarios=Count('usuarios', distinct=True),
         ).prefetch_related(
-            Prefetch('certificados', queryset=Certificado.objects.filter(tipo=Certificado.SCTR), to_attr='sctr_certificados')
+            Prefetch('certificados', queryset=Certificado.objects.filter(tipo=Certificado.SCTR), to_attr='sctr_certificados'),
+            Prefetch('certificados', queryset=Certificado.objects.filter(tipo=Certificado.HOMOLOGACION), to_attr='homologacion_certificados'),
         ).order_by('-activo', 'nombre')
         q = self.request.GET.get('q', '').strip()
         if q:
@@ -188,6 +255,8 @@ class EmpresaBuscarView(LoginRequiredMixin, ListView):
         queryset = Empresa.objects.annotate(
             total_trabajadores=Count('trabajadores', distinct=True)
         ).order_by('-homologado', 'nombre')
+        if self.request.user.role == User.GARITA:
+            return queryset
         q = self.request.GET.get('q', '').strip()
         if q:
             queryset = queryset.filter(
@@ -202,10 +271,16 @@ class EmpresaBuscarView(LoginRequiredMixin, ListView):
             queryset = queryset.filter(homologado=(habilitado == '1'))
         return queryset
 
+    def get_paginate_by(self, queryset):
+        if self.request.user.role == User.GARITA:
+            return None
+        return self.paginate_by
+
     def get_context_data(self, **kwargs):
         kwargs.setdefault('q', self.request.GET.get('q', ''))
         kwargs.setdefault('estado', self.request.GET.get('estado', ''))
         kwargs.setdefault('habilitado', self.request.GET.get('habilitado', ''))
+        kwargs.setdefault('es_garita', self.request.user.role == User.GARITA)
         return super().get_context_data(**kwargs)
 
 
@@ -266,6 +341,7 @@ class EmpresaDetailView(LoginRequiredMixin, DetailView):
         kwargs.setdefault('total_trabajadores', trabajadores.count())
         kwargs.setdefault('total_usuarios', self.object.usuarios.count())
         kwargs.setdefault('sctr', self.object.certificados.filter(tipo=Certificado.SCTR).first())
+        kwargs.setdefault('homologacion', self.object.certificados.filter(tipo=Certificado.HOMOLOGACION).first())
         kwargs.setdefault(
             'trabajadores_por_estado',
             [
@@ -322,6 +398,25 @@ class EmpresaSCTRUpdateView(LoginRequiredMixin, UpdateView):
         return reverse('app_control:empresa_detalle', args=[self.request.user.empresa.pk])
 
 
+class EmpresaHomologacionUpdateView(EmpresaSCTRUpdateView):
+    form_class = HomologacionForm
+    template_name = 'control/empresas/homologacion_form.html'
+    context_object_name = 'homologacion'
+
+    def get_queryset(self):
+        return Certificado.objects.filter(
+            empresa=self.request.user.empresa,
+            tipo=Certificado.HOMOLOGACION,
+        )
+
+    def form_valid(self, form):
+        if not form.instance.pk:
+            form.instance.empresa = self.request.user.empresa
+        response = super(EmpresaSCTRUpdateView, self).form_valid(form)
+        messages.success(self.request, 'Homologación actualizada correctamente.')
+        return response
+
+
 class EmpresaDeleteView(AdministrarEmpresasMixin, DeleteView):
     model = Empresa
     template_name = 'control/empresas/confirm_delete.html'
@@ -356,6 +451,11 @@ class TrabajadorListView(VerTrabajadoresMixin, ListView):
         'aptitud_medica': ('tiene_aptitud_medica', 'apellidos', 'nombres'),
         'estado': ('habilitado', 'apellidos', 'nombres'),
     }
+
+    def get_paginate_by(self, queryset):
+        if self.request.user.role == User.GARITA:
+            return None
+        return self.paginate_by
 
     def get_queryset(self):
         certificados = Certificado.objects.filter(trabajador=OuterRef('pk'))
@@ -432,9 +532,19 @@ class TrabajadorListView(VerTrabajadoresMixin, ListView):
         kwargs['sortable_columns']['estado'] = 'Estado'
         kwargs.setdefault('cursos_columnas', Certificado.CURSO_CHOICES)
         kwargs.setdefault('es_empresa', self.request.user.role == User.USUARIO_EMPRESA)
+        kwargs.setdefault('es_garita', self.request.user.role == User.GARITA)
         if kwargs['es_empresa']:
             kwargs['sortable_columns'].pop('empresa', None)
         kwargs.setdefault('empresa', getattr(self.request.user, 'empresa', None))
+        return super().get_context_data(**kwargs)
+
+
+class EmpresaTrabajadoresGaritaView(UsuarioGaritaRequiredMixin, TrabajadorListView):
+    def get_queryset(self):
+        return super().get_queryset().filter(empresa_id=self.kwargs['pk'])
+
+    def get_context_data(self, **kwargs):
+        kwargs.setdefault('empresa', get_object_or_404(Empresa, pk=self.kwargs['pk']))
         return super().get_context_data(**kwargs)
 
 
@@ -564,6 +674,14 @@ class CertificadoCreateView(AdministrarTrabajadoresMixin, CreateView):
     model = Certificado
     form_class = CertificadoForm
     template_name = 'control/certificados/form.html'
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['trabajador'] = get_object_or_404(
+            Trabajador,
+            pk=self.kwargs['trabajador_pk'],
+        )
+        return kwargs
 
     def get_trabajador(self):
         return get_object_or_404(Trabajador, pk=self.kwargs['trabajador_pk'])
@@ -851,6 +969,11 @@ class CertificadoEmpresaCreateView(TrabajadorEmpresaBaseMixin, CreateView):
     model = Certificado
     form_class = CertificadoForm
     template_name = 'control/certificados/form.html'
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['trabajador'] = self.get_trabajador()
+        return kwargs
 
     def get_form(self, form_class=None):
         form = super().get_form(form_class)

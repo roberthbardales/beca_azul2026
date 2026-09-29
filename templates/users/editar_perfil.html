@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar perfil | Sistema de Control{% endblock %}
+
+{% block content %}
+<div class="profile-page flex justify-center py-2">
+  <div class="w-full max-w-2xl">
+    <div class="profile-card rounded-xl border border-gray-100 bg-white p-6 shadow-sm sm:p-8">
+      <div class="mb-8 border-b border-gray-100 pb-5">
+        <h1 class="text-2xl font-bold text-[#0f172a]">Editar perfil</h1>
+        <p class="mt-1 text-sm text-gray-500">Actualiza tus datos personales.</p>
+      </div>
+
+      <form method="post" novalidate class="space-y-5">
+        {% csrf_token %}
+        {% if form.non_field_errors %}<div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{{ form.non_field_errors }}</div>{% endif %}
+        <div class="grid gap-4 sm:grid-cols-2">
+          {% for field in form %}
+            <div class="{% if field.name == 'date_birth' %}sm:col-span-2{% endif %}">
+              <label for="{{ field.id_for_label }}" class="mb-1 block text-sm font-medium text-[#0f172a]">{{ field.label }}</label>
+              {{ field }}
+              {% for error in field.errors %}<div class="mt-1 text-sm text-red-600">{{ error }}</div>{% endfor %}
+            </div>
+          {% endfor %}
+        </div>
+        <div class="flex items-center gap-3 pt-2">
+          <button class="btn btn-primary" type="submit">Guardar cambios</button>
+          <a class="text-sm font-medium text-gray-500 hover:underline" href="{% url 'app_users:mi_perfil' %}">Cancelar</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

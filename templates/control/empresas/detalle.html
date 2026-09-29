@@ -26,13 +26,11 @@
                 </div>
             </div>
         </section>
-
         <section aria-label="Resumen de empresa" class="company-metrics grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
             <div class="rounded-lg border border-gray-100 bg-white px-4 py-3 shadow-sm"><p class="text-xs font-semibold uppercase tracking-wide text-[var(--ink-500)]">Trabajadores</p><p class="mt-1 text-xl font-bold text-[var(--ink-900)]">{{ total_trabajadores }}</p></div>
-            <div class="rounded-lg border border-gray-100 bg-white px-4 py-3 shadow-sm"><p class="text-xs font-semibold uppercase tracking-wide text-[var(--ink-500)]">Usuarios</p><p class="mt-1 text-xl font-bold text-[var(--ink-900)]">{{ total_usuarios }}</p></div>
+            {% if request.user.is_superuser or request.user.role == '0' or request.user.role == '1' %}<div class="rounded-lg border border-gray-100 bg-white px-4 py-3 shadow-sm"><p class="text-xs font-semibold uppercase tracking-wide text-[var(--ink-500)]">Usuarios</p><p class="mt-1 text-xl font-bold text-[var(--ink-900)]">{{ total_usuarios }}</p></div>{% endif %}
             {% for grupo in trabajadores_por_estado %}<div class="rounded-lg border border-gray-100 bg-white px-4 py-3 shadow-sm"><p class="text-xs font-semibold uppercase tracking-wide text-[var(--ink-500)]">{{ grupo.label }}</p><p class="mt-1 text-xl font-bold {% if grupo.habilitado %}text-green-600{% else %}text-red-600{% endif %}">{{ grupo.total }}</p></div>{% endfor %}
         </section>
-
         <section class="company-sctr-card rounded-xl border px-4 py-3 shadow-sm {% if sctr %}company-sctr-card--registered{% else %}company-sctr-card--pending{% endif %}">
             <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                 <div class="min-w-0">
@@ -40,6 +38,15 @@
                     {% if sctr %}<p class="mt-1 text-xs text-[var(--ink-500)]">Emisión <strong class="text-[var(--ink-900)]">{{ sctr.fecha_emision|date:'d/m/Y' }}</strong><span class="mx-2">·</span>Vencimiento <strong class="text-[var(--ink-900)]">{{ sctr.fecha_vencimiento|date:'d/m/Y' }}</strong></p>{% else %}<p class="mt-1 text-xs text-[var(--ink-500)]">La empresa aún no tiene un SCTR registrado.</p>{% endif %}
                 </div>
                 {% if request.user.role == '3' %}<a class="btn btn-primary btn-sm" href="{% url 'app_control:empresa_sctr_editar' empresa.pk %}">{% if sctr %}Ver SCTR{% else %}Registrar SCTR{% endif %}</a>{% endif %}
+            </div>
+        </section>
+        <section class="company-sctr-card rounded-xl border px-4 py-3 shadow-sm {% if homologacion %}company-sctr-card--registered{% else %}company-sctr-card--pending{% endif %}">
+            <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                <div class="min-w-0">
+                    <div class="flex flex-wrap items-center gap-2"><h2 class="text-base font-bold text-[var(--ink-900)]">Homologación</h2><span class="inline-flex rounded-full px-2 py-0.5 text-xs font-semibold {% if homologacion %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">{% if homologacion %}Registrada{% else %}Pendiente{% endif %}</span></div>
+                    {% if homologacion %}<p class="mt-1 text-xs text-[var(--ink-500)]">Emisión <strong class="text-[var(--ink-900)]">{{ homologacion.fecha_emision|date:'d/m/Y' }}</strong><span class="mx-2">·</span>Vencimiento <strong class="text-[var(--ink-900)]">{{ homologacion.fecha_vencimiento|date:'d/m/Y' }}</strong></p>{% else %}<p class="mt-1 text-xs text-[var(--ink-500)]">La empresa aún no tiene una homologación registrada.</p>{% endif %}
+                </div>
+                {% if request.user.role == '3' %}<a class="btn btn-primary btn-sm" href="{% url 'app_control:empresa_homologacion_editar' empresa.pk %}">{% if homologacion %}Ver homologación{% else %}Registrar homologación{% endif %}</a>{% endif %}
             </div>
         </section>
     </div>

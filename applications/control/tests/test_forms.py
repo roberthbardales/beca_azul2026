@@ -6,6 +6,7 @@ from django.test import SimpleTestCase, TestCase
 
 from ..forms import (
     CertificadoForm,
+    EmpresaForm,
     IncidenciaForm,
     SCTRForm,
     TrabajadorEmpresaForm,
@@ -66,6 +67,26 @@ class FormValidationTests(TestCase):
         self.assertFalse(form.is_valid())
         self.assertIn('curso', form.errors)
 
+    def test_certificado_form_rechaza_requisito_duplicado_al_crear(self):
+        Certificado.objects.create(
+            trabajador=self.trabajador,
+            tipo=Certificado.INDUCCION,
+            fecha_emision=date.today(),
+            fecha_vencimiento=date.today() + timedelta(days=1),
+            archivo=SimpleUploadedFile('induccion.pdf', b'%PDF-1.4 existente'),
+        )
+        form = CertificadoForm(
+            data={
+                'tipo': Certificado.INDUCCION,
+                **self.fechas,
+            },
+            files={'archivo': SimpleUploadedFile('nuevo.pdf', b'%PDF-1.4 nuevo')},
+            trabajador=self.trabajador,
+        )
+
+        self.assertFalse(form.is_valid())
+        self.assertIn('tipo', form.errors)
+
     def test_sctr_form_exige_archivo_al_crear(self):
         form = SCTRForm(data=self.fechas, empresa=self.empresa)
 
@@ -96,6 +117,32 @@ class FormValidationTests(TestCase):
         actualizado = form.save()
         self.assertEqual(actualizado.archivo.name, archivo_original)
         self.assertEqual(actualizado.fecha_vencimiento, date.today() + timedelta(days=30))
+
+    def test_empresa_form_actualiza_fechas_sctr_sin_nuevo_archivo(self):
+        certificado = Certificado.objects.create(
+            empresa=self.empresa,
+            tipo=Certificado.SCTR,
+            fecha_emision=date.today() - timedelta(days=10),
+            fecha_vencimiento=date.today() + timedelta(days=10),
+            archivo=SimpleUploadedFile('sctr.pdf', b'%PDF-1.4 existente'),
+        )
+        archivo_original = certificado.archivo.name
+        form = EmpresaForm(
+            data={
+                'nombre': self.empresa.nombre,
+                'ruc': self.empresa.ruc,
+                'sctr_fecha_emision': date.today().isoformat(),
+                'sctr_fecha_vencimiento': (date.today() + timedelta(days=30)).isoformat(),
+            },
+            instance=self.empresa,
+            can_edit_sctr=True,
+        )
+
+        self.assertTrue(form.is_valid(), form.errors)
+        form.save()
+        certificado.refresh_from_db()
+        self.assertEqual(certificado.archivo.name, archivo_original)
+        self.assertEqual(certificado.fecha_vencimiento, date.today() + timedelta(days=30))
 
     def test_editar_trabajador_sin_cambios_de_certificados_los_conserva(self):
         certificado = Certificado.objects.create(

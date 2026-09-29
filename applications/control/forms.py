@@ -75,11 +75,16 @@ class EmpresaForm(forms.ModelForm):
     def save(self, commit=True):
         empresa = super().save(commit=commit)
         archivo = self.cleaned_data.get('sctr_archivo')
-        if commit and archivo:
-            certificado, _ = Certificado.objects.get_or_create(empresa=empresa, tipo=Certificado.SCTR)
+        certificado = Certificado.objects.filter(
+            empresa=empresa,
+            tipo=Certificado.SCTR,
+        ).first()
+        if commit and (archivo or certificado):
+            certificado = certificado or Certificado(empresa=empresa, tipo=Certificado.SCTR)
             certificado.fecha_emision = self.cleaned_data['sctr_fecha_emision']
             certificado.fecha_vencimiento = self.cleaned_data['sctr_fecha_vencimiento']
-            certificado.archivo = archivo
+            if archivo:
+                certificado.archivo = archivo
             certificado.save()
         return empresa
 
@@ -91,6 +96,8 @@ class EmpresaForm(forms.ModelForm):
 
 
 class SCTRForm(forms.ModelForm):
+    certificate_type = Certificado.SCTR
+    required_file_message = 'El archivo SCTR es obligatorio.'
     archivo = forms.FileField(required=False, validators=[validate_pdf])
     fecha_emision = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
     fecha_vencimiento = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
@@ -111,13 +118,13 @@ class SCTRForm(forms.ModelForm):
     def clean(self):
         cleaned = super().clean()
         if not self.instance.pk and not cleaned.get('archivo'):
-            self.add_error('archivo', 'El archivo SCTR es obligatorio.')
+            self.add_error('archivo', self.required_file_message)
         add_date_range_error(
             self,
             cleaned,
             'fecha_emision',
             'fecha_vencimiento',
-            DATE_RANGE_ERROR,
+            CERTIFICATE_DATE_RANGE_ERROR,
         )
         return cleaned
 
@@ -125,12 +132,17 @@ class SCTRForm(forms.ModelForm):
         certificado = super().save(commit=False)
         certificado.empresa = self.empresa
         certificado.trabajador = None
-        certificado.tipo = Certificado.SCTR
+        certificado.tipo = self.certificate_type
         if not self.cleaned_data.get('archivo') and certificado.pk:
             certificado.archivo = Certificado.objects.get(pk=certificado.pk).archivo
         if commit:
             certificado.save()
         return certificado
+
+
+class HomologacionForm(SCTRForm):
+    certificate_type = Certificado.HOMOLOGACION
+    required_file_message = 'El archivo de homologación es obligatorio.'
 
 
 class TrabajadorForm(forms.ModelForm):
@@ -234,7 +246,7 @@ class TrabajadorEmpresaForm(forms.ModelForm):
                 cleaned,
                 f'{prefix}_fecha_emision',
                 f'{prefix}_fecha_vencimiento',
-                DATE_RANGE_ERROR,
+                CERTIFICATE_DATE_RANGE_ERROR,
             )
         return cleaned
 
@@ -291,6 +303,7 @@ class CertificadoForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        self.trabajador = kwargs.pop('trabajador', None)
         super().__init__(*args, **kwargs)
         self.fields['tipo'].choices = tuple(choice for choice in self.fields['tipo'].choices if choice[0] != Certificado.SCTR)
         self.fields['curso'].required = False
@@ -304,8 +317,9 @@ class CertificadoForm(forms.ModelForm):
             self.add_error('curso', 'El curso es obligatorio para los certificados de cursos.')
         if tipo != Certificado.CURSOS and curso:
             self.add_error('curso', 'El curso solo aplica a los certificados de cursos.')
-        if tipo and self.instance.trabajador_id:
-            qs = Certificado.objects.filter(trabajador=self.instance.trabajador, tipo=tipo)
+        trabajador = self.trabajador or self.instance.trabajador
+        if tipo and trabajador:
+            qs = Certificado.objects.filter(trabajador=trabajador, tipo=tipo)
             qs = qs.filter(curso=curso) if tipo == Certificado.CURSOS else qs.filter(curso__isnull=True)
             if self.instance.pk:
                 qs = qs.exclude(pk=self.instance.pk)
@@ -370,13 +384,13 @@ class CertificadoCargaForm(forms.ModelForm):
             cleaned,
             'fecha_emision',
             'fecha_vencimiento',
-            DATE_RANGE_ERROR,
+            CERTIFICATE_DATE_RANGE_ERROR,
         )
         return cleaned
 
     def _post_clean(self):
         # El trabajador se asigna después de validar el formset en la vista.
-        # La validación de propietario del modelo se ejecutará al guardar.
+        # Ejecutar ModelForm._post_clean aquí validaría un certificado sin propietario.
         pass
 
     def save(self, commit=True):

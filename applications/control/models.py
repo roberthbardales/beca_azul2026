@@ -20,6 +20,7 @@ class CursoTipo(models.TextChoices):
 
 class CertificadoTipo(models.TextChoices):
     SCTR = 'SCTR', 'SCTR'
+    HOMOLOGACION = 'HOMOLOGACION', 'Homologación'
     INDUCCION = 'INDUCCION', 'Inducción'
     CURSOS = 'CURSOS', 'Cursos'
     APTITUD_MEDICA = 'APTITUD_MEDICA', 'Aptitud médica'
@@ -124,6 +125,7 @@ class Incidencia(TimeStampedModel):
 class Certificado(TimeStampedModel):
 
     SCTR = CertificadoTipo.SCTR
+    HOMOLOGACION = CertificadoTipo.HOMOLOGACION
     INDUCCION = CertificadoTipo.INDUCCION
     CURSOS = CertificadoTipo.CURSOS
     APTITUD_MEDICA = CertificadoTipo.APTITUD_MEDICA
@@ -158,13 +160,13 @@ class Certificado(TimeStampedModel):
             ),
             models.UniqueConstraint(
                 fields=('empresa', 'tipo'),
-                condition=Q(empresa__isnull=False, tipo=CertificadoTipo.SCTR),
-                name='certificado_unico_sctr_empresa',
+                condition=Q(empresa__isnull=False, tipo__in=(CertificadoTipo.SCTR, CertificadoTipo.HOMOLOGACION)),
+                name='certificado_unico_empresa_tipo',
             ),
             models.CheckConstraint(
                 check=(
                     Q(
-                        tipo=CertificadoTipo.SCTR,
+                        tipo__in=(CertificadoTipo.SCTR, CertificadoTipo.HOMOLOGACION),
                         empresa__isnull=False,
                         trabajador__isnull=True,
                         curso__isnull=True,
@@ -198,10 +200,10 @@ class Certificado(TimeStampedModel):
         super().clean()
         errores = {}
 
-        if self.tipo == self.SCTR:
+        if self.tipo in (self.SCTR, self.HOMOLOGACION):
             if not self.empresa_id or self.trabajador_id or self.curso:
                 errores[NON_FIELD_ERRORS] = (
-                    'Un certificado SCTR debe pertenecer a una empresa y no tener trabajador ni curso.',
+                    'Este certificado debe pertenecer a una empresa y no tener trabajador ni curso.',
                 )
         elif self.tipo:
             if not self.trabajador_id or self.empresa_id:

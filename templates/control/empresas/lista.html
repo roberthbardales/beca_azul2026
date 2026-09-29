@@ -42,9 +42,8 @@
             <tr>
                  <th class="px-3 py-1 text-left text-xs font-semibold text-[#A5A5A5]">Nombre</th>
                  <th class="px-3 py-1 text-left text-xs font-semibold text-[#A5A5A5]">RUC</th>
-                 <th class="px-3 py-1 text-left text-xs font-semibold text-[#A5A5A5]">SCTR</th>
-                 <th class="px-3 py-1 text-left text-xs font-semibold text-[#A5A5A5]">Emisión</th>
-                 <th class="px-3 py-1 text-left text-xs font-semibold text-[#A5A5A5]">Vencimiento</th>
+                  <th class="px-3 py-1 text-left text-xs font-semibold text-[#A5A5A5]">SCTR</th>
+                  <th class="px-3 py-1 text-left text-xs font-semibold text-[#A5A5A5]">Cert. homologación</th>
                  <th class="px-3 py-1 text-left text-xs font-semibold text-[#A5A5A5]">Estado</th>
                  <th class="px-3 py-1 text-left text-xs font-semibold text-[#A5A5A5]">Trabajadores</th>
                  <th class="px-3 py-1 text-left text-xs font-semibold text-[#A5A5A5]">Homologación</th>
@@ -57,10 +56,11 @@
                 <td data-label="Nombre" class="px-5 py-3 text-sm font-medium">{{ empresa.nombre }}</td>
                 <td data-label="RUC" class="px-5 py-3 text-sm">{{ empresa.ruc }}</td>
                 {% with sctr=empresa.sctr_certificados.0 %}
-                <td data-label="SCTR" class="px-5 py-3 text-sm">{% if sctr %}<span class="inline-block rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">Registrado</span>{% else %}<span class="inline-block rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">No registrado</span>{% endif %}</td>
-                <td data-label="Emisión" class="px-5 py-3 text-sm">{% if sctr %}{{ sctr.fecha_emision|date:'d/m/Y' }}{% else %}-{% endif %}</td>
-                <td data-label="Vencimiento" class="px-5 py-3 text-sm">{% if sctr %}{{ sctr.fecha_vencimiento|date:'d/m/Y' }}{% else %}-{% endif %}</td>
-                {% endwith %}
+                  <td data-label="SCTR" class="px-5 py-3 text-center">{% if sctr %}<span class="inline-flex rounded-full p-1" title="Tiene SCTR" aria-label="Tiene SCTR"><svg style="width:1.05rem;height:1.05rem" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#16a34a"/><path fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="m7 12 3 3 7-7"/></svg></span>{% else %}<span class="inline-flex rounded-full p-1" title="No tiene SCTR" aria-label="No tiene SCTR"><svg style="width:1.05rem;height:1.05rem" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#dc2626"/><path fill="none" stroke="#fff" stroke-linecap="round" stroke-width="2.5" d="m8 8 8 8m0-8-8 8"/></svg></span>{% endif %}</td>
+                 {% endwith %}
+                 {% with homologacion=empresa.homologacion_certificados.0 %}
+                  <td data-label="Cert. homologación" class="px-5 py-3 text-center">{% if homologacion %}<span class="inline-flex rounded-full p-1" title="Tiene homologación" aria-label="Tiene homologación"><svg style="width:1.05rem;height:1.05rem" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#16a34a"/><path fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="m7 12 3 3 7-7"/></svg></span>{% else %}<span class="inline-flex rounded-full p-1" title="No tiene homologación" aria-label="No tiene homologación"><svg style="width:1.05rem;height:1.05rem" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#dc2626"/><path fill="none" stroke="#fff" stroke-linecap="round" stroke-width="2.5" d="m8 8 8 8m0-8-8 8"/></svg></span>{% endif %}</td>
+                 {% endwith %}
                 <td data-label="Estado" class="px-5 py-3 text-sm">
                     {% if empresa.activo %}
                     <span class="inline-block rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">Activa</span>
@@ -75,7 +75,7 @@
                 </td>
             </tr>
             {% empty %}
-            <tr class="list-empty-row"><td colspan="9" class="list-empty-state px-4 py-10 text-center text-sm text-[#A5A5A5]">{% if q %}No se encontraron empresas para "{{ q }}".{% elif estado or homologado %}No se encontraron empresas con los filtros seleccionados.{% else %}No hay empresas registradas.{% endif %}</td></tr>
+            <tr class="list-empty-row"><td colspan="8" class="list-empty-state px-4 py-10 text-center text-sm text-[#A5A5A5]">{% if q %}No se encontraron empresas para "{{ q }}".{% elif estado or homologado %}No se encontraron empresas con los filtros seleccionados.{% else %}No hay empresas registradas.{% endif %}</td></tr>
             {% endfor %}
         </tbody>
     </table>

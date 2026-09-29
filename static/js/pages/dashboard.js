@@ -157,10 +157,10 @@
                 backgroundColor: data.empresas.data.map(function (_, index) { return barColors[index % barColors.length]; }),
                 borderRadius: 4,
                 borderSkipped: false,
-                maxBarThickness: 44
+                maxBarThickness: 30
             }]
         },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: tooltipOptions(' trabajadores') }, scales: { y: { beginAtZero: true, ticks: { precision: 0, padding: 8 }, border: { display: false }, grid: { color: gridColor } }, x: { border: { display: false }, grid: { display: false }, ticks: { maxRotation: 35, minRotation: 0, padding: 8 } } } }
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: tooltipOptions(' trabajadores') }, scales: { y: { beginAtZero: true, suggestedMax: 10, ticks: { precision: 0, padding: 8 }, border: { display: false }, grid: { color: gridColor } }, x: { border: { display: false }, grid: { display: false }, ticks: { maxRotation: 35, minRotation: 0, padding: 8 } } } }
     });
 
     new Chart(registrationsCanvas, {
