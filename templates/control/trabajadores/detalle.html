@@ -16,6 +16,11 @@
                         <input type="hidden" name="estado" value="{% if trabajador.habilitado %}0{% else %}1{% endif %}">
                         <button class="btn {% if trabajador.habilitado %}btn-quinary{% else %}btn-primary{% endif %} btn-sm" type="submit">{% if trabajador.habilitado %}Deshabilitar trabajador{% else %}Habilitar trabajador{% endif %}</button>
                     </form>
+                    <form method="post" action="{% url 'app_control:trabajador_sctr' trabajador.pk %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="estado" value="{% if trabajador.sctr %}0{% else %}1{% endif %}">
+                        <button class="btn {% if trabajador.sctr %}btn-quinary{% else %}btn-primary{% endif %} btn-sm" type="submit">{% if trabajador.sctr %}Desaprobar SCTR{% else %}Aprobar SCTR{% endif %}</button>
+                    </form>
                 {% endif %}
                 {% if es_empresa %}
                     <a class="btn btn-primary btn-sm" href="{% url 'app_control:trabajador_empresa_editar' trabajador.pk %}">Editar trabajador</a>
@@ -23,7 +28,8 @@
                         {% csrf_token %}
                         <button class="btn btn-secondary btn-sm" type="submit">{% if trabajador.activo %}Desactivar trabajador{% else %}Activar trabajador{% endif %}</button>
                     </form>
-                    <a class="btn btn-quinary btn-sm" href="{% url 'app_control:trabajador_empresa_eliminar' trabajador.pk %}">Eliminar trabajador</a>
+                {% elif request.user.role == '1' %}
+                    <a class="btn btn-quinary btn-sm" href="{% url 'app_control:trabajador_eliminar' trabajador.pk %}">Eliminar trabajador</a>
                 {% endif %}
             </div>
         </header>
@@ -31,8 +37,8 @@
         <section class="border-b border-gray-200 p-5">
             <div class="app-table-wrap responsive-table">
                 <table class="app-table worker-data-table w-full" aria-label="Datos del trabajador">
-                    <thead><tr><th>Nombres</th><th>Apellidos</th><th>Empresa</th><th>Documento</th><th>Cargo</th><th>Certificados</th><th>Habilitado</th></tr></thead>
-                    <tbody><tr><td>{{ trabajador.nombres }}</td><td>{{ trabajador.apellidos }}</td><td>{{ trabajador.empresa }}</td><td>{{ trabajador.get_tipo_documento_display }} {{ trabajador.dni }}</td><td>{{ trabajador.cargo|default:'-' }}</td><td>{{ certificados|length }}</td><td>{% if trabajador.habilitado %}<span class="rounded-full bg-green-100 px-2 py-1 text-xs text-green-700">Sí</span>{% else %}<span class="rounded-full bg-red-100 px-2 py-1 text-xs text-red-700">No</span>{% endif %}</td></tr></tbody>
+                    <thead><tr><th>Nombres</th><th>Apellidos</th><th>Empresa</th><th>Documento</th><th>Cargo</th><th>SCTR</th><th>Certificados</th><th>Habilitado</th></tr></thead>
+                    <tbody><tr><td>{{ trabajador.nombres }}</td><td>{{ trabajador.apellidos }}</td><td>{{ trabajador.empresa }}</td><td>{{ trabajador.get_tipo_documento_display }} {{ trabajador.dni }}</td><td>{{ trabajador.cargo|default:'-' }}</td><td>{% if trabajador.sctr %}<span class="rounded-full bg-green-100 px-2 py-1 text-xs text-green-700">Aprobado</span>{% else %}<span class="rounded-full bg-red-100 px-2 py-1 text-xs text-red-700">Desaprobado</span>{% endif %}</td><td>{{ certificados|length }}</td><td>{% if trabajador.habilitado %}<span class="rounded-full bg-green-100 px-2 py-1 text-xs text-green-700">Sí</span>{% else %}<span class="rounded-full bg-red-100 px-2 py-1 text-xs text-red-700">No</span>{% endif %}</td></tr></tbody>
                 </table>
             </div>
         </section>

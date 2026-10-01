@@ -31,7 +31,7 @@ class PdfValidationTests(SimpleTestCase):
 
 class FormValidationTests(TestCase):
     def setUp(self):
-        self.empresa = Empresa.objects.create(nombre='Empresa', ruc='20123456789')
+        self.empresa = Empresa.objects.create(nombre='Empresa', ruc='20123456789', correo='empresa@example.com')
         self.trabajador = Trabajador.objects.create(
             empresa=self.empresa,
             dni='12345678',
@@ -54,6 +54,20 @@ class FormValidationTests(TestCase):
 
         self.assertFalse(form.is_valid())
         self.assertIn('dni', form.errors)
+
+    def test_trabajador_form_actualiza_sctr(self):
+        form = TrabajadorForm(data={
+            'empresa': self.empresa.pk,
+            'tipo_documento': Trabajador.DNI,
+            'dni': '87654321',
+            'nombres': 'Nuevo',
+            'apellidos': 'Trabajador',
+            'sctr': 'on',
+        })
+
+        self.assertTrue(form.is_valid(), form.errors)
+        trabajador = form.save()
+        self.assertTrue(trabajador.sctr)
 
     def test_certificado_form_exige_curso(self):
         form = CertificadoForm(
@@ -131,6 +145,7 @@ class FormValidationTests(TestCase):
             data={
                 'nombre': self.empresa.nombre,
                 'ruc': self.empresa.ruc,
+                'correo': self.empresa.correo,
                 'sctr_fecha_emision': date.today().isoformat(),
                 'sctr_fecha_vencimiento': (date.today() + timedelta(days=30)).isoformat(),
             },

@@ -13,23 +13,11 @@ from .forms import (
     PerfilForm,
     ResetPasswordForm,
     UpdatePasswordForm,
-    UserRegisterForm,
     UsuarioGestionForm,
 )
 from .mixins import CrearUsuariosPermisoMixin, ConsultaUsuariosPermisoMixin, GestionUsuariosPermisoMixin
 from .models import User
 from . import services
-
-
-class UserRegisterView(FormView):
-    template_name = 'users/register.html'
-    form_class = UserRegisterForm
-    success_url = reverse_lazy('app_users:login')
-
-    def form_valid(self, form):
-        services.create_user(form.cleaned_data)
-        messages.success(self.request, 'Cuenta creada correctamente. Inicia sesión.')
-        return super().form_valid(form)
 
 
 class LoginUser(FormView):
@@ -184,7 +172,9 @@ class UsuarioDetailView(ConsultaUsuariosPermisoMixin, DetailView):
     def get_queryset(self):
         user = self.request.user
         if user.role == User.BECA_AZUL:
-            return User.objects.filter(role=User.USUARIO_EMPRESA)
+            return User.objects.filter(
+                role__in=[User.PLANTA, User.USUARIO_EMPRESA, User.GARITA]
+            )
         if user.is_superuser or user.role == User.ADMINISTRADOR:
             return User.objects.exclude(role=User.ADMINISTRADOR)
         return User.objects.filter(role__in=[User.BECA_AZUL, User.PLANTA, User.GARITA])
@@ -216,12 +206,15 @@ class UsuarioUpdateView(GestionUsuariosPermisoMixin, UpdateView):
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs['current_user'] = self.request.user
+        kwargs['allow_all_roles'] = True
         return kwargs
 
     def get_queryset(self):
         user = self.request.user
         if user.role == User.BECA_AZUL:
-            return User.objects.filter(role=User.USUARIO_EMPRESA)
+            return User.objects.filter(
+                role__in=[User.PLANTA, User.USUARIO_EMPRESA, User.GARITA]
+            )
         if user.is_superuser or user.role == User.ADMINISTRADOR:
             return User.objects.exclude(role=User.ADMINISTRADOR)
         return User.objects.filter(role__in=[User.BECA_AZUL, User.PLANTA, User.GARITA])
@@ -235,7 +228,11 @@ class UsuarioToggleView(GestionUsuariosPermisoMixin, View):
     def post(self, request, pk):
         user = request.user
         if user.role == User.BECA_AZUL:
-            usuario = get_object_or_404(User, pk=pk, role=User.USUARIO_EMPRESA)
+            usuario = get_object_or_404(
+                User,
+                pk=pk,
+                role__in=[User.PLANTA, User.USUARIO_EMPRESA, User.GARITA],
+            )
         elif user.is_superuser or user.role == User.ADMINISTRADOR:
             usuario = get_object_or_404(User, pk=pk)
         else:
@@ -263,7 +260,9 @@ class UsuarioDeleteView(GestionUsuariosPermisoMixin, DeleteView):
     def get_queryset(self):
         user = self.request.user
         if user.role == User.BECA_AZUL:
-            return User.objects.filter(role=User.USUARIO_EMPRESA)
+            return User.objects.filter(
+                role__in=[User.PLANTA, User.USUARIO_EMPRESA, User.GARITA]
+            )
         if user.is_superuser or user.role == User.ADMINISTRADOR:
             return User.objects.exclude(role=User.ADMINISTRADOR)
         return User.objects.filter(role__in=[User.BECA_AZUL, User.PLANTA, User.GARITA])
@@ -287,7 +286,11 @@ class UsuarioPasswordResetView(GestionUsuariosPermisoMixin, FormView):
     def get_object(self):
         user = self.request.user
         if user.role == User.BECA_AZUL:
-            return get_object_or_404(User, pk=self.kwargs['pk'], role=User.USUARIO_EMPRESA)
+            return get_object_or_404(
+                User,
+                pk=self.kwargs['pk'],
+                role__in=[User.PLANTA, User.USUARIO_EMPRESA, User.GARITA],
+            )
         if user.is_superuser or user.role == User.ADMINISTRADOR:
             return get_object_or_404(User, pk=self.kwargs['pk'])
         return get_object_or_404(

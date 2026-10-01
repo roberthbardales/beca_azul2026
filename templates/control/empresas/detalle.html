@@ -2,7 +2,7 @@
 {% block title %}{{ empresa.nombre }} | Control{% endblock %}
 {% block content %}
 <div class="control-detail-page flex justify-center">
-    <div class="w-full max-w-6xl space-y-4">
+    <div class="w-full max-w-6xl space-y-3">
         <section class="company-hero rounded-xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div class="min-w-0">
@@ -11,25 +11,21 @@
                         <h1 class="text-xl font-bold tracking-tight text-[#0f172a] sm:text-2xl">{{ empresa.nombre }}</h1>
                         <span class="text-sm text-[var(--ink-500)]">RUC {{ empresa.ruc }}</span>
                     </div>
+                    <p class="mt-1 text-sm text-[var(--ink-500)]">{{ empresa.correo }}{% if empresa.fecha_fundacion %} · Fundación {{ empresa.fecha_fundacion|date:'d/m/Y' }}{% endif %}</p>
                     <div class="mt-2 flex flex-wrap gap-2">
                         {% if request.user.role != '3' %}<span class="inline-flex rounded-full px-2 py-0.5 text-xs font-semibold {% if empresa.activo %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">{% if empresa.activo %}Activa{% else %}Inactiva{% endif %}</span>{% endif %}
                         {% if request.user.role != '3' %}<span class="inline-flex items-center gap-1 whitespace-nowrap rounded-full border px-2 py-0.5 text-xs font-semibold {% if empresa.homologado %}border-green-200 bg-green-50 text-green-700{% else %}border-red-200 bg-red-50 text-red-700{% endif %}"><svg class="h-4 w-4 shrink-0" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="{% if empresa.homologado %}m5 12 4 4L19 6{% else %}M6 6l12 12M18 6 6 18{% endif %}" /></svg>{% if empresa.homologado %}Homologada{% else %}No homologada{% endif %}</span>{% endif %}
                     </div>
                 </div>
                 <div class="flex flex-wrap gap-2 sm:justify-end">
-                    {% if request.user.role == '0' or request.user.role == '1' %}
-                    <a class="btn btn-tertiary btn-sm" href="{% url 'app_control:empresa_editar' empresa.pk %}">Editar</a>
-                    <form method="post" action="{% url 'app_control:empresa_toggle' empresa.pk %}" class="inline">{% csrf_token %}<button type="submit" class="btn btn-sm {% if empresa.activo %}btn-quinary{% else %}btn-primary{% endif %}">{% if empresa.activo %}Desactivar{% else %}Activar{% endif %}</button></form>
-                    <a class="btn btn-quinary btn-sm" href="{% url 'app_control:empresa_eliminar' empresa.pk %}">Eliminar</a>
+                    {% if request.user.role == '1' %}
+                    <a class="btn btn-tertiary btn-sm" href="{% url 'app_control:empresa_editar' empresa.pk %}">Editar empresa</a>
+                    <form method="post" action="{% url 'app_control:empresa_toggle' empresa.pk %}" class="inline">{% csrf_token %}<button type="submit" class="btn btn-sm {% if empresa.activo %}btn-quinary{% else %}btn-primary{% endif %}">{% if empresa.activo %}Desactivar empresa{% else %}Activar empresa{% endif %}</button></form>
+                    <a class="btn btn-quinary btn-sm" href="{% url 'app_control:empresa_eliminar' empresa.pk %}">Eliminar empresa</a>
                     {% endif %}
                     {% if request.user.role == '3' %}<span class="inline-flex items-center gap-1 rounded-full border px-3 py-1 text-sm font-semibold {% if empresa.homologado %}border-green-200 bg-green-50 text-green-700{% else %}border-red-200 bg-red-50 text-red-700{% endif %}"><svg class="h-4 w-4" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="{% if empresa.homologado %}m5 12 4 4L19 6{% else %}M6 6l12 12M18 6 6 18{% endif %}" /></svg>{% if empresa.homologado %}Homologada{% else %}No homologada{% endif %}</span>{% endif %}
                 </div>
             </div>
-        </section>
-        <section aria-label="Resumen de empresa" class="company-metrics grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-            <div class="rounded-lg border border-gray-100 bg-white px-4 py-3 shadow-sm"><p class="text-xs font-semibold uppercase tracking-wide text-[var(--ink-500)]">Trabajadores</p><p class="mt-1 text-xl font-bold text-[var(--ink-900)]">{{ total_trabajadores }}</p></div>
-            {% if request.user.is_superuser or request.user.role == '0' or request.user.role == '1' %}<div class="rounded-lg border border-gray-100 bg-white px-4 py-3 shadow-sm"><p class="text-xs font-semibold uppercase tracking-wide text-[var(--ink-500)]">Usuarios</p><p class="mt-1 text-xl font-bold text-[var(--ink-900)]">{{ total_usuarios }}</p></div>{% endif %}
-            {% for grupo in trabajadores_por_estado %}<div class="rounded-lg border border-gray-100 bg-white px-4 py-3 shadow-sm"><p class="text-xs font-semibold uppercase tracking-wide text-[var(--ink-500)]">{{ grupo.label }}</p><p class="mt-1 text-xl font-bold {% if grupo.habilitado %}text-green-600{% else %}text-red-600{% endif %}">{{ grupo.total }}</p></div>{% endfor %}
         </section>
         <section class="company-sctr-card rounded-xl border px-4 py-3 shadow-sm {% if sctr %}company-sctr-card--registered{% else %}company-sctr-card--pending{% endif %}">
             <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
@@ -49,6 +45,28 @@
                 {% if request.user.role == '3' %}<a class="btn btn-primary btn-sm" href="{% url 'app_control:empresa_homologacion_editar' empresa.pk %}">{% if homologacion %}Ver homologación{% else %}Registrar homologación{% endif %}</a>{% endif %}
             </div>
         </section>
+        <section aria-label="Resumen de empresa" class="company-metrics grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+            <div class="rounded-lg border border-gray-100 bg-white px-4 py-3 shadow-sm"><p class="text-xs font-semibold uppercase tracking-wide text-[var(--ink-500)]">Trabajadores</p><p class="mt-1 text-xl font-bold text-[var(--ink-900)]">{{ total_trabajadores }}</p></div>
+            {% if request.user.is_superuser or request.user.role == '0' or request.user.role == '1' %}<div class="rounded-lg border border-gray-100 bg-white px-4 py-3 shadow-sm"><p class="text-xs font-semibold uppercase tracking-wide text-[var(--ink-500)]">Usuarios</p><p class="mt-1 text-xl font-bold text-[var(--ink-900)]">{{ total_usuarios }}</p></div>{% endif %}
+             {% for grupo in trabajadores_por_estado %}<div class="rounded-lg border border-gray-100 bg-white px-4 py-3 shadow-sm"><p class="text-xs font-semibold uppercase tracking-wide text-[var(--ink-500)]">{{ grupo.label }}</p><p class="mt-1 text-xl font-bold {% if grupo.habilitado %}text-green-600{% else %}text-red-600{% endif %}">{{ grupo.total }}</p></div>{% endfor %}
+        </section>
+        {% if request.user.role == '3' %}
+        <section class="dashboard-chart mx-auto w-full max-w-xl rounded-lg border border-gray-100 bg-white px-4 py-2 shadow-sm" aria-labelledby="empresa-estado-trabajadores-title">
+            <h2 id="empresa-estado-trabajadores-title" class="mb-3 text-base font-semibold text-[#0f172a]">Trabajadores por estado</h2>
+            <div class="relative min-h-0" style="height: 220px;">
+                <canvas id="empresa-estado-trabajadores" aria-label="Gráfica de barras de trabajadores habilitados y no habilitados"></canvas>
+            </div>
+        </section>
+        {{ empresa_trabajadores_chart|json_script:"empresa-trabajadores-chart-data" }}
+        {% endif %}
     </div>
 </div>
+{% endblock %}
+
+{% load static %}
+{% block extra_js %}
+{% if request.user.role == '3' %}
+<script src="{% static 'vendor/chartjs/chart.umd.min.js' %}"></script>
+<script src="{% static 'js/pages/empresa_detalle.js' %}"></script>
+{% endif %}
 {% endblock %}

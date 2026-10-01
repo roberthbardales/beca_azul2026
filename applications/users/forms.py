@@ -5,60 +5,6 @@ from ..control.models import Empresa
 from .models import User
 
 
-class UserRegisterForm(forms.Form):
-    email = forms.EmailField(label='Correo electrónico')
-    first_name = forms.CharField(label='Nombres', max_length=50)
-    last_name = forms.CharField(label='Apellidos', max_length=50)
-    # El registro público no debe permitir crear cuentas privilegiadas.
-    role = forms.ChoiceField(
-        label='Rol',
-        choices=((User.USUARIO_EMPRESA, 'Usuario Empresa'),),
-    )
-    gender = forms.ChoiceField(label='Género', choices=User.GENDER_CHOICES)
-    phone = forms.CharField(label='Celular', max_length=15, required=False)
-    date_birth = forms.DateField(label='Fecha de nacimiento', required=False)
-    empresa = forms.ModelChoiceField(
-        label='Empresa',
-        queryset=Empresa.objects.all(),
-        required=False,
-        empty_label='--- Seleccione empresa ---',
-    )
-    password1 = forms.CharField(label='Contraseña', widget=forms.PasswordInput)
-    password2 = forms.CharField(label='Confirmar contraseña', widget=forms.PasswordInput)
-
-    def clean(self):
-        cleaned_data = super().clean()
-        password1 = cleaned_data.get('password1')
-        password2 = cleaned_data.get('password2')
-        if password1 and password2 and password1 != password2:
-            self.add_error('password2', 'Las contraseñas no coinciden.')
-        role = cleaned_data.get('role')
-        empresa = cleaned_data.get('empresa')
-        if role == User.USUARIO_EMPRESA and not empresa:
-            self.add_error('empresa', 'El usuario con rol "Usuario Empresa" requiere una empresa asignada.')
-        elif role and role != User.USUARIO_EMPRESA and empresa:
-            self.add_error('empresa', 'Solo el rol "Usuario Empresa" puede tener una empresa asignada.')
-        return cleaned_data
-
-    def clean_email(self):
-        email = self.cleaned_data.get('email')
-        if email and User.objects.filter(email__iexact=email).exists():
-            self.add_error('email', 'Ya existe un usuario con este correo electrónico.')
-        return email
-
-    def clean_date_birth(self):
-        date_birth = self.cleaned_data.get('date_birth')
-        if date_birth and date_birth > timezone.localdate():
-            self.add_error('date_birth', 'La fecha de nacimiento no puede ser futura.')
-        return date_birth
-
-    def clean_password1(self):
-        password = self.cleaned_data.get('password1')
-        if password:
-            validate_password(password)
-        return password
-
-
 class UsuarioGestionForm(forms.ModelForm):
     password1 = forms.CharField(label='Contraseña', widget=forms.PasswordInput, required=False)
     password2 = forms.CharField(label='Confirmar contraseña', widget=forms.PasswordInput, required=False)
@@ -72,7 +18,7 @@ class UsuarioGestionForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ('email', 'first_name', 'last_name', 'gender', 'phone', 'date_birth')
+        fields = ('email', 'first_name', 'last_name', 'phone', 'date_birth')
 
     def __init__(self, *args, **kwargs):
         self.current_user = kwargs.pop('current_user', None)

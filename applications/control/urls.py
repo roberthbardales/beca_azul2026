@@ -32,6 +32,7 @@ urlpatterns = [
     path('trabajadores/<int:pk>/', views.TrabajadorDetailView.as_view(), name='trabajador_detalle'),
     path('trabajadores/<int:pk>/editar/', views.TrabajadorUpdateView.as_view(), name='trabajador_editar'),
     path('trabajadores/<int:pk>/homologacion/', views.TrabajadorHomologacionView.as_view(), name='trabajador_homologacion'),
+    path('trabajadores/<int:pk>/sctr/', views.TrabajadorSCTRView.as_view(), name='trabajador_sctr'),
     path('trabajadores/<int:pk>/toggle/', views.TrabajadorToggleView.as_view(), name='trabajador_toggle'),
     path('trabajadores/<int:pk>/eliminar/', views.TrabajadorDeleteView.as_view(), name='trabajador_eliminar'),
 

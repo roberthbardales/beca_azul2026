@@ -53,6 +53,8 @@ class Empresa(TimeStampedModel):
 
     nombre = models.CharField(max_length=150)
     ruc = models.CharField(max_length=11, unique=True)
+    correo = models.EmailField(unique=True)
+    fecha_fundacion = models.DateField(null=True, blank=True)
 
     homologado = models.BooleanField(default=False, db_index=True)
     activo = models.BooleanField(default=True)
@@ -64,6 +66,11 @@ class Empresa(TimeStampedModel):
 
     def __str__(self):
         return self.nombre
+
+    def clean(self):
+        super().clean()
+        if self.fecha_fundacion and self.fecha_fundacion > timezone.localdate():
+            raise ValidationError({'fecha_fundacion': 'La fecha de fundación no puede ser futura.'})
 
     def actualizar_homologado(self):
         trabajadores = self.trabajadores.filter(activo=True)
@@ -86,6 +93,7 @@ class Trabajador(TimeStampedModel):
     apellidos = models.CharField(max_length=150)
     cargo = models.CharField(max_length=150, blank=True)
 
+    sctr = models.BooleanField(default=False)
     habilitado = models.BooleanField(default=True, db_index=True)
     activo = models.BooleanField(default=True)
 

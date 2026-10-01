@@ -3,20 +3,6 @@ from django.contrib.auth import authenticate, login, logout
 from .models import User
 
 
-def create_user(form_data):
-    User.objects.create_user(
-        form_data['email'],
-        form_data['password1'],
-        first_name=form_data['first_name'],
-        last_name=form_data['last_name'],
-        role=form_data['role'],
-        gender=form_data['gender'],
-        date_birth=form_data['date_birth'],
-        phone=form_data.get('phone', ''),
-        empresa=form_data.get('empresa'),
-    )
-
-
 def authenticate_user(request, email, password):
     user = authenticate(request, email=email, password=password)
     if user is not None:

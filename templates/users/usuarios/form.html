@@ -84,18 +84,6 @@
 
                 <div class="grid gap-3 sm:grid-cols-2">
                     <div>
-                        <label for="{{ form.gender.id_for_label }}" class="mb-1 block text-xs font-medium text-[#0f172a]">Género</label>
-                        <select name="{{ form.gender.html_name }}" id="{{ form.gender.id_for_label }}"
-                                class="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-[#00B0F0] focus:outline-none focus:ring-2 focus:ring-[#00B0F0]/30">
-                            {% for value, label in form.fields.gender.choices %}
-                                <option value="{{ value }}" {% if form.gender.value == value %}selected{% endif %}>{{ label }}</option>
-                            {% endfor %}
-                        </select>
-                        {% for error in form.gender.errors %}
-                            <div class="mt-1 text-xs text-red-600">{{ error }}</div>
-                        {% endfor %}
-                    </div>
-                    <div>
                         <label for="{{ form.phone.id_for_label }}" class="mb-1 block text-xs font-medium text-[#0f172a]">Celular</label>
                         <input type="text" name="{{ form.phone.html_name }}" id="{{ form.phone.id_for_label }}" value="{{ form.phone.value|default:'' }}"
                                class="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-[#00B0F0] focus:outline-none focus:ring-2 focus:ring-[#00B0F0]/30">

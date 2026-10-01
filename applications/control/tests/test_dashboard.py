@@ -19,7 +19,7 @@ class DashboardViewTests(TestCase):
             role=User.ADMINISTRADOR,
         )
         self.client.force_login(self.user)
-        self.empresa = Empresa.objects.create(nombre='Empresa principal', ruc='20123456789')
+        self.empresa = Empresa.objects.create(nombre='Empresa principal', ruc='20123456789', correo='principal@example.com')
         self.trabajador = Trabajador.objects.create(
             empresa=self.empresa,
             dni='12345678',
@@ -70,7 +70,7 @@ class DashboardViewTests(TestCase):
 
     def test_agrupa_empresas_fuera_del_top_diez(self):
         for index in range(11):
-            Empresa.objects.create(nombre=f'Empresa {index:02d}', ruc=f'20{index:09d}')
+            Empresa.objects.create(nombre=f'Empresa {index:02d}', ruc=f'20{index:09d}', correo=f'empresa{index}@example.com')
 
         response = self.client.get(reverse('app_control:dashboard'))
         empresas = response.context['dashboard_charts']['empresas']
@@ -81,14 +81,14 @@ class DashboardViewTests(TestCase):
 
     def test_agrupa_trabajadores_de_empresas_restantes(self):
         for index in range(10):
-            empresa = Empresa.objects.create(nombre=f'Empresa {index:02d}', ruc=f'20{index:09d}')
+            empresa = Empresa.objects.create(nombre=f'Empresa {index:02d}', ruc=f'20{index:09d}', correo=f'empresa{index}@example.com')
             Trabajador.objects.create(
                 empresa=empresa,
                 dni=f'{index:08d}',
                 nombres='Trabajador',
                 apellidos=str(index),
             )
-        empresa_extra = Empresa.objects.create(nombre='Empresa extra', ruc='20999999999')
+        empresa_extra = Empresa.objects.create(nombre='Empresa extra', ruc='20999999999', correo='extra@example.com')
         Trabajador.objects.create(
             empresa=empresa_extra,
             dni='99999999',
@@ -105,7 +105,7 @@ class DashboardViewTests(TestCase):
 
 class TrabajadorEmpresaCreateViewTests(TestCase):
     def test_usuario_empresa_puede_crear_trabajador(self):
-        empresa = Empresa.objects.create(nombre='Empresa', ruc='20123456789')
+        empresa = Empresa.objects.create(nombre='Empresa', ruc='20123456789', correo='empresa@example.com')
         user = User.objects.create_user(
             email='empresa@example.com',
             password='test-password',

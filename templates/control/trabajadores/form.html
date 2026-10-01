@@ -83,6 +83,15 @@
                         <input type="text" name="{{ form.cargo.html_name }}" id="{{ form.cargo.id_for_label }}" value="{{ form.cargo.value|default:'' }}" class="form-control">
                         {% for error in form.cargo.errors %}<div class="mt-1 text-xs text-red-600">{{ error }}</div>{% endfor %}
                     </div>
+                    {% if request.user.role != '3' %}
+                    <div class="flex items-end pb-1">
+                        <label for="{{ form.sctr.id_for_label }}" class="flex items-center gap-2 text-sm font-medium text-[#0f172a]">
+                            {{ form.sctr }}
+                            SCTR aprobado
+                        </label>
+                        {% for error in form.sctr.errors %}<div class="ml-2 text-xs text-red-600">{{ error }}</div>{% endfor %}
+                    </div>
+                    {% endif %}
                 </div></fieldset>
 
                  {% if request.user.role == '3' %}

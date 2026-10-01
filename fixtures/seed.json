@@ -7,6 +7,8 @@
     "modified": "2026-09-24T05:13:53.497Z",
     "nombre": "Apple",
     "ruc": "20100000001",
+    "correo": "apple@gmail.com",
+    "fecha_fundacion": "1976-04-01",
     "homologado": false,
     "activo": true
   }
@@ -19,6 +21,8 @@
     "modified": "2026-09-24T05:13:53.534Z",
     "nombre": "Google",
     "ruc": "20100000002",
+    "correo": "google@gmail.com",
+    "fecha_fundacion": "1998-09-04",
     "homologado": false,
     "activo": true
   }
@@ -31,6 +35,8 @@
     "modified": "2026-09-24T05:13:53.572Z",
     "nombre": "Microsoft",
     "ruc": "20100000003",
+    "correo": "microsoft@gmail.com",
+    "fecha_fundacion": "1975-04-04",
     "homologado": false,
     "activo": true
   }
@@ -43,6 +49,8 @@
     "modified": "2026-09-24T05:13:53.629Z",
     "nombre": "Amazon",
     "ruc": "20100000004",
+    "correo": "amazon@gmail.com",
+    "fecha_fundacion": "1994-07-05",
     "homologado": false,
     "activo": true
   }
@@ -55,6 +63,8 @@
     "modified": "2026-09-24T05:13:53.669Z",
     "nombre": "Tesla",
     "ruc": "20100000005",
+    "correo": "tesla@gmail.com",
+    "fecha_fundacion": "2003-07-01",
     "homologado": false,
     "activo": true
   }
@@ -67,6 +77,8 @@
     "modified": "2026-09-24T05:13:53.717Z",
     "nombre": "Samsung",
     "ruc": "20100000006",
+    "correo": "samsung@gmail.com",
+    "fecha_fundacion": "1938-03-01",
     "homologado": false,
     "activo": true
   }
@@ -79,6 +91,8 @@
     "modified": "2026-09-24T05:13:53.759Z",
     "nombre": "Toyota",
     "ruc": "20100000007",
+    "correo": "toyota@gmail.com",
+    "fecha_fundacion": "1937-08-28",
     "homologado": false,
     "activo": true
   }
@@ -91,6 +105,8 @@
     "modified": "2026-09-24T05:13:53.810Z",
     "nombre": "Adobe",
     "ruc": "20100000008",
+    "correo": "adobe@gmail.com",
+    "fecha_fundacion": "1982-12-01",
     "homologado": false,
     "activo": true
   }
@@ -103,6 +119,8 @@
     "modified": "2026-09-24T05:13:53.853Z",
     "nombre": "Oracle",
     "ruc": "20100000009",
+    "correo": "oracle@gmail.com",
+    "fecha_fundacion": "1977-06-16",
     "homologado": false,
     "activo": true
   }
@@ -115,6 +133,8 @@
     "modified": "2026-09-24T05:13:53.892Z",
     "nombre": "Netflix",
     "ruc": "20100000010",
+    "correo": "netflix@gmail.com",
+    "fecha_fundacion": "1997-08-29",
     "homologado": false,
     "activo": true
   }

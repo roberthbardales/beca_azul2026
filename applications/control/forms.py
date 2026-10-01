@@ -2,6 +2,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.forms import formset_factory
+from django.utils import timezone
 
 from .models import Certificado, Empresa, Incidencia, Trabajador
 
@@ -41,7 +42,7 @@ class EmpresaForm(forms.ModelForm):
 
     class Meta:
         model = Empresa
-        fields = ('nombre', 'ruc')
+        fields = ('nombre', 'ruc', 'correo', 'fecha_fundacion')
 
     def __init__(self, *args, **kwargs):
         can_edit_sctr = kwargs.pop('can_edit_sctr', False)
@@ -79,10 +80,10 @@ class EmpresaForm(forms.ModelForm):
             empresa=empresa,
             tipo=Certificado.SCTR,
         ).first()
-        if commit and (archivo or certificado):
+        if commit and 'sctr_fecha_emision' in self.fields and (archivo or certificado):
             certificado = certificado or Certificado(empresa=empresa, tipo=Certificado.SCTR)
-            certificado.fecha_emision = self.cleaned_data['sctr_fecha_emision']
-            certificado.fecha_vencimiento = self.cleaned_data['sctr_fecha_vencimiento']
+            certificado.fecha_emision = self.cleaned_data.get('sctr_fecha_emision')
+            certificado.fecha_vencimiento = self.cleaned_data.get('sctr_fecha_vencimiento')
             if archivo:
                 certificado.archivo = archivo
             certificado.save()
@@ -93,6 +94,12 @@ class EmpresaForm(forms.ModelForm):
         if ruc and (not ruc.isdigit() or len(ruc) != 11):
             raise forms.ValidationError('El RUC debe contener exactamente 11 dígitos numéricos.')
         return ruc
+
+    def clean_fecha_fundacion(self):
+        fecha = self.cleaned_data.get('fecha_fundacion')
+        if fecha and fecha > timezone.localdate():
+            raise forms.ValidationError('La fecha de fundación no puede ser futura.')
+        return fecha
 
 
 class SCTRForm(forms.ModelForm):
@@ -156,7 +163,7 @@ class TrabajadorForm(forms.ModelForm):
         model = Trabajador
         fields = (
             'empresa', 'tipo_documento', 'dni', 'nombres', 'apellidos',
-            'cargo',
+            'cargo', 'sctr',
         )
 
     def clean_dni(self):

@@ -10,7 +10,7 @@ from ..models import Certificado, CursoTipo, Empresa, Trabajador, certificado_up
 
 class CertificadoModelTests(TestCase):
     def setUp(self):
-        self.empresa = Empresa.objects.create(nombre='Empresa', ruc='20123456789')
+        self.empresa = Empresa.objects.create(nombre='Empresa', ruc='20123456789', correo='empresa@example.com')
         self.trabajador = Trabajador.objects.create(
             empresa=self.empresa,
             dni='12345678',
@@ -58,8 +58,8 @@ class CertificadoModelTests(TestCase):
 
 class TrabajadorSignalTests(TestCase):
     def test_cambiar_empresa_actualiza_la_homologacion_de_ambas(self):
-        empresa_anterior = Empresa.objects.create(nombre='Anterior', ruc='20123456789')
-        empresa_nueva = Empresa.objects.create(nombre='Nueva', ruc='20987654321')
+        empresa_anterior = Empresa.objects.create(nombre='Anterior', ruc='20123456789', correo='anterior@example.com')
+        empresa_nueva = Empresa.objects.create(nombre='Nueva', ruc='20987654321', correo='nueva@example.com')
         trabajador = Trabajador.objects.create(
             empresa=empresa_anterior,
             dni='12345678',

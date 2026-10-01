@@ -46,8 +46,8 @@ beca_azul2026/
 - `/`: inicio.
 - `/panel/`: dashboard general para roles autorizados.
 - `/reportes/`: reportes de vencimientos, trabajadores y empresas para roles autorizados.
-- `/users/`: login, registro, dashboard, perfil, cambio y restablecimiento de
-  contraseña, además de la gestión de usuarios.
+- `/users/`: login, dashboard, perfil, cambio y restablecimiento de contraseña,
+  además de la gestión protegida de usuarios.
 - `/empresas/`: listado y administración de empresas.
 - `/empresas/<id>/`: detalle de empresa para Administrador, Beca Azul y Planta; el
   Usuario Empresa solo puede consultar la empresa asociada.
@@ -205,16 +205,21 @@ contacto. No se puede eliminar una empresa que tenga relaciones protegidas.
 ### Trabajador
 
 Pertenece a una empresa y contiene tipo de documento, DNI, nombres, apellidos,
-cargo, `habilitado` y `activo`. El DNI/documento activo debe ser único dentro de
-la empresa. Los requisitos documentales no se almacenan como estados en el
-trabajador; se gestionan mediante la relación `certificados`.
+cargo, `sctr`, `habilitado` y `activo`. `sctr` es un booleano que indica si Beca
+Azul aprobó el SCTR del trabajador; por defecto es `false` (desaprobado). El
+DNI/documento activo debe ser único dentro de la empresa. Los requisitos
+documentales se gestionan mediante la relación `certificados`.
 
  Al registrar un trabajador desde el portal de empresa se guardan sus datos básicos,
  un certificado obligatorio de Inducción y uno obligatorio de Aptitud médica. Los
  cursos son opcionales durante la creación; si se completa un curso, debe incluir
  archivo y fechas. Inducción y Aptitud médica admiten un certificado por trabajador
  y Cursos admite varios, uno por categoría. El SCTR y la homologación pertenecen a
- la empresa y existe un único certificado de cada tipo por empresa.
+  la empresa y existe un único certificado de cada tipo por empresa. El campo
+  `Trabajador.sctr` es independiente del certificado SCTR de la empresa: no se
+  cambia automáticamente cuando el certificado vence y solo Beca Azul puede
+  aprobarlo o desaprobarlo desde la página de detalle del trabajador mediante
+  una acción protegida exclusivamente para Beca Azul.
 
 ### Certificado
 
@@ -240,7 +245,7 @@ trabajador es independiente del estado de los certificados.
 | Rol | Usuarios | Empresas | Trabajadores |
 |---|---|---|---|
 | Administrador | Ve y gestiona usuarios permitidos, incluido crear usuarios | CRUD, igual que Beca Azul | Solo lectura; puede ver y descargar certificados |
-| Beca Azul | Gestiona usuarios Planta, Empresa y Garita | CRUD | CRUD de trabajadores; puede ver y descargar certificados |
+| Beca Azul | Gestiona usuarios Planta, Empresa y Garita | CRUD | CRUD de trabajadores; puede aprobar o desaprobar el SCTR del trabajador y ver y descargar certificados |
 | Usuario Empresa | Sin acceso | Consulta de su empresa y gestión de su SCTR y homologación | CRUD solo de su empresa; puede cargar, editar, reemplazar y eliminar certificados |
 | Planta | Consulta de usuarios, sin crear/editar/eliminar ni activar/desactivar | Solo lectura | Consulta trabajadores y certificados |
 | Garita | Sin acceso | Búsqueda de empresas y consulta por empresa | Listas por empresa; sin detalle individual ni modificaciones |
@@ -285,6 +290,9 @@ ocultar botones en las plantillas no es suficiente.
 
 - Solo `USUARIO_EMPRESA` puede crear, editar, reemplazar o eliminar certificados
   desde la aplicación, siempre dentro de su propia empresa.
+- En la edición de una empresa, los campos de fechas y archivo del SCTR solo se
+  incluyen para usuarios autorizados; guardar los datos generales no modifica el
+  certificado SCTR cuando esos campos no están disponibles.
 - `ADMINISTRADOR`, `BECA_AZUL` y `PLANTA` pueden visualizar y descargar los
   certificados desde el detalle del trabajador.
 - Las categorías de cursos se mantienen en código mediante `CursoTipo`; no se
@@ -423,9 +431,11 @@ Correcciones técnicas pendientes documentadas en `corregir.md`:
   certificados.
 - Dividir `applications/control/views.py` si continúa creciendo.
 
-El registro público `/users/register/` solo permite crear usuarios con rol
-`USUARIO_EMPRESA`; los roles privilegiados se gestionan desde el módulo protegido
-de usuarios.
+El registro público `/users/register/` está deshabilitado y devuelve `404 Not Found`.
+La creación de usuarios se realiza desde `/users/gestion/crear/`, disponible para
+Administrador y Beca Azul. Beca Azul puede crear usuarios Planta, Empresa y Garita;
+Administrador puede crear los roles permitidos por el formulario, sin crear otro
+Administrador ni cuentas superusuario.
 
 ## Archivos de referencia
 

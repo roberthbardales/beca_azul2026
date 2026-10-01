@@ -324,7 +324,7 @@ class EmpresaCreateView(AdministrarEmpresasMixin, CreateView):
         return super().form_valid(form)
 
 
-class EmpresaUpdateView(AdministrarEmpresasMixin, UpdateView):
+class EmpresaUpdateView(BecaAzulRequiredMixin, UpdateView):
     model = Empresa
     form_class = EmpresaForm
     template_name = 'control/empresas/form.html'
@@ -335,7 +335,7 @@ class EmpresaUpdateView(AdministrarEmpresasMixin, UpdateView):
         return super().form_valid(form)
 
 
-class EmpresaToggleView(AdministrarEmpresasMixin, View):
+class EmpresaToggleView(BecaAzulRequiredMixin, View):
     def post(self, request, pk):
         empresa = get_object_or_404(Empresa, pk=pk)
         empresa.activo = not empresa.activo
@@ -368,6 +368,16 @@ class EmpresaDetailView(LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         trabajadores = self.object.trabajadores.order_by('apellidos', 'nombres')
         kwargs.setdefault('total_trabajadores', trabajadores.count())
+        kwargs.setdefault(
+            'empresa_trabajadores_chart',
+            {
+                'labels': ['Habilitado', 'No habilitado'],
+                'data': [
+                    trabajadores.filter(habilitado=True).count(),
+                    trabajadores.filter(habilitado=False).count(),
+                ],
+            },
+        )
         kwargs.setdefault('total_usuarios', self.object.usuarios.count())
         kwargs.setdefault('sctr', self.object.certificados.filter(tipo=Certificado.SCTR).first())
         kwargs.setdefault('homologacion', self.object.certificados.filter(tipo=Certificado.HOMOLOGACION).first())
@@ -446,7 +456,7 @@ class EmpresaHomologacionUpdateView(EmpresaSCTRUpdateView):
         return response
 
 
-class EmpresaDeleteView(AdministrarEmpresasMixin, DeleteView):
+class EmpresaDeleteView(BecaAzulRequiredMixin, DeleteView):
     model = Empresa
     template_name = 'control/empresas/confirm_delete.html'
     context_object_name = 'empresa'
@@ -478,7 +488,6 @@ class TrabajadorListView(VerTrabajadoresMixin, ListView):
         'cargo': ('cargo', 'apellidos', 'nombres'),
         'induccion': ('tiene_induccion', 'apellidos', 'nombres'),
         'aptitud_medica': ('tiene_aptitud_medica', 'apellidos', 'nombres'),
-        'estado': ('habilitado', 'apellidos', 'nombres'),
     }
 
     def get_paginate_by(self, queryset):
@@ -536,7 +545,8 @@ class TrabajadorListView(VerTrabajadoresMixin, ListView):
             'dni': 'DNI',
             'nombre': 'Nombre completo',
              'empresa': 'Empresa',
-             'cargo': 'Cargo',
+            'cargo': 'Cargo',
+            'sctr': 'SCTR',
              'induccion': 'Inducción',
             'aptitud_medica': 'Aptitud médica',
         })
@@ -650,6 +660,22 @@ class TrabajadorHomologacionView(BecaAzulRequiredMixin, View):
             return redirect('app_control:trabajador_detalle', pk=trabajador.pk)
         trabajador.habilitado = estado == '1'
         trabajador.save(update_fields=['habilitado'])
+        return redirect('app_control:trabajador_detalle', pk=trabajador.pk)
+
+
+class TrabajadorSCTRView(BecaAzulRequiredMixin, View):
+    def post(self, request, pk):
+        trabajador = get_object_or_404(Trabajador, pk=pk)
+        estado = request.POST.get('estado')
+        if estado not in ('0', '1'):
+            messages.error(request, 'Estado de SCTR no válido.')
+        else:
+            trabajador.sctr = estado == '1'
+            trabajador.save(update_fields=['sctr'])
+            messages.success(
+                request,
+                f'El SCTR de "{trabajador}" fue {"aprobado" if trabajador.sctr else "desaprobado"}.',
+            )
         return redirect('app_control:trabajador_detalle', pk=trabajador.pk)
 
 
@@ -960,7 +986,7 @@ class TrabajadorEmpresaToggleView(TrabajadorEmpresaBaseMixin, View):
         return redirect('app_control:trabajador_empresa_detalle', pk=trabajador.pk)
 
 
-class TrabajadorEmpresaDeleteView(TrabajadorEmpresaBaseMixin, DeleteView):
+class TrabajadorEmpresaDeleteView(BecaAzulRequiredMixin, DeleteView):
     model = Trabajador
     template_name = 'control/trabajadores/confirm_delete.html'
     context_object_name = 'trabajador'

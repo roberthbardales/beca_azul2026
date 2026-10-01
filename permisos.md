@@ -8,7 +8,7 @@ validan el rol y, cuando corresponde, restringen el conjunto de datos consultabl
 
 | Rol | Código | Alcance general |
 |---|---:|---|
-| **Administrador** | `0` | Administración de empresas y consulta amplia del sistema. Puede consultar todos los usuarios desde el listado, pero no puede crear usuarios ni modificar trabajadores, certificados o incidencias. |
+| **Administrador** | `0` | Administración de empresas y usuarios, además de consulta amplia del sistema. Puede crear usuarios, pero no modificar trabajadores, certificados o incidencias desde las vistas normales. |
 | **Beca Azul** | `1` | Administración general de usuarios, empresas, trabajadores, certificados e incidencias. |
 | **Usuario Planta** | `2` | Consulta de usuarios, empresas, trabajadores y certificados. También puede acceder al dashboard. No tiene operaciones de modificación. |
 | **Usuario Empresa** | `3` | Administración exclusivamente sobre la empresa asignada, sus trabajadores y sus certificados. |
@@ -29,7 +29,11 @@ si se modifican, deben actualizarse de forma coordinada.
 | Listado de trabajadores | `/trabajadores/` |
 | Búsqueda de trabajadores | `/trabajadores/buscar/` |
 | Gestión de usuarios | `/users/gestion/` |
+| Creación de usuarios protegida | `/users/gestion/crear/` |
 | Reportes | `/reportes/` |
+
+La ruta `/users/register/` fue deshabilitada y devuelve `404 Not Found`. La creación de
+usuarios se realiza únicamente desde la gestión protegida.
 
 Las rutas de gestión de trabajadores y certificados tienen dos variantes: una para
 Beca Azul y otra específica para Usuario Empresa. Las vistas específicas de empresa
@@ -105,6 +109,9 @@ comprueban que el registro pertenezca a la empresa asignada al usuario.
 - Puede activar o desactivar trabajadores.
 - Puede eliminar trabajadores.
 - Puede modificar el estado de habilitación u homologación del trabajador.
+- Puede aprobar o desaprobar el SCTR del trabajador desde su página de detalle.
+- El estado SCTR del trabajador inicia como desaprobado y no cambia automáticamente
+  por el vencimiento del certificado SCTR de la empresa.
 
 ### Certificados e incidencias
 
@@ -149,6 +156,7 @@ comprueban que el registro pertenezca a la empresa asignada al usuario.
 - No puede crear, editar ni eliminar certificados.
 - No puede crear, editar ni eliminar incidencias.
 - No puede modificar la homologación o habilitación de trabajadores.
+- No puede aprobar ni desaprobar el SCTR de los trabajadores.
 
 ### Dashboard
 
@@ -188,6 +196,7 @@ comprueban que el registro pertenezca a la empresa asignada al usuario.
 - Puede activar o desactivar trabajadores de su empresa.
 - Puede eliminar trabajadores de su empresa.
 - Al crear o editar un trabajador, la empresa se establece desde el usuario autenticado; no puede elegir otra empresa.
+- No puede aprobar ni desaprobar el SCTR del trabajador; esa acción corresponde exclusivamente a Beca Azul.
 
 ### Certificados
 
@@ -229,6 +238,7 @@ comprueban que el registro pertenezca a la empresa asignada al usuario.
 - Actualmente el backend no exige que el trabajador pertenezca a una empresa homologada.
 - No puede crear, editar, activar, desactivar ni eliminar trabajadores.
 - No puede modificar la homologación o habilitación del trabajador.
+- No puede aprobar ni desaprobar el SCTR del trabajador.
 
 ### Usuarios, certificados, incidencias y dashboard
 
@@ -264,7 +274,7 @@ comprueban que el registro pertenezca a la empresa asignada al usuario.
 |---|---:|---:|---:|---:|---:|
 | Dashboard general | Sí | Sí | Sí | No | No |
 | Listar usuarios | Sí | Sí | Sí | No | No |
-| Crear usuarios | No | Sí | No | No | No |
+| Crear usuarios | Sí | Sí | No | No | No |
 | Gestionar empresas | Sí | Sí | No | No | No |
 | Consultar empresas | Todas | Todas | Todas | Asignada | Búsqueda general |
 | Consultar trabajadores | Todas | Todas | Todas | Propios | Búsqueda general |
