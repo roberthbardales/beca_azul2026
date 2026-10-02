@@ -5,7 +5,7 @@ from django.contrib.auth.hashers import make_password
 from django.db import transaction
 
 from applications.users.models import User
-from applications.control.models import Certificado, Empresa, Trabajador
+from applications.control.models import Certificado, CursoObligatorio, Empresa, Trabajador
 
 
 class Command(BaseCommand):
@@ -51,6 +51,8 @@ class Command(BaseCommand):
                         cargo=('Operario', 'Tecnico', 'Supervisora', 'Analista', 'Supervisor')[trabajador_index],
                         habilitado=trabajador_index != 3, activo=trabajador_index != 4,
                     )
+                    for curso in cursos:
+                        CursoObligatorio.objects.create(trabajador=trabajador, curso=curso)
                     Certificado.objects.create(
                         trabajador=trabajador, tipo=Certificado.INDUCCION,
                         fecha_emision=hoy - timedelta(days=30), fecha_vencimiento=hoy + timedelta(days=180),
