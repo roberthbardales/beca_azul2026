@@ -11,7 +11,6 @@
                 <p class="mt-1 text-sm text-gray-500">Detalle de usuario</p>
             </div>
             <div class="flex flex-wrap gap-2">
-                <a class="btn btn-secondary btn-sm" href="{% url 'app_users:usuario_lista' %}">Volver</a>
                 {% if request.user.role != '2' %}<a class="btn btn-primary btn-sm" href="{% url 'app_users:usuario_editar' usuario.pk %}">Editar</a>{% endif %}
                 {% if request.user.is_superuser or request.user.role == '0' or request.user.role == '1' %}<a class="btn btn-quaternary btn-sm" href="{% url 'app_users:usuario_password' usuario.pk %}">Restablecer contraseña</a>{% endif %}
                 {% if request.user.role != '2' %}<form method="post" action="{% url 'app_users:usuario_toggle' usuario.pk %}" class="inline">{% csrf_token %}<button class="btn btn-quinary btn-sm" type="submit">{% if usuario.is_active %}Desactivar{% else %}Activar{% endif %}</button></form><a class="btn btn-quinary btn-sm" href="{% url 'app_users:usuario_eliminar' usuario.pk %}">Eliminar</a>{% endif %}
@@ -47,6 +46,9 @@
             </table>
         </div>
 
+    </div>
+    <div class="mt-5 flex justify-center">
+        <a class="btn btn-secondary btn-sm" href="{% url 'app_users:usuario_lista' %}">Volver</a>
     </div>
 </main>
 {% endblock %}

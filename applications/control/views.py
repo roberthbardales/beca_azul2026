@@ -7,8 +7,7 @@ from django.core.exceptions import PermissionDenied
 from django.core.mail import EmailMultiAlternatives
 from django.db import transaction
 from django.db.models import Count, Exists, OuterRef, Prefetch, Q
-from django.db.models.functions import TruncDate
-from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.http import FileResponse, Http404, HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse, reverse_lazy
@@ -38,7 +37,25 @@ from .forms import (
     TrabajadorEmpresaForm,
     TrabajadorForm,
 )
-from .models import Certificado, Empresa, Incidencia, Trabajador
+from .models import Certificado, CursoObligatorio, Empresa, Incidencia, Trabajador
+
+
+class TrabajadorActivoRequiredMixin:
+    def dispatch(self, request, *args, **kwargs):
+        trabajador = None
+        if 'trabajador_pk' in kwargs:
+            trabajador = Trabajador.objects.filter(pk=kwargs['trabajador_pk']).first()
+        elif 'pk' in kwargs:
+            if self.model is Trabajador:
+                trabajador = Trabajador.objects.filter(pk=kwargs['pk']).first()
+            elif self.model is Certificado:
+                trabajador = Trabajador.objects.filter(certificados__pk=kwargs['pk']).first()
+            elif self.model is Incidencia:
+                trabajador = Trabajador.objects.filter(incidencias__pk=kwargs['pk']).first()
+        if trabajador and not trabajador.activo:
+            raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)
+
 
 class DashboardView(LoginRequiredMixin, View):
     template_name = 'users/dashboard.html'
@@ -72,34 +89,46 @@ class DashboardView(LoginRequiredMixin, View):
             fecha_vencimiento__gte=hoy, fecha_vencimiento__lte=limite_60
         ).count()
 
-        trabajadores_por_empresa = list(
-            Empresa.objects.annotate(total=Count('trabajadores', distinct=True))
-            .order_by('-total', 'nombre')
-        )
-        empresas_grafica = trabajadores_por_empresa[:10]
-        otros_trabajadores = sum(empresa.total for empresa in trabajadores_por_empresa[10:])
-
-        inicio_semana = hoy - timedelta(days=6)
-        altas_por_dia = {
-            item['dia']: item['total']
-            for item in (
-                Trabajador.objects.filter(created__date__gte=inicio_semana)
-                .annotate(dia=TruncDate('created'))
-                .values('dia')
-                .annotate(total=Count('id'))
-                .order_by('dia')
-            )
+        trabajadores_por_estado = {
+            'Habilitado': trabajadores_habilitados,
+            'No habilitado': trabajadores_deshabilitados,
         }
-        dias_semana = [inicio_semana + timedelta(days=offset) for offset in range(7)]
+
+        trabajadores_por_empresa = Empresa.objects.annotate(
+            habilitados=Count(
+                'trabajadores',
+                filter=Q(trabajadores__activo=True, trabajadores__habilitado=True),
+            ),
+            inhabilitados=Count(
+                'trabajadores',
+                filter=Q(trabajadores__activo=True, trabajadores__habilitado=False),
+            ),
+        ).order_by('nombre')
+
         certificados_vigentes = Certificado.objects.filter(
             fecha_vencimiento__gt=limite_30
         ).count()
 
-        empresas_labels = [empresa.nombre for empresa in empresas_grafica]
-        empresas_data = [empresa.total for empresa in empresas_grafica]
-        if otros_trabajadores:
-            empresas_labels.append('Otros')
-            empresas_data.append(otros_trabajadores)
+        vencimientos_por_empresa = Empresa.objects.annotate(
+            vigentes=Count(
+                'certificados',
+                filter=Q(certificados__fecha_vencimiento__gt=limite_30),
+                distinct=True,
+            ),
+            proximos=Count(
+                'certificados',
+                filter=Q(
+                    certificados__fecha_vencimiento__gte=hoy,
+                    certificados__fecha_vencimiento__lte=limite_30,
+                ),
+                distinct=True,
+            ),
+            vencidos=Count(
+                'certificados',
+                filter=Q(certificados__fecha_vencimiento__lt=hoy),
+                distinct=True,
+            ),
+        ).order_by('nombre')
 
         context = {
             'total_empresas': total_empresas,
@@ -115,20 +144,27 @@ class DashboardView(LoginRequiredMixin, View):
             'certificados_sin_vencimiento': certificados_sin_vencimiento,
             'certificados_proximos_30': certificados_proximos_30,
             'certificados_proximos_60': certificados_proximos_60,
-            'trabajadores_por_empresa': trabajadores_por_empresa,
+            'trabajadores_por_estado': trabajadores_por_estado,
             'dashboard_charts': {
-                'empresas': {
-                    'labels': empresas_labels,
-                    'data': empresas_data,
+                'estados_trabajadores': {
+                    'labels': list(trabajadores_por_estado),
+                    'data': list(trabajadores_por_estado.values()),
+                },
+                'trabajadores_empresa': {
+                    'labels': [empresa.nombre for empresa in trabajadores_por_empresa],
+                    'habilitados': [empresa.habilitados for empresa in trabajadores_por_empresa],
+                    'inhabilitados': [empresa.inhabilitados for empresa in trabajadores_por_empresa],
                 },
                 'cumplimiento': [
                     certificados_vigentes,
                     certificados_proximos_30,
                     certificados_vencidos,
                 ],
-                'altas': {
-                    'labels': [dia.strftime('%d/%m') for dia in dias_semana],
-                    'data': [altas_por_dia.get(dia, 0) for dia in dias_semana],
+                'vencimientos_empresa': {
+                    'labels': [empresa.nombre for empresa in vencimientos_por_empresa],
+                    'vigentes': [empresa.vigentes for empresa in vencimientos_por_empresa],
+                    'proximos': [empresa.proximos for empresa in vencimientos_por_empresa],
+                    'vencidos': [empresa.vencidos for empresa in vencimientos_por_empresa],
                 },
             },
         }
@@ -347,6 +383,83 @@ class EmpresaToggleView(BecaAzulRequiredMixin, View):
         return redirect('app_control:empresa_detalle', pk=empresa.pk)
 
 
+class EmpresaHomologacionToggleView(BecaAzulRequiredMixin, View):
+    def post(self, request, pk):
+        empresa = get_object_or_404(Empresa, pk=pk)
+        if not empresa.homologado:
+            certificados = {
+                certificado.tipo: certificado
+                for certificado in empresa.certificados.filter(
+                    tipo__in=(Certificado.SCTR, Certificado.HOMOLOGACION)
+                )
+            }
+            sctr = certificados.get(Certificado.SCTR)
+            homologacion = certificados.get(Certificado.HOMOLOGACION)
+            tiene_sctr = (
+                sctr
+                and sctr.archivo
+                and sctr.archivo.storage.exists(sctr.archivo.name)
+                and sctr.fecha_vencimiento >= timezone.localdate()
+            )
+            tiene_homologacion = (
+                homologacion
+                and homologacion.archivo
+                and homologacion.archivo.storage.exists(homologacion.archivo.name)
+                and homologacion.fecha_vencimiento >= timezone.localdate()
+            )
+            if not tiene_sctr:
+                messages.error(request, 'Falta subir el SCTR.')
+            if not tiene_homologacion:
+                messages.error(request, 'Falta subir el certificado de homologación.')
+            if not tiene_sctr or not tiene_homologacion:
+                return redirect('app_control:empresa_detalle', pk=empresa.pk)
+        empresa.homologado = not empresa.homologado
+        empresa.save(update_fields=['homologado'])
+        estado = 'aprobada' if empresa.homologado else 'desaprobada'
+        messages.success(request, f'La homologación de "{empresa.nombre}" fue {estado}.')
+        return redirect('app_control:empresa_detalle', pk=empresa.pk)
+
+
+class EmpresaCertificadoView(BecaAzulRequiredMixin, View):
+    def get(self, request, pk):
+        certificado = get_object_or_404(
+            Certificado,
+            pk=pk,
+            empresa__isnull=False,
+            tipo__in=(Certificado.SCTR, Certificado.HOMOLOGACION),
+        )
+        if not certificado.archivo or not certificado.archivo.storage.exists(certificado.archivo.name):
+            raise Http404
+        return FileResponse(certificado.archivo.open('rb'), content_type='application/pdf')
+
+
+class EmpresaCertificadoArchivoView(LoginRequiredMixin, View):
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_superuser or request.user.role in (User.BECA_AZUL, User.PLANTA, User.USUARIO_EMPRESA):
+            if request.user.role == User.USUARIO_EMPRESA and (
+                not request.user.empresa or not request.user.empresa.activo
+            ):
+                raise PermissionDenied
+            return super().dispatch(request, *args, **kwargs)
+        raise PermissionDenied
+
+    def get(self, request, empresa_id, path):
+        certificado = get_object_or_404(
+            Certificado,
+            archivo=f'certificados/empresa_{empresa_id}/{path}',
+        )
+        certificado_empresa_id = certificado.empresa_id or certificado.trabajador.empresa_id
+        if certificado_empresa_id != int(empresa_id):
+            raise Http404
+        if request.user.role == User.PLANTA and certificado.empresa_id:
+            raise PermissionDenied
+        if request.user.role == User.USUARIO_EMPRESA and request.user.empresa_id != certificado_empresa_id:
+            raise PermissionDenied
+        if not certificado.archivo or not certificado.archivo.storage.exists(certificado.archivo.name):
+            raise Http404
+        return FileResponse(certificado.archivo.open('rb'), content_type='application/pdf')
+
+
 class EmpresaDetailView(LoginRequiredMixin, DetailView):
     model = Empresa
     template_name = 'control/empresas/detalle.html'
@@ -356,6 +469,8 @@ class EmpresaDetailView(LoginRequiredMixin, DetailView):
         if request.user.role not in (User.ADMINISTRADOR, User.BECA_AZUL, User.PLANTA, User.USUARIO_EMPRESA):
             raise PermissionDenied
         if request.user.role == User.USUARIO_EMPRESA and not request.user.empresa:
+            raise PermissionDenied
+        if request.user.role == User.USUARIO_EMPRESA and not request.user.empresa.activo:
             raise PermissionDenied
         return super().dispatch(request, *args, **kwargs)
 
@@ -367,29 +482,42 @@ class EmpresaDetailView(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         trabajadores = self.object.trabajadores.order_by('apellidos', 'nombres')
+        sctr = self.object.certificados.filter(tipo=Certificado.SCTR).first()
+        homologacion = self.object.certificados.filter(tipo=Certificado.HOMOLOGACION).first()
+        hoy = timezone.localdate()
+        sctr_valido = bool(
+            sctr
+            and sctr.archivo
+            and sctr.archivo.storage.exists(sctr.archivo.name)
+            and sctr.fecha_vencimiento >= hoy
+        )
+        homologacion_valida = bool(
+            homologacion
+            and homologacion.archivo
+            and homologacion.archivo.storage.exists(homologacion.archivo.name)
+            and homologacion.fecha_vencimiento >= hoy
+        )
         kwargs.setdefault('total_trabajadores', trabajadores.count())
         kwargs.setdefault(
             'empresa_trabajadores_chart',
             {
-                'labels': ['Habilitado', 'No habilitado'],
-                'data': [
+                    'labels': ['Habilitado', 'No habilitado'],
+                    'data': [
                     trabajadores.filter(habilitado=True).count(),
                     trabajadores.filter(habilitado=False).count(),
                 ],
             },
         )
         kwargs.setdefault('total_usuarios', self.object.usuarios.count())
-        kwargs.setdefault('sctr', self.object.certificados.filter(tipo=Certificado.SCTR).first())
-        kwargs.setdefault('homologacion', self.object.certificados.filter(tipo=Certificado.HOMOLOGACION).first())
+        kwargs.setdefault('sctr', sctr)
+        kwargs.setdefault('sctr_valido', sctr_valido)
+        kwargs.setdefault('homologacion', homologacion)
+        kwargs.setdefault('homologacion_valida', homologacion_valida)
         kwargs.setdefault(
             'trabajadores_por_estado',
             [
-                {
-                    'habilitado': grupo['habilitado'],
-                    'total': grupo['total'],
-                    'label': 'Habilitado' if grupo['habilitado'] else 'No habilitado',
-                }
-                for grupo in trabajadores.values('habilitado').annotate(total=Count('habilitado')).order_by('habilitado')
+                {'estado': 'HABILITADO', 'total': trabajadores.filter(habilitado=True).count(), 'label': 'Habilitado'},
+                {'estado': 'NO_HABILITADO', 'total': trabajadores.filter(habilitado=False).count(), 'label': 'No habilitado'},
             ],
         )
         return super().get_context_data(**kwargs)
@@ -402,7 +530,11 @@ class EmpresaSCTRUpdateView(LoginRequiredMixin, UpdateView):
     context_object_name = 'sctr'
 
     def dispatch(self, request, *args, **kwargs):
-        if request.user.role != User.USUARIO_EMPRESA or not request.user.empresa:
+        if (
+            request.user.role != User.USUARIO_EMPRESA
+            or not request.user.empresa
+            or not request.user.empresa.activo
+        ):
             raise PermissionDenied
         return super().dispatch(request, *args, **kwargs)
 
@@ -512,7 +644,7 @@ class TrabajadorListView(VerTrabajadoresMixin, ListView):
                 )
                 for codigo, label in Certificado.CURSO_CHOICES
             },
-        ).order_by('apellidos', 'nombres', '-habilitado')
+        ).order_by('-created', '-pk')
         if self.request.user.role == User.USUARIO_EMPRESA:
             queryset = queryset.filter(empresa=self.request.user.empresa)
         q = self.request.GET.get('q', '').strip()
@@ -524,9 +656,12 @@ class TrabajadorListView(VerTrabajadoresMixin, ListView):
                 | Q(cargo__icontains=q)
                 | Q(empresa__nombre__icontains=q)
             )
+        habilitacion = self.request.GET.get('habilitacion', '').strip()
+        if habilitacion in ('1', '0'):
+            queryset = queryset.filter(habilitado=(habilitacion == '1'))
         estado = self.request.GET.get('estado', '').strip()
-        if estado in ('0', '1'):
-            queryset = queryset.filter(habilitado=(estado == '1'))
+        if estado in ('1', '0'):
+            queryset = queryset.filter(activo=(estado == '1'))
         empresa_id = self.request.GET.get('empresa', '').strip()
         if self.request.user.role != User.USUARIO_EMPRESA and empresa_id.isdigit():
             queryset = queryset.filter(empresa_id=empresa_id)
@@ -536,11 +671,13 @@ class TrabajadorListView(VerTrabajadoresMixin, ListView):
         query_params = self.request.GET.copy()
         query_params.pop('page', None)
         kwargs.setdefault('q', self.request.GET.get('q', ''))
+        kwargs.setdefault('habilitacion', self.request.GET.get('habilitacion', ''))
         kwargs.setdefault('estado', self.request.GET.get('estado', ''))
         kwargs.setdefault('empresa_id', self.request.GET.get('empresa', ''))
         kwargs.setdefault('query_string', query_params.urlencode())
         kwargs.setdefault('empresas', Empresa.objects.order_by('nombre'))
-        kwargs.setdefault('estado_choices', ((1, 'Habilitado'), (0, 'No habilitado')))
+        kwargs.setdefault('habilitacion_choices', (('1', 'Habilitado'), ('0', 'No habilitado')))
+        kwargs.setdefault('estado_choices', (('1', 'Activo'), ('0', 'Desactivado')))
         kwargs.setdefault('sortable_columns', {
             'dni': 'DNI',
             'nombre': 'Nombre completo',
@@ -551,6 +688,7 @@ class TrabajadorListView(VerTrabajadoresMixin, ListView):
             'aptitud_medica': 'Aptitud médica',
         })
         kwargs['sortable_columns'].update({codigo.lower(): label for codigo, label in Certificado.CURSO_CHOICES})
+        kwargs['sortable_columns']['habilitacion'] = 'Habilitación'
         kwargs['sortable_columns']['estado'] = 'Estado'
         kwargs.setdefault('cursos_columnas', Certificado.CURSO_CHOICES)
         kwargs.setdefault('es_empresa', self.request.user.role == User.USUARIO_EMPRESA)
@@ -575,6 +713,11 @@ class TrabajadorBuscarView(LoginRequiredMixin, View):
     login_url = reverse_lazy('app_users:login')
 
     def get(self, request):
+        if (
+            request.user.role == User.USUARIO_EMPRESA
+            and (not request.user.empresa or not request.user.empresa.activo)
+        ):
+            raise PermissionDenied
         q = request.GET.get('q', '').strip()
         trabajador = None
         resultados = 0
@@ -605,7 +748,7 @@ class TrabajadorBuscarView(LoginRequiredMixin, View):
         return render(request, self.template_name, context)
 
 
-class TrabajadorUpdateView(AdministrarTrabajadoresMixin, UpdateView):
+class TrabajadorUpdateView(TrabajadorActivoRequiredMixin, AdministrarTrabajadoresMixin, UpdateView):
     model = Trabajador
     form_class = TrabajadorForm
     template_name = 'control/trabajadores/form.html'
@@ -640,32 +783,61 @@ class TrabajadorDetailView(VerTrabajadorDetalleMixin, DetailView):
             for certificado in certificados_lista
             if certificado.tipo == Certificado.CURSOS
         }
+        obligatorios = set(self.object.cursos_obligatorios.values_list('curso', flat=True))
         kwargs.setdefault('certificados', certificados_lista)
         kwargs.setdefault('certificados_requeridos', [
             {'tipo': Certificado.INDUCCION, 'label': 'Inducción', 'objeto': certificados.get(Certificado.INDUCCION)},
             {'tipo': Certificado.APTITUD_MEDICA, 'label': 'Aptitud médica', 'objeto': certificados.get(Certificado.APTITUD_MEDICA)},
         ])
-        kwargs.setdefault('cursos', [{'codigo': codigo, 'nombre': label, 'certificado': cursos.get(codigo)} for codigo, label in Certificado.CURSO_CHOICES])
+        kwargs.setdefault('cursos', [
+            {'codigo': codigo, 'nombre': label, 'certificado': cursos.get(codigo), 'obligatorio': codigo in obligatorios}
+            for codigo, label in Certificado.CURSO_CHOICES
+        ])
+        kwargs.setdefault('puede_configurar_cursos', self.request.user.is_superuser or self.request.user.role == User.BECA_AZUL)
         kwargs.setdefault('incidencias', self.object.incidencias.select_related('registrado_por'))
         kwargs.setdefault('es_empresa', self.request.user.role == User.USUARIO_EMPRESA)
         return super().get_context_data(**kwargs)
 
 
-class TrabajadorHomologacionView(BecaAzulRequiredMixin, View):
+class TrabajadorHabilitadoToggleView(BecaAzulRequiredMixin, View):
     def post(self, request, pk):
         trabajador = get_object_or_404(Trabajador, pk=pk)
-        estado = request.POST.get('estado')
-        if estado not in ('0', '1'):
-            messages.error(self.request, 'Estado no válido.')
+        if not trabajador.activo:
+            messages.error(
+                request,
+                f'No se puede modificar la habilitación porque el trabajador "{trabajador}" está desactivado.',
+            )
             return redirect('app_control:trabajador_detalle', pk=trabajador.pk)
-        trabajador.habilitado = estado == '1'
+        trabajador.habilitado = not trabajador.habilitado
         trabajador.save(update_fields=['habilitado'])
+        estado = 'habilitado' if trabajador.habilitado else 'no habilitado'
+        messages.success(request, f'El trabajador "{trabajador}" ahora está {estado}.')
+        return redirect('app_control:trabajador_detalle', pk=trabajador.pk)
+
+
+class TrabajadorCursoObligatorioToggleView(BecaAzulRequiredMixin, View):
+    def post(self, request, pk, curso):
+        trabajador = get_object_or_404(Trabajador, pk=pk)
+        if not trabajador.activo:
+            messages.error(request, 'No se puede modificar la obligatoriedad de cursos porque el trabajador está desactivado.')
+            return redirect('app_control:trabajador_detalle', pk=trabajador.pk)
+        if curso not in dict(Certificado.CURSO_CHOICES):
+            raise PermissionDenied
+        requisito, creado = CursoObligatorio.objects.get_or_create(trabajador=trabajador, curso=curso)
+        if not creado:
+            requisito.delete()
         return redirect('app_control:trabajador_detalle', pk=trabajador.pk)
 
 
 class TrabajadorSCTRView(BecaAzulRequiredMixin, View):
     def post(self, request, pk):
         trabajador = get_object_or_404(Trabajador, pk=pk)
+        if not trabajador.activo:
+            messages.error(
+                request,
+                f'No se puede modificar el SCTR porque el trabajador "{trabajador}" está desactivado.',
+            )
+            return redirect('app_control:trabajador_detalle', pk=trabajador.pk)
         estado = request.POST.get('estado')
         if estado not in ('0', '1'):
             messages.error(request, 'Estado de SCTR no válido.')
@@ -683,7 +855,11 @@ class TrabajadorToggleView(AdministrarTrabajadoresMixin, View):
     def post(self, request, pk):
         trabajador = get_object_or_404(Trabajador, pk=pk)
         trabajador.activo = not trabajador.activo
-        trabajador.save(update_fields=['activo'])
+        if not trabajador.activo:
+            trabajador.habilitado = False
+            trabajador.save(update_fields=['activo', 'habilitado'])
+        else:
+            trabajador.save(update_fields=['activo'])
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return JsonResponse({'activo': trabajador.activo, 'nombre': str(trabajador)})
         estado = 'activado' if trabajador.activo else 'desactivado'
@@ -691,7 +867,7 @@ class TrabajadorToggleView(AdministrarTrabajadoresMixin, View):
         return redirect('app_control:trabajador_detalle', pk=trabajador.pk)
 
 
-class TrabajadorDeleteView(AdministrarTrabajadoresMixin, DeleteView):
+class TrabajadorDeleteView(TrabajadorActivoRequiredMixin, AdministrarTrabajadoresMixin, DeleteView):
     model = Trabajador
     template_name = 'control/trabajadores/confirm_delete.html'
     context_object_name = 'trabajador'
@@ -708,7 +884,7 @@ class TrabajadorDeleteView(AdministrarTrabajadoresMixin, DeleteView):
         return HttpResponseRedirect(self.get_success_url())
 
 
-class CertificadoCreateView(AdministrarTrabajadoresMixin, CreateView):
+class CertificadoCreateView(TrabajadorActivoRequiredMixin, AdministrarTrabajadoresMixin, CreateView):
     model = Certificado
     form_class = CertificadoForm
     template_name = 'control/certificados/form.html'
@@ -746,7 +922,7 @@ class CertificadoCreateView(AdministrarTrabajadoresMixin, CreateView):
         return reverse('app_control:trabajador_detalle', args=[self.trabajador.pk])
 
 
-class CertificadoUpdateView(AdministrarTrabajadoresMixin, UpdateView):
+class CertificadoUpdateView(TrabajadorActivoRequiredMixin, AdministrarTrabajadoresMixin, UpdateView):
     model = Certificado
     form_class = CertificadoForm
     template_name = 'control/certificados/form.html'
@@ -764,7 +940,7 @@ class CertificadoUpdateView(AdministrarTrabajadoresMixin, UpdateView):
         return reverse('app_control:trabajador_detalle', args=[self.object.trabajador.pk])
 
 
-class CertificadoDeleteView(AdministrarTrabajadoresMixin, DeleteView):
+class CertificadoDeleteView(TrabajadorActivoRequiredMixin, AdministrarTrabajadoresMixin, DeleteView):
     model = Certificado
     template_name = 'control/certificados/confirm_delete.html'
 
@@ -776,7 +952,7 @@ class CertificadoDeleteView(AdministrarTrabajadoresMixin, DeleteView):
         return HttpResponseRedirect(reverse('app_control:trabajador_detalle', args=[trabajador_pk]))
 
 
-class IncidenciaCreateView(GestionarIncidenciasMixin, CreateView):
+class IncidenciaCreateView(TrabajadorActivoRequiredMixin, GestionarIncidenciasMixin, CreateView):
     model = Incidencia
     form_class = IncidenciaForm
     template_name = 'control/incidencias/form.html'
@@ -799,7 +975,7 @@ class IncidenciaCreateView(GestionarIncidenciasMixin, CreateView):
         return reverse('app_control:trabajador_detalle', args=[self.trabajador.pk])
 
 
-class IncidenciaUpdateView(GestionarIncidenciasMixin, UpdateView):
+class IncidenciaUpdateView(TrabajadorActivoRequiredMixin, GestionarIncidenciasMixin, UpdateView):
     model = Incidencia
     form_class = IncidenciaForm
     template_name = 'control/incidencias/form.html'
@@ -817,7 +993,7 @@ class IncidenciaUpdateView(GestionarIncidenciasMixin, UpdateView):
         return reverse('app_control:trabajador_detalle', args=[self.object.trabajador.pk])
 
 
-class IncidenciaDeleteView(GestionarIncidenciasMixin, DeleteView):
+class IncidenciaDeleteView(TrabajadorActivoRequiredMixin, GestionarIncidenciasMixin, DeleteView):
     model = Incidencia
     template_name = 'control/incidencias/confirm_delete.html'
 
@@ -851,13 +1027,14 @@ class TrabajadorEmpresaDetailView(TrabajadorEmpresaBaseMixin, DetailView):
             for certificado in certificados_lista
             if certificado.tipo == Certificado.CURSOS
         }
+        obligatorios = set(self.object.cursos_obligatorios.values_list('curso', flat=True))
         kwargs.setdefault('certificados', certificados_lista)
         kwargs.setdefault('certificados_requeridos', [
             {'tipo': Certificado.INDUCCION, 'label': 'Inducción', 'objeto': certificados.get(Certificado.INDUCCION)},
             {'tipo': Certificado.APTITUD_MEDICA, 'label': 'Aptitud médica', 'objeto': certificados.get(Certificado.APTITUD_MEDICA)},
         ])
         kwargs.setdefault('cursos', [
-            {'codigo': codigo, 'nombre': label, 'certificado': cursos.get(codigo)}
+            {'codigo': codigo, 'nombre': label, 'certificado': cursos.get(codigo), 'obligatorio': codigo in obligatorios}
             for codigo, label in Certificado.CURSO_CHOICES
         ])
         kwargs.setdefault('incidencias', self.object.incidencias.select_related('registrado_por'))
@@ -911,7 +1088,7 @@ class TrabajadorEmpresaCreateView(TrabajadorEmpresaBaseMixin, CreateView):
         return HttpResponseRedirect(self.get_success_url())
 
 
-class TrabajadorEmpresaUpdateView(TrabajadorEmpresaBaseMixin, UpdateView):
+class TrabajadorEmpresaUpdateView(TrabajadorActivoRequiredMixin, TrabajadorEmpresaBaseMixin, UpdateView):
     model = Trabajador
     form_class = TrabajadorEmpresaForm
     template_name = 'control/trabajadores/form.html'
@@ -976,14 +1153,18 @@ class TrabajadorEmpresaUpdateView(TrabajadorEmpresaBaseMixin, UpdateView):
         return HttpResponseRedirect(self.get_success_url())
 
 
-class TrabajadorEmpresaToggleView(TrabajadorEmpresaBaseMixin, View):
+class TrabajadorEmpresaToggleView(BecaAzulRequiredMixin, View):
     def post(self, request, pk):
-        trabajador = get_object_or_404(Trabajador, pk=pk, empresa=self.request.user.empresa)
+        trabajador = get_object_or_404(Trabajador, pk=pk)
         trabajador.activo = not trabajador.activo
-        trabajador.save(update_fields=['activo'])
+        if not trabajador.activo:
+            trabajador.habilitado = False
+            trabajador.save(update_fields=['activo', 'habilitado'])
+        else:
+            trabajador.save(update_fields=['activo'])
         estado = 'activado' if trabajador.activo else 'desactivado'
         messages.success(request, f'El trabajador "{trabajador}" fue {estado}.', extra_tags='worker-toggled')
-        return redirect('app_control:trabajador_empresa_detalle', pk=trabajador.pk)
+        return redirect('app_control:trabajador_detalle', pk=trabajador.pk)
 
 
 class TrabajadorEmpresaDeleteView(BecaAzulRequiredMixin, DeleteView):
@@ -1003,10 +1184,21 @@ class TrabajadorEmpresaDeleteView(BecaAzulRequiredMixin, DeleteView):
         return HttpResponseRedirect(self.get_success_url())
 
 
-class CertificadoEmpresaCreateView(TrabajadorEmpresaBaseMixin, CreateView):
+class CertificadoEmpresaCreateView(TrabajadorActivoRequiredMixin, TrabajadorEmpresaBaseMixin, CreateView):
     model = Certificado
     form_class = CertificadoForm
     template_name = 'control/certificados/form.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.method == 'GET':
+            trabajador = self.get_trabajador()
+            curso = request.GET.get('curso')
+            if request.GET.get('tipo') == Certificado.CURSOS and not CursoObligatorio.objects.filter(
+                trabajador=trabajador,
+                curso=curso,
+            ).exists():
+                raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -1015,6 +1207,9 @@ class CertificadoEmpresaCreateView(TrabajadorEmpresaBaseMixin, CreateView):
 
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
+        # Model validation needs the worker assigned before form.is_valid().
+        form.instance.trabajador = self.get_trabajador()
+        form.instance.tipo = Certificado.CURSOS
         form.fields['tipo'].disabled = True
         return form
 
@@ -1036,6 +1231,11 @@ class CertificadoEmpresaCreateView(TrabajadorEmpresaBaseMixin, CreateView):
         self.trabajador = self.get_trabajador()
         form.instance.trabajador = self.trabajador
         form.instance.tipo = Certificado.CURSOS
+        if not CursoObligatorio.objects.filter(
+            trabajador=self.trabajador,
+            curso=form.cleaned_data.get('curso'),
+        ).exists():
+            raise PermissionDenied
         with transaction.atomic():
             Certificado.objects.filter(
                 trabajador=self.trabajador,
@@ -1050,7 +1250,7 @@ class CertificadoEmpresaCreateView(TrabajadorEmpresaBaseMixin, CreateView):
         return reverse('app_control:trabajador_empresa_detalle', args=[self.trabajador.pk])
 
 
-class CertificadoEmpresaUpdateView(TrabajadorEmpresaBaseMixin, UpdateView):
+class CertificadoEmpresaUpdateView(TrabajadorActivoRequiredMixin, TrabajadorEmpresaBaseMixin, UpdateView):
     model = Certificado
     form_class = CertificadoForm
     template_name = 'control/certificados/form.html'
@@ -1064,8 +1264,15 @@ class CertificadoEmpresaUpdateView(TrabajadorEmpresaBaseMixin, UpdateView):
         return form
 
     def get_queryset(self):
-        return Certificado.objects.filter(
+        queryset = Certificado.objects.filter(
             trabajador__empresa=self.request.user.empresa
+        )
+        obligatorios = CursoObligatorio.objects.filter(
+            trabajador_id=OuterRef('trabajador_id'),
+            curso=OuterRef('curso'),
+        )
+        return queryset.annotate(curso_obligatorio=Exists(obligatorios)).filter(
+            Q(tipo=Certificado.CURSOS, curso_obligatorio=True) | ~Q(tipo=Certificado.CURSOS)
         )
 
     def get_context_data(self, **kwargs):
@@ -1081,13 +1288,20 @@ class CertificadoEmpresaUpdateView(TrabajadorEmpresaBaseMixin, UpdateView):
         return reverse('app_control:trabajador_empresa_detalle', args=[self.object.trabajador.pk])
 
 
-class CertificadoEmpresaDeleteView(TrabajadorEmpresaBaseMixin, DeleteView):
+class CertificadoEmpresaDeleteView(TrabajadorActivoRequiredMixin, TrabajadorEmpresaBaseMixin, DeleteView):
     model = Certificado
     template_name = 'control/certificados/confirm_delete.html'
 
     def get_queryset(self):
-        return Certificado.objects.filter(
+        queryset = Certificado.objects.filter(
             trabajador__empresa=self.request.user.empresa
+        )
+        obligatorios = CursoObligatorio.objects.filter(
+            trabajador_id=OuterRef('trabajador_id'),
+            curso=OuterRef('curso'),
+        )
+        return queryset.annotate(curso_obligatorio=Exists(obligatorios)).filter(
+            Q(tipo=Certificado.CURSOS, curso_obligatorio=True) | ~Q(tipo=Certificado.CURSOS)
         )
 
     def delete(self, request, *args, **kwargs):

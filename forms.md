@@ -31,6 +31,12 @@
    - Se mantiene el comportamiento actual.
    - La validación del modelo se omite durante `_post_clean()` porque el trabajador se asigna después, al guardar el formset.
 
+8. **Cursos obligatorios por trabajador**
+   - La obligatoriedad no se configura desde los formularios de certificados.
+   - Beca Azul la activa o desactiva desde el detalle del trabajador mediante un interruptor.
+   - Activar la obligación no crea un certificado ni un PDF.
+   - Si falta la constancia de un curso obligatorio, el detalle muestra `Falta subir`.
+
 ## Comprobaciones manuales
 
 - Crear dos certificados de inducción para el mismo trabajador.
@@ -43,5 +49,5 @@
 
 ## Verificación automatizada
 
-- `python manage.py test`: 19 tests OK.
+- Las pruebas automatizadas disponibles deben ejecutarse con `python manage.py test`.
 - `python manage.py check`: sin errores.

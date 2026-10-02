@@ -70,6 +70,8 @@ class TrabajadorEmpresaPermisoMixin(LoginRequiredMixin):
             raise PermissionDenied
         if not request.user.empresa:
             raise PermissionDenied
+        if not request.user.empresa.activo:
+            raise PermissionDenied
         return super().dispatch(request, *args, **kwargs)
 
 

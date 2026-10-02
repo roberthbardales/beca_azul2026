@@ -84,18 +84,10 @@
 
                 <div class="grid gap-3 sm:grid-cols-2">
                     <div>
-                        <label for="{{ form.phone.id_for_label }}" class="mb-1 block text-xs font-medium text-[#0f172a]">Celular</label>
+                        <label for="{{ form.phone.id_for_label }}" class="mb-1 block text-xs font-medium text-[#0f172a]">Celular (opcional)</label>
                         <input type="text" name="{{ form.phone.html_name }}" id="{{ form.phone.id_for_label }}" value="{{ form.phone.value|default:'' }}"
                                class="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-[#00B0F0] focus:outline-none focus:ring-2 focus:ring-[#00B0F0]/30">
                         {% for error in form.phone.errors %}
-                            <div class="mt-1 text-xs text-red-600">{{ error }}</div>
-                        {% endfor %}
-                    </div>
-                    <div>
-                        <label for="{{ form.date_birth.id_for_label }}" class="mb-1 block text-xs font-medium text-[#0f172a]">Fecha de nacimiento</label>
-                        <input type="date" name="{{ form.date_birth.html_name }}" id="{{ form.date_birth.id_for_label }}" value="{{ form.date_birth.value|default:'' }}"
-                               class="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-[#00B0F0] focus:outline-none focus:ring-2 focus:ring-[#00B0F0]/30">
-                        {% for error in form.date_birth.errors %}
                             <div class="mt-1 text-xs text-red-600">{{ error }}</div>
                         {% endfor %}
                     </div>

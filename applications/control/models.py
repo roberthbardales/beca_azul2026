@@ -72,14 +72,6 @@ class Empresa(TimeStampedModel):
         if self.fecha_fundacion and self.fecha_fundacion > timezone.localdate():
             raise ValidationError({'fecha_fundacion': 'La fecha de fundación no puede ser futura.'})
 
-    def actualizar_homologado(self):
-        trabajadores = self.trabajadores.filter(activo=True)
-        nuevo_valor = trabajadores.exists() and not trabajadores.filter(habilitado=False).exists()
-        if self.homologado != nuevo_valor:
-            self.homologado = nuevo_valor
-            self.save(update_fields=['homologado'])
-
-
 class Trabajador(TimeStampedModel):
     DNI = TipoDocumento.DNI
     CE = TipoDocumento.CE
@@ -111,6 +103,16 @@ class Trabajador(TimeStampedModel):
 
     def __str__(self):
         return f'{self.nombres} {self.apellidos}'
+
+
+class CursoObligatorio(TimeStampedModel):
+    trabajador = models.ForeignKey(Trabajador, on_delete=models.CASCADE, related_name='cursos_obligatorios')
+    curso = models.CharField(max_length=30, choices=CursoTipo.choices)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=('trabajador', 'curso'), name='curso_obligatorio_unico_trabajador'),
+        ]
 
 
 class Incidencia(TimeStampedModel):

@@ -2,7 +2,7 @@
     var dataElement = document.getElementById('dashboard-charts-data');
     if (!dataElement) return;
 
-    var chartIds = ['estado-cumplimiento', 'trabajadores-por-empresa', 'altas-trabajadores'];
+    var chartIds = ['estado-cumplimiento', 'trabajadores-por-estado'];
 
     function showChartError(message) {
         chartIds.forEach(function (id) {
@@ -29,9 +29,10 @@
         return;
     }
 
-    if (!data || !Array.isArray(data.cumplimiento) || !data.empresas ||
-            !Array.isArray(data.empresas.labels) || !Array.isArray(data.empresas.data) ||
-            !data.altas || !Array.isArray(data.altas.labels) || !Array.isArray(data.altas.data)) {
+    if (!data || !Array.isArray(data.cumplimiento) || !data.trabajadores_empresa ||
+            !Array.isArray(data.trabajadores_empresa.labels) ||
+            !Array.isArray(data.trabajadores_empresa.habilitados) ||
+            !Array.isArray(data.trabajadores_empresa.inhabilitados)) {
         showChartError('No hay datos válidos para generar las gráficas.');
         return;
     }
@@ -100,9 +101,8 @@
     var complianceTotal = total(data.cumplimiento);
     var complianceLegend = document.getElementById('cumplimiento-legend');
     var complianceCanvas = document.getElementById('estado-cumplimiento');
-    var companiesCanvas = document.getElementById('trabajadores-por-empresa');
-    var registrationsCanvas = document.getElementById('altas-trabajadores');
-    if (!complianceLegend || !complianceCanvas || !companiesCanvas || !registrationsCanvas) {
+    var workersStatusCanvas = document.getElementById('trabajadores-por-estado');
+    if (!complianceLegend || !complianceCanvas || !workersStatusCanvas) {
         showChartError('No fue posible preparar las gráficas.');
         return;
     }
@@ -145,43 +145,12 @@
         }
     });
 
-    var barColors = ['#ef4444', '#f97316', '#eab308', '#1677df', '#10b981'];
-    new Chart(companiesCanvas, {
-        type: 'bar',
-        plugins: [emptyStatePlugin],
-        data: {
-            labels: data.empresas.labels,
-            datasets: [{
-                label: 'Trabajadores',
-                data: data.empresas.data,
-                backgroundColor: data.empresas.data.map(function (_, index) { return barColors[index % barColors.length]; }),
-                borderRadius: 4,
-                borderSkipped: false,
-                maxBarThickness: 30
-            }]
-        },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: tooltipOptions(' trabajadores') }, scales: { y: { beginAtZero: true, suggestedMax: 10, ticks: { precision: 0, padding: 8 }, border: { display: false }, grid: { color: gridColor } }, x: { border: { display: false }, grid: { display: false }, ticks: { maxRotation: 35, minRotation: 0, padding: 8 } } } }
-    });
-
-    new Chart(registrationsCanvas, {
-        type: 'line',
-        plugins: [emptyStatePlugin],
-        data: {
-            labels: data.altas.labels,
-            datasets: [{
-                label: 'Nuevos trabajadores',
-                data: data.altas.data,
-                borderColor: '#1677df',
-                pointBackgroundColor: '#1677df',
-                pointBorderColor: '#1677df',
-                pointBorderWidth: 2,
-                pointRadius: 4,
-                pointHoverRadius: 5,
-                borderWidth: 3,
-                tension: .28,
-                fill: false
-            }]
-        },
-        options: { responsive: true, maintainAspectRatio: false, interaction: { intersect: false, mode: 'index' }, plugins: { legend: { display: false }, tooltip: tooltipOptions(' altas') }, scales: { y: { beginAtZero: true, ticks: { precision: 0, padding: 8 }, border: { display: false }, grid: { color: gridColor } }, x: { border: { display: false }, grid: { display: false }, ticks: { padding: 8 } } } }
+    new Chart(workersStatusCanvas, {
+        type: 'bar', plugins: [emptyStatePlugin],
+        data: { labels: data.trabajadores_empresa.labels, datasets: [
+            { label: 'Habilitados', data: data.trabajadores_empresa.habilitados, backgroundColor: '#10b981', borderRadius: 4, borderSkipped: false },
+            { label: 'Inhabilitados', data: data.trabajadores_empresa.inhabilitados, backgroundColor: '#ef4444', borderRadius: 4, borderSkipped: false }
+        ] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' }, tooltip: tooltipOptions(' trabajadores') }, scales: { y: { beginAtZero: true, ticks: { precision: 0, padding: 8 }, border: { display: false }, grid: { color: gridColor } }, x: { border: { display: false }, grid: { display: false }, ticks: { maxRotation: 45, minRotation: 0, padding: 8 } } } }
     });
 })();

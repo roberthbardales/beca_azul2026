@@ -68,39 +68,74 @@ class DashboardViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, 'Reportes')
 
-    def test_agrupa_empresas_fuera_del_top_diez(self):
-        for index in range(11):
-            Empresa.objects.create(nombre=f'Empresa {index:02d}', ruc=f'20{index:09d}', correo=f'empresa{index}@example.com')
+    def test_grafica_agrupa_trabajadores_por_estado_e_incluye_inactivos(self):
+        self.trabajador.activo = False
+        self.trabajador.habilitado = False
+        self.trabajador.save(update_fields=['activo', 'habilitado'])
 
         response = self.client.get(reverse('app_control:dashboard'))
-        empresas = response.context['dashboard_charts']['empresas']
+        estados = response.context['dashboard_charts']['trabajadores_empresa']
 
-        self.assertEqual(len(empresas['labels']), 10)
-        self.assertEqual(empresas['labels'][0], 'Empresa principal')
-        self.assertNotIn('Otros', empresas['labels'])
+        self.assertEqual(estados['labels'], ['Empresa principal'])
+        self.assertEqual(estados['habilitados'], [0])
+        self.assertEqual(estados['inhabilitados'], [0])
 
-    def test_agrupa_trabajadores_de_empresas_restantes(self):
-        for index in range(10):
-            empresa = Empresa.objects.create(nombre=f'Empresa {index:02d}', ruc=f'20{index:09d}', correo=f'empresa{index}@example.com')
-            Trabajador.objects.create(
-                empresa=empresa,
-                dni=f'{index:08d}',
-                nombres='Trabajador',
-                apellidos=str(index),
-            )
-        empresa_extra = Empresa.objects.create(nombre='Empresa extra', ruc='20999999999', correo='extra@example.com')
+    def test_grafica_agrupa_trabajadores_activos_por_empresa_y_estado(self):
+        otra_empresa = Empresa.objects.create(nombre='Empresa secundaria', ruc='20987654321', correo='secundaria@example.com')
         Trabajador.objects.create(
-            empresa=empresa_extra,
-            dni='99999999',
-            nombres='Trabajador',
-            apellidos='Extra',
+            empresa=self.empresa, dni='22345678', nombres='Luis', apellidos='Prueba', habilitado=False,
+        )
+        Trabajador.objects.create(
+            empresa=otra_empresa, dni='32345678', nombres='Marta', apellidos='Prueba', habilitado=False,
+        )
+        Trabajador.objects.create(
+            empresa=otra_empresa, dni='42345678', nombres='Rosa', apellidos='Prueba', activo=False,
         )
 
         response = self.client.get(reverse('app_control:dashboard'))
-        empresas = response.context['dashboard_charts']['empresas']
+        estados = response.context['dashboard_charts']['trabajadores_empresa']
 
-        self.assertEqual(empresas['labels'][-1], 'Otros')
-        self.assertEqual(empresas['data'][-1], 2)
+        self.assertEqual(estados['labels'], ['Empresa principal', 'Empresa secundaria'])
+        self.assertEqual(estados['habilitados'], [1, 0])
+        self.assertEqual(estados['inhabilitados'], [1, 1])
+
+    def test_dashboard_cuenta_trabajadores_no_habilitados(self):
+        self.trabajador.habilitado = False
+        self.trabajador.save(update_fields=['habilitado'])
+
+        response = self.client.get(reverse('app_control:dashboard'))
+
+        self.assertEqual(response.context['trabajadores_deshabilitados'], 1)
+
+    def test_beca_azul_puede_alternar_estado_habilitado(self):
+        user = User.objects.create_user(
+            email='beca@example.com',
+            password='test-password',
+            first_name='Beca',
+            last_name='Azul',
+            role=User.BECA_AZUL,
+        )
+        self.client.force_login(user)
+
+        response = self.client.post(
+            reverse('app_control:trabajador_habilitado_toggle', args=[self.trabajador.pk]),
+            {},
+        )
+
+        self.assertRedirects(response, reverse('app_control:trabajador_detalle', args=[self.trabajador.pk]))
+        self.trabajador.refresh_from_db()
+        self.assertFalse(self.trabajador.habilitado)
+
+    def test_usuario_no_beca_azul_no_puede_alternar_estado_habilitado(self):
+        self.client.force_login(self.user)
+
+        response = self.client.post(
+            reverse('app_control:trabajador_habilitado_toggle', args=[self.trabajador.pk]),
+        )
+
+        self.assertEqual(response.status_code, 403)
+        self.trabajador.refresh_from_db()
+        self.assertTrue(self.trabajador.habilitado)
 
 
 class TrabajadorEmpresaCreateViewTests(TestCase):

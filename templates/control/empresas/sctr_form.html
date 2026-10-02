@@ -15,7 +15,7 @@
         {% if sctr.pk and sctr.archivo %}
         <div class="mb-5 flex flex-col gap-3 rounded-lg border border-[var(--primary-100)] bg-[var(--primary-50)] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
             <div class="min-w-0"><p class="text-xs font-semibold uppercase tracking-wide text-[var(--primary-700)]">Archivo actual</p><p class="mt-1 truncate text-sm font-medium text-[var(--ink-900)]">{{ sctr.archivo.name|cut:'certificados/' }}</p></div>
-            <a class="btn btn-secondary btn-sm shrink-0" href="{{ sctr.archivo.url }}" target="_blank" rel="noopener">Ver PDF</a>
+            {% if request.user.role == '1' %}<a class="btn btn-secondary btn-sm shrink-0" href="{% url 'app_control:empresa_certificado_ver' sctr.pk %}" target="_blank" rel="noopener">Ver PDF</a>{% endif %}
         </div>
         {% endif %}
 

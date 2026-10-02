@@ -69,6 +69,11 @@ main .workers-list-filter--compact select { border-color: #f8fafc !important; }
     font-size: .95rem;
 }
 
+.worker-data-table--aligned {
+    min-width: 620px;
+    table-layout: fixed;
+}
+
 .worker-data-table thead { background: #f1f4f6 !important; }
 .worker-data-table th {
     height: 3.25rem;

@@ -1,65 +1,38 @@
-# Correcciones Pendientes
+# Correcciones pendientes
 
-Ordenadas de más crítico a menos crítico.
+Este archivo contiene únicamente temas técnicos que todavía no forman parte de
+las funcionalidades actuales. No sustituye las reglas de `contexto.md` ni
+`permisos.md`.
 
-## 1. Permisos inconsistentes en vistas administrativas
+## Reemplazo seguro de certificados
 
-Las vistas de trabajadores y certificados usan permisos que no reflejan claramente los roles autorizados. Esto puede impedir operaciones a usuarios permitidos o permitir accesos incorrectos.
+Revisar el flujo de reemplazo de archivos para conservar el archivo anterior si
+falla el guardado del nuevo. Las operaciones deben mantener consistencia entre
+base de datos y storage.
 
-Archivos principales:
+## Conflictos de cursos
 
-- `applications/control/views.py`
-- `applications/users/mixins.py`
+Validar de forma explícita los conflictos cuando se cambia la categoría de un
+certificado y ya existe otro certificado para la misma combinación trabajador y
+curso.
 
-## 2. Eliminación del certificado anterior antes de guardar el nuevo
+## Consultas del dashboard
 
-Al reemplazar un certificado, el anterior se elimina antes de confirmar que el nuevo archivo se guardó correctamente. Si ocurre un error, puede perderse el certificado anterior.
+Revisar la cantidad de consultas independientes cuando aumente el volumen de
+empresas, trabajadores y certificados.
 
-Vistas afectadas:
+## Organización del código
 
-- `CertificadoCreateView`
-- `CertificadoEmpresaCreateView`
+`applications/control/views.py` concentra dashboard, empresas, trabajadores,
+certificados e incidencias. Puede dividirse por funcionalidad si continúa
+creciendo.
 
-## 3. Falta de transacción al reemplazar certificados
+## Pruebas pendientes
 
-La eliminación y creación del certificado deben ejecutarse dentro de `transaction.atomic()` para evitar operaciones incompletas.
+Ampliar las pruebas automatizadas para cubrir específicamente:
 
-## 4. Posible `IntegrityError` al cambiar el curso
-
-Si un trabajador ya tiene un certificado para el curso seleccionado, cambiar otro certificado a ese mismo curso puede violar la restricción única y producir un error 500.
-
-## 5. Roles escritos como valores literales
-
-Hay condiciones como:
-
-```python
-request.user.role == '3'
-```
-
-Deben usar las constantes del modelo:
-
-```python
-request.user.role == User.USUARIO_EMPRESA
-```
-
-## 6. Muchas consultas independientes en el dashboard
-
-El dashboard realiza varias consultas separadas para contadores, trabajadores, empresas y certificados. Puede optimizarse agrupando agregaciones cuando aumente el volumen de datos.
-
-## 8. `certificados_sin_vencimiento` fijo en cero
-
-Actualmente se define así:
-
-```python
-certificados_sin_vencimiento = 0
-```
-
-Debe calcularse o eliminarse si el modelo siempre exige fecha de vencimiento.
-
-## 9. Falta validar trabajadores inactivos
-
-Algunas operaciones permiten editar trabajadores inactivos o agregarles certificados. Debe definirse si esto es correcto para el negocio.
-
-## 10. `views.py` demasiado grande
-
-El archivo contiene dashboard, empresas, trabajadores, certificados e incidencias. Conviene dividirlo por funcionalidad para facilitar su mantenimiento.
+- Activación y desactivación de cursos obligatorios.
+- Restricción de la operación a Beca Azul.
+- Rechazo de cursos no pertenecientes al catálogo fijo.
+- Mensaje `Falta subir` cuando falta una constancia obligatoria.
+- Conservación del certificado al desactivar la obligación.

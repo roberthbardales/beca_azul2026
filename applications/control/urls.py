@@ -19,6 +19,8 @@ urlpatterns = [
     path('empresas/<int:pk>/trabajadores/', views.EmpresaTrabajadoresGaritaView.as_view(), name='empresa_trabajadores_garita'),
     path('empresas/<int:pk>/editar/', views.EmpresaUpdateView.as_view(), name='empresa_editar'),
     path('empresas/<int:pk>/toggle/', views.EmpresaToggleView.as_view(), name='empresa_toggle'),
+    path('empresas/<int:pk>/homologacion/toggle/', views.EmpresaHomologacionToggleView.as_view(), name='empresa_homologacion_toggle'),
+    path('empresas/certificados/<int:pk>/ver/', views.EmpresaCertificadoView.as_view(), name='empresa_certificado_ver'),
     path('empresas/<int:pk>/eliminar/', views.EmpresaDeleteView.as_view(), name='empresa_eliminar'),
 
     # Trabajadores
@@ -31,7 +33,8 @@ urlpatterns = [
     path('trabajadores/empresa/<int:pk>/eliminar/', views.TrabajadorEmpresaDeleteView.as_view(), name='trabajador_empresa_eliminar'),
     path('trabajadores/<int:pk>/', views.TrabajadorDetailView.as_view(), name='trabajador_detalle'),
     path('trabajadores/<int:pk>/editar/', views.TrabajadorUpdateView.as_view(), name='trabajador_editar'),
-    path('trabajadores/<int:pk>/homologacion/', views.TrabajadorHomologacionView.as_view(), name='trabajador_homologacion'),
+    path('trabajadores/<int:pk>/habilitado/toggle/', views.TrabajadorHabilitadoToggleView.as_view(), name='trabajador_habilitado_toggle'),
+    path('trabajadores/<int:pk>/cursos/<str:curso>/obligatorio/', views.TrabajadorCursoObligatorioToggleView.as_view(), name='trabajador_curso_obligatorio_toggle'),
     path('trabajadores/<int:pk>/sctr/', views.TrabajadorSCTRView.as_view(), name='trabajador_sctr'),
     path('trabajadores/<int:pk>/toggle/', views.TrabajadorToggleView.as_view(), name='trabajador_toggle'),
     path('trabajadores/<int:pk>/eliminar/', views.TrabajadorDeleteView.as_view(), name='trabajador_eliminar'),

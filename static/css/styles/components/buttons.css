@@ -101,3 +101,49 @@ main button[class*="bg-[#0F6FC6]"], main a[class*="bg-[#0F6FC6]"] { background: 
     min-height: 2rem;
     padding: 0;
 }
+
+/* Course requirement controls use semantic classes because the static Tailwind build
+   does not include the arbitrary utility classes used by the template. */
+main button[role="switch"] {
+    display: inline-flex;
+    width: 2.75rem;
+    height: 1.5rem;
+    min-height: 1.5rem;
+    align-items: center;
+    padding: 0;
+    border: 0;
+    border-radius: 9999px;
+    background: #cbd5e1;
+    box-shadow: inset 0 0 0 1px rgba(15, 23, 42, .12);
+}
+
+main button[role="switch"].bg-blue-600 {
+    background: var(--primary-600);
+}
+
+main button[role="switch"] span {
+    display: block;
+    width: 1rem;
+    height: 1rem;
+    margin-left: .25rem;
+    border-radius: 9999px;
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, .2);
+    transform: translateX(0);
+    transition: transform .16s ease;
+}
+
+main button[role="switch"].bg-blue-600 span {
+    transform: translateX(1.5rem);
+}
+
+main button[role="switch"]:focus-visible {
+    outline: 2px solid var(--primary-500);
+    outline-offset: 2px;
+}
+
+.courses-section--disabled button[role="switch"] {
+    cursor: not-allowed;
+    opacity: .5;
+    pointer-events: none;
+}

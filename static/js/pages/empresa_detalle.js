@@ -38,7 +38,7 @@
             datasets: [{
                 label: 'Trabajadores',
                 data: data.data,
-                backgroundColor: ['#16a34a', '#dc2626'],
+                 backgroundColor: ['#16a34a', '#dc2626'],
                 borderWidth: 0,
                 hoverOffset: 4
             }]

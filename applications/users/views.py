@@ -41,6 +41,12 @@ class LoginUser(FormView):
             return self.form_invalid(form)
         if user.is_superuser:
             return super().form_valid(form)
+        if user.role == User.USUARIO_EMPRESA and (
+            not user.empresa or not user.empresa.activo
+        ):
+            services.logout_user(self.request)
+            form.add_error(None, 'La empresa asociada está desactivada.')
+            return self.form_invalid(form)
         if user.role == User.USUARIO_EMPRESA:
             return redirect('app_control:trabajador_lista')
         if user.role == User.GARITA:

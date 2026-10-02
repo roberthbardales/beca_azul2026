@@ -71,7 +71,7 @@
                  {% endfor %}
                  {% elif reporte_actual == 'trabajadores' %}
                  {% for fila in filas %}
-                  <tr><td data-label="Trabajador" class="px-5 py-3 text-sm font-medium">{{ fila }}</td><td data-label="Documento" class="px-5 py-3 text-sm">{{ fila.dni }}</td><td data-label="Empresa" class="px-5 py-3 text-sm">{{ fila.empresa }}</td><td data-label="Cargo" class="px-5 py-3 text-sm">{{ fila.cargo|default:'-' }}</td><td data-label="Estado" class="px-5 py-3 text-sm">{% if fila.habilitado %}<span class="inline-block rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">Habilitado</span>{% else %}<span class="inline-block rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">No habilitado</span>{% endif %}</td></tr>
+                    <tr><td data-label="Trabajador" class="px-5 py-3 text-sm font-medium">{{ fila }}</td><td data-label="Documento" class="px-5 py-3 text-sm">{{ fila.dni }}</td><td data-label="Empresa" class="px-5 py-3 text-sm">{{ fila.empresa }}</td><td data-label="Cargo" class="px-5 py-3 text-sm">{{ fila.cargo|default:'-' }}</td><td data-label="Estado" class="px-5 py-3 text-sm">{% if fila.habilitado %}<span class="inline-block rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">Habilitado</span>{% else %}<span class="inline-block rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">No habilitado</span>{% endif %}</td></tr>
                  {% endfor %}
                  {% else %}
                  {% for fila in filas %}
