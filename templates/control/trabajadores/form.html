@@ -85,11 +85,14 @@
                     </div>
                     {% if request.user.role != '3' %}
                     <div class="flex items-end pb-1">
-                        <label for="{{ form.sctr.id_for_label }}" class="flex items-center gap-2 text-sm font-medium text-[#0f172a]">
-                            {{ form.sctr }}
-                            SCTR aprobado
+                        <label for="{{ form.sctr_pension.id_for_label }}" class="flex items-center gap-2 text-sm font-medium text-[#0f172a]">
+                            {{ form.sctr_pension }}
+                            SCTR pensión aprobado
                         </label>
-                        {% for error in form.sctr.errors %}<div class="ml-2 text-xs text-red-600">{{ error }}</div>{% endfor %}
+                        <label for="{{ form.sctr_salud.id_for_label }}" class="ml-3 flex items-center gap-2 text-sm font-medium text-[#0f172a]">
+                            {{ form.sctr_salud }}
+                            SCTR salud aprobado
+                        </label>
                     </div>
                     {% endif %}
                 </div></fieldset>
@@ -98,7 +101,7 @@
                   <fieldset class="control-form-section border-t border-gray-100 pt-3"><legend class="mb-2 text-sm font-semibold text-[#0f172a]">Certificados</legend>
                       {{ certificado_formset.management_form }}
                         <div class="app-table-wrap responsive-table"><table class="app-table worker-data-table w-full min-w-[520px]"><thead><tr><th>Tipo</th><th>Archivo PDF</th><th>Emisión</th><th>Vencimiento</th></tr></thead><tbody id="certificados-fijos">
-                          <tr><td>Inducción</td><td>{{ form.induccion_archivo }}{% for error in form.induccion_archivo.errors %}<div class="text-xs text-red-600">{{ error }}</div>{% endfor %}</td><td>{{ form.induccion_fecha_emision }}{{ form.induccion_fecha_emision.errors }}</td><td>{{ form.induccion_fecha_vencimiento }}{{ form.induccion_fecha_vencimiento.errors }}</td></tr>
+                           <tr><td>Inducción</td><td>{{ form.induccion_archivo }}{% for error in form.induccion_archivo.errors %}<div class="text-xs text-red-600">{{ error }}</div>{% endfor %}</td><td>{{ form.induccion_fecha_emision }}{{ form.induccion_fecha_emision.errors }}</td><td>{{ form.induccion_fecha_vencimiento }}{{ form.induccion_fecha_vencimiento.errors }}</td></tr>
                           <tr><td>Aptitud médica</td><td>{{ form.aptitud_medica_archivo }}{% for error in form.aptitud_medica_archivo.errors %}<div class="text-xs text-red-600">{{ error }}</div>{% endfor %}</td><td>{{ form.aptitud_medica_fecha_emision }}{{ form.aptitud_medica_fecha_emision.errors }}</td><td>{{ form.aptitud_medica_fecha_vencimiento }}{{ form.aptitud_medica_fecha_vencimiento.errors }}</td></tr>
                        </tbody></table></div>
                  </fieldset>

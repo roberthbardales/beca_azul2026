@@ -5,10 +5,12 @@
 
 {% block content %}
 <div class="auth-page py-6 sm:py-10">
-    <div class="auth-composition mx-auto flex w-full max-w-md flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+    <div class="auth-layout mx-auto flex w-full max-w-6xl items-center justify-center gap-6 lg:gap-10">
+        <img class="auth-side-image auth-side-image--left" src="{% static 'images/01.png' %}" alt="" aria-hidden="true">
+        <div class="auth-composition flex w-full max-w-md flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
         <section class="auth-composition__form p-6 sm:p-8 lg:p-10" aria-labelledby="login-title">
             <div class="login-brand-panel mb-8">
-                <img class="mx-auto mb-7 h-auto w-56 object-contain" src="{% static 'images/logo.png' %}" alt="Beca Azul Ingenieros y Consultores">
+                <img class="mx-auto mb-7 h-auto w-56 object-contain" src="{% static 'images/logo2.png' %}" alt="Beca Azul Ingenieros y Consultores">
             </div>
             <div class="mb-8 text-center">
                 <h1 id="login-title" class="text-3xl font-bold leading-tight text-[#0f172a]">Iniciar sesión</h1>
@@ -48,9 +50,11 @@
                     {% endfor %}
                 </div>
 
-                <button class="btn btn-primary" type="submit">Entrar</button>
+                <button class="login-submit btn btn-secondary" type="submit">Entrar</button>
             </form>
         </section>
+        </div>
+        <img class="auth-side-image auth-side-image--right" src="{% static 'images/05.png' %}" alt="" aria-hidden="true">
     </div>
 </div>
 {% endblock %}

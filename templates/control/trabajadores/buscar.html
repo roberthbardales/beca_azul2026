@@ -35,8 +35,24 @@
 {% endif %}
 </section>
 {% elif resultados > 1 %}
-<section class="search-empty-state rounded-xl border border-gray-100 bg-white p-6 text-center text-sm text-[#A5A5A5] shadow-sm" aria-live="polite">
-Hay {{ resultados }} coincidencias. Refina la búsqueda con más datos del trabajador.
+<section class="search-result rounded-xl border border-gray-100 bg-white p-6 shadow-sm sm:p-8" aria-labelledby="coincidencias-trabajador-title">
+<h2 id="coincidencias-trabajador-title" class="mb-4 text-xl font-bold text-[#0f172a]">Trabajadores encontrados ({{ resultados }})</h2>
+<div class="app-table-wrap">
+<table class="app-table" aria-label="Trabajadores encontrados">
+<thead><tr><th>Nombre</th><th>Documento</th><th>Empresa</th><th>Estado</th><th></th></tr></thead>
+<tbody class="divide-y divide-gray-100">
+{% for resultado in trabajadores %}
+<tr>
+<td class="font-medium">{{ resultado.nombres }} {{ resultado.apellidos }}</td>
+<td>{{ resultado.get_tipo_documento_display }} {{ resultado.dni }}</td>
+<td>{{ resultado.empresa }}</td>
+<td>{% if resultado.habilitado %}Habilitado{% else %}No habilitado{% endif %}</td>
+<td>{% if puede_ver_detalle %}<a class="btn btn-primary btn-sm" href="{% if es_empresa %}{% url 'app_control:trabajador_empresa_detalle' resultado.pk %}{% else %}{% url 'app_control:trabajador_detalle' resultado.pk %}{% endif %}">Ver detalle</a>{% endif %}</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
 </section>
 {% else %}
 <section class="search-empty-state rounded-xl border border-gray-100 bg-white p-6 text-center text-sm text-[#A5A5A5] shadow-sm" aria-live="polite">

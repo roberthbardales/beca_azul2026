@@ -42,7 +42,7 @@ class EmpresaForm(forms.ModelForm):
 
     class Meta:
         model = Empresa
-        fields = ('nombre', 'ruc', 'correo', 'fecha_fundacion')
+        fields = ('nombre', 'ruc', 'correo', 'representante_legal')
 
     def __init__(self, *args, **kwargs):
         can_edit_sctr = kwargs.pop('can_edit_sctr', False)
@@ -95,13 +95,6 @@ class EmpresaForm(forms.ModelForm):
             raise forms.ValidationError('El RUC debe contener exactamente 11 dígitos numéricos.')
         return ruc
 
-    def clean_fecha_fundacion(self):
-        fecha = self.cleaned_data.get('fecha_fundacion')
-        if fecha and fecha > timezone.localdate():
-            raise forms.ValidationError('La fecha de fundación no puede ser futura.')
-        return fecha
-
-
 class SCTRForm(forms.ModelForm):
     certificate_type = Certificado.SCTR
     required_file_message = 'El archivo SCTR es obligatorio.'
@@ -136,6 +129,9 @@ class SCTRForm(forms.ModelForm):
         return cleaned
 
     def save(self, commit=True):
+        archivo_anterior = None
+        if self.certificate_type == Certificado.HOMOLOGACION and self.instance.pk and self.cleaned_data.get('archivo'):
+            archivo_anterior = Certificado.objects.get(pk=self.instance.pk).archivo
         certificado = super().save(commit=False)
         certificado.empresa = self.empresa
         certificado.trabajador = None
@@ -144,6 +140,10 @@ class SCTRForm(forms.ModelForm):
             certificado.archivo = Certificado.objects.get(pk=certificado.pk).archivo
         if commit:
             certificado.save()
+            if archivo_anterior and archivo_anterior.name != certificado.archivo.name:
+                archivo_anterior.delete(save=False)
+            if self.certificate_type == Certificado.HOMOLOGACION:
+                Empresa.objects.filter(pk=certificado.empresa_id, homologacion=True).update(homologacion=False)
         return certificado
 
 
@@ -152,7 +152,14 @@ class HomologacionForm(SCTRForm):
     required_file_message = 'El archivo de homologación es obligatorio.'
 
 
+class SCTRSaludForm(SCTRForm):
+    certificate_type = Certificado.SCTR_SALUD
+    required_file_message = 'El archivo SCTR salud es obligatorio.'
+
+
 class TrabajadorForm(forms.ModelForm):
+    # Accept the old input name while clients migrate to the two separate flags.
+    sctr = forms.BooleanField(required=False)
     empresa = forms.ModelChoiceField(
         label='Empresa',
         queryset=Empresa.objects.filter(activo=True),
@@ -163,8 +170,16 @@ class TrabajadorForm(forms.ModelForm):
         model = Trabajador
         fields = (
             'empresa', 'tipo_documento', 'dni', 'nombres', 'apellidos',
-            'cargo', 'sctr',
+            'cargo', 'sctr_pension', 'sctr_salud',
         )
+
+    def save(self, commit=True):
+        trabajador = super().save(commit=False)
+        if 'sctr' in self.data:
+            trabajador.sctr_pension = self.cleaned_data.get('sctr', False)
+        if commit:
+            trabajador.save()
+        return trabajador
 
     def clean_dni(self):
         dni = self.cleaned_data.get('dni', '').strip()
@@ -312,7 +327,10 @@ class CertificadoForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         self.trabajador = kwargs.pop('trabajador', None)
         super().__init__(*args, **kwargs)
-        self.fields['tipo'].choices = tuple(choice for choice in self.fields['tipo'].choices if choice[0] != Certificado.SCTR)
+        self.fields['tipo'].choices = tuple(
+            choice for choice in self.fields['tipo'].choices
+            if choice[0] not in (Certificado.SCTR_PENSION, Certificado.SCTR_SALUD)
+        )
         self.fields['curso'].required = False
         self.fields['archivo'].validators.append(validate_pdf)
 

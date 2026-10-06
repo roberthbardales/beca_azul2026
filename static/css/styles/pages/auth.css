@@ -1,11 +1,33 @@
 .auth-page { display: grid; min-height: calc(100vh - 11.5rem); place-items: center; }
-.auth-composition { border-color: rgba(255, 255, 255, .75) !important; box-shadow: 0 24px 55px -24px rgba(6, 44, 77, .55) !important; }
+.auth-layout { width: min(100%, 72rem); }
+.auth-side-image { width: 15rem; height: 27rem; flex: 0 1 15rem; border-radius: 1rem; object-fit: contain; mix-blend-mode: multiply; }
+.auth-composition { border-color: #0b416b !important; background: #062c4d !important; box-shadow: 0 24px 55px -24px rgba(6, 44, 77, .7) !important; }
 .auth-composition__visual { display: flex; min-height: 24rem; flex-direction: column; justify-content: space-between; background: var(--primary-700); }
 .auth-composition__visual h1, .auth-composition__visual h2, .auth-composition__visual h3 { color: #fff !important; }
 .auth-composition__visual p { color: rgba(255, 255, 255, .78) !important; }
-.auth-composition__form { background: #fff; }
-.auth-composition__form h1 { letter-spacing: -.025em; }
-.login-brand-panel { margin: -2.5rem -2.5rem 2rem; padding: 1.5rem 1rem; background: #062c4d; }
+.auth-composition__form { background: #062c4d; color: #fff; }
+.auth-composition__form h1 { letter-spacing: -.025em; color: #fff !important; }
+.auth-composition__form p { color: rgba(255, 255, 255, .78) !important; }
+.auth-composition__form label { color: #fff !important; }
+.auth-composition__form input { background: #fff; color: #0f172a; }
+.auth-composition__form .text-red-600 { color: #fecaca; }
+.auth-composition__form .btn-primary { background: #19a7d8; color: #fff; }
+.login-brand-panel { margin: -2.5rem -2.5rem 2rem; padding: 1.5rem 1rem; background: transparent; }
 .login-brand-panel img { margin-bottom: 0; }
 .auth-composition__form .btn-primary { display: flex; width: 70%; margin: 0 auto; }
-@media (max-width: 640px) { .auth-page { min-height: auto; } .auth-composition__visual { min-height: 0; } .login-brand-panel { margin: -1.5rem -1.5rem 2rem; } .auth-composition__form .btn-primary { width: 100%; } }
+.auth-composition__form .login-submit { display: flex; width: 70%; margin: 0 auto; }
+.auth-composition--single .auth-composition__form .toggle-password { color: #4b5563 !important; }
+.auth-composition--single .password-field { width: 85%; margin: 0 auto; }
+.auth-composition--single .password-label { width: 85%; margin-right: auto; margin-left: auto; }
+.auth-composition--single .password-actions .btn { width: auto; margin: 0; flex: 1; }
+.auth-composition--single .password-actions { margin-top: 3rem !important; }
+.auth-composition--single .password-actions .btn-primary { background: var(--primary-600); color: #fff; }
+.auth-composition--single .password-actions .btn-primary:hover { background: var(--primary-700); color: #fff; }
+.auth-composition--single .password-actions .btn-secondary { background: var(--secondary-500); color: #fff; }
+.auth-composition--single .password-actions .btn-secondary:hover { background: var(--secondary-600); color: #fff; }
+.auth-composition--single .password-actions .btn-tertiary { background: var(--tertiary-500); color: #fff; }
+.auth-composition--single .password-actions .btn-tertiary:hover { background: var(--tertiary-600); color: #fff; }
+@media (max-width: 640px) { .auth-composition--single .password-field { width: 100%; } }
+@media (max-width: 640px) { .auth-composition--single .password-label { width: 100%; } }
+@media (max-width: 900px) { .auth-side-image { width: 10rem; height: 23rem; flex-basis: 10rem; } }
+@media (max-width: 640px) { .auth-page { min-height: auto; } .auth-layout { display: block; } .auth-side-image { display: none; } .auth-composition__visual { min-height: 0; } .login-brand-panel { margin: -1.5rem -1.5rem 2rem; } .auth-composition__form .btn-primary, .auth-composition__form .login-submit { width: 100%; } }

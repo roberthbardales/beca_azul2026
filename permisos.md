@@ -19,10 +19,10 @@ la vista no añade una restricción específica.
 ## Administrador
 
 - Gestiona usuarios permitidos: consultar, crear, editar, activar, desactivar, eliminar y restablecer contraseñas según las vistas.
-- Consulta y administra empresas: crear, editar, activar, desactivar y eliminar cuando no existan relaciones protegidas.
+- Consulta empresas y sus detalles.
 - Consulta trabajadores, certificados e incidencias.
-- No gestiona trabajadores, certificados ni incidencias desde las vistas normales.
-- No activa ni desactiva cursos obligatorios mediante la vista de Beca Azul.
+- No crea, edita, activa, desactiva ni elimina empresas, trabajadores, certificados o incidencias desde las vistas normales.
+- No activa ni desactiva cursos obligatorios ni estados de trabajadores.
 - Accede al dashboard y a reportes globales.
 
 ## Beca Azul
@@ -31,28 +31,30 @@ la vista no añade una restricción específica.
 - Gestiona empresas, incluyendo activación, desactivación y homologación.
 - Consulta trabajadores de todas las empresas.
 - Crea, edita, activa, desactiva y elimina trabajadores.
+- Crea, edita y elimina certificados de trabajadores de Inducción, Aptitud
+  médica y cursos.
 - Cambia la habilitación del trabajador y aprueba o desaprueba su SCTR.
-- Gestiona incidencias.
+- Crea, edita y elimina incidencias.
 - Consulta certificados desde los detalles permitidos.
 - Activa o desactiva manualmente cada uno de los seis cursos para cada trabajador.
 - Puede modificar esa obligatoriedad solo en trabajadores activos.
 - Puede hacerlo mediante `POST` en `/trabajadores/<id>/cursos/<curso>/obligatorio/`.
 - No modifica Inducción ni Aptitud médica mediante esta configuración.
 - Accede al dashboard y a reportes globales.
+- Puede enviar reportes por correo mediante `POST`.
 
 Al activar un curso obligatorio no se crea automáticamente una constancia. Si
 falta el PDF, Usuario Empresa verá `Falta subir` y deberá cargarlo.
 
 ## Usuario Planta
 
-- Consulta usuarios permitidos por las vistas.
 - Consulta empresas, trabajadores y certificados.
 - Accede al dashboard.
 - Accede a reportes según el alcance implementado.
-- No crea, edita, activa, desactiva ni elimina usuarios, empresas, trabajadores,
-  certificados o incidencias.
+- No gestiona usuarios, empresas, trabajadores, certificados ni incidencias.
 - No modifica estados de trabajadores, SCTR ni cursos obligatorios.
 - Puede consultar la configuración de obligatoriedad visible en el detalle.
+- No envía reportes por correo.
 
 ## Usuario Empresa
 
@@ -62,8 +64,11 @@ falta el PDF, Usuario Empresa verá `Falta subir` y deberá cargarlo.
 - Crea y edita trabajadores de su empresa.
 - No puede activar ni desactivar trabajadores; esa operación está reservada a
   Beca Azul.
-- Carga, edita, reemplaza y elimina certificados de sus trabajadores.
-- Puede cargar cualquiera de los seis cursos aunque no sea obligatorio.
+- Puede cargar, editar y eliminar certificados de sus trabajadores dentro de los
+  límites de las vistas de empresa.
+- Puede cargar cualquiera de los seis cursos al crear o editar un trabajador.
+- Las vistas específicas de cursos solo permiten cursos marcados como
+  obligatorios.
 - Si Beca Azul marcó un curso como obligatorio y no existe PDF, el detalle muestra
   `Falta subir`.
 - Puede consultar si un curso está marcado como obligatorio, pero no puede cambiarlo.
@@ -71,12 +76,14 @@ falta el PDF, Usuario Empresa verá `Falta subir` y deberá cargarlo.
 - No aprueba SCTR de trabajadores ni homologa/deshomologa empresas.
 - No accede al dashboard general.
 - Sus reportes se limitan a su empresa y trabajadores.
+- No puede enviar reportes por correo.
 
 ## Usuario Garita
 
 - Busca empresas.
 - Consulta la lista de trabajadores de una empresa.
 - Puede ver trabajadores activos e inactivos en esa lista.
+- Puede buscar trabajadores, pero no consultar su detalle individual.
 - No accede al detalle individual del trabajador.
 - No administra empresas, trabajadores, certificados, incidencias, estados ni
   cursos obligatorios.
@@ -106,3 +113,23 @@ falta el PDF, Usuario Empresa verá `Falta subir` y deberá cargarlo.
   `Certificado.CURSO_CHOICES`.
 - La existencia de una ruta de archivo en la base de datos no garantiza que el
   PDF exista físicamente; las vistas documentales comprueban el storage.
+
+## Datos iniciales y despliegue
+
+- La carga inicial usa únicamente `fixtures/seed.json`.
+- El fixture incluye los usuarios de los cinco roles, empresas, trabajadores,
+  certificados y cursos obligatorios.
+- Las migraciones se ejecutan antes del fixture; `loaddata` no crea tablas ni
+  reemplaza migraciones.
+- En una base nueva, el orden recomendado es:
+
+```text
+python manage.py migrate
+python manage.py loaddata seed
+```
+
+- Los PDFs demo referenciados por el fixture deben estar disponibles en
+  `media/certificados/demo/`. Si el archivo físico falta, el sistema conserva
+  el registro pero no lo considera disponible para consulta o descarga.
+- Las credenciales contenidas en el fixture son datos de desarrollo y deben
+  cambiarse antes de usar el entorno en producción.

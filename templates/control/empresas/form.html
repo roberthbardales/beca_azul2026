@@ -50,9 +50,9 @@
                         {% for error in form.correo.errors %}<div class="mt-1 text-xs text-red-600">{{ error }}</div>{% endfor %}
                     </div>
                     <div>
-                        <label for="{{ form.fecha_fundacion.id_for_label }}" class="mb-1 block text-xs font-medium text-[#0f172a]">Fecha de fundación</label>
-                        <input type="date" name="{{ form.fecha_fundacion.html_name }}" id="{{ form.fecha_fundacion.id_for_label }}" value="{{ form.fecha_fundacion.value|default:'' }}" class="w-full rounded-lg border border-gray-300 px-2 py-0.5 text-sm focus:border-[#00B0F0] focus:outline-none focus:ring-2 focus:ring-[#00B0F0]/30">
-                        {% for error in form.fecha_fundacion.errors %}<div class="mt-1 text-xs text-red-600">{{ error }}</div>{% endfor %}
+                        <label for="{{ form.representante_legal.id_for_label }}" class="mb-1 block text-xs font-medium text-[#0f172a]">Representante legal</label>
+                        <input type="text" name="{{ form.representante_legal.html_name }}" id="{{ form.representante_legal.id_for_label }}" value="{{ form.representante_legal.value|default:'' }}" class="w-full rounded-lg border border-gray-300 px-2 py-0.5 text-sm focus:border-[#00B0F0] focus:outline-none focus:ring-2 focus:ring-[#00B0F0]/30">
+                        {% for error in form.representante_legal.errors %}<div class="mt-1 text-xs text-red-600">{{ error }}</div>{% endfor %}
                     </div>
                 </div>
                 </fieldset>

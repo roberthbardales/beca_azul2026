@@ -67,13 +67,57 @@ class HomologacionManualTests(TestCase):
             apellidos='Prueba',
             habilitado=True,
         )
-        empresa_anterior.homologado = True
-        empresa_anterior.save(update_fields=['homologado'])
+        empresa_anterior.homologacion = True
+        empresa_anterior.save(update_fields=['homologacion'])
 
         trabajador.empresa = empresa_nueva
         trabajador.save()
 
         empresa_anterior.refresh_from_db()
         empresa_nueva.refresh_from_db()
-        self.assertTrue(empresa_anterior.homologado)
-        self.assertFalse(empresa_nueva.homologado)
+        self.assertTrue(empresa_anterior.homologacion)
+        self.assertFalse(empresa_nueva.homologacion)
+
+
+class SctrEfectivoTests(TestCase):
+    def setUp(self):
+        self.empresa = Empresa.objects.create(nombre='Empresa', ruc='20123456789', correo='empresa@example.com')
+        self.trabajador = Trabajador.objects.create(
+            empresa=self.empresa,
+            dni='12345678',
+            nombres='Ana',
+            apellidos='Prueba',
+            sctr_pension=True,
+            sctr_salud=True,
+        )
+
+    def crear_certificado(self, tipo, vencimiento):
+        return Certificado.objects.create(
+            empresa=self.empresa,
+            tipo=tipo,
+            fecha_emision=date.today() - timedelta(days=1),
+            fecha_vencimiento=vencimiento,
+            archivo=SimpleUploadedFile(f'{tipo.lower()}.pdf', b'%PDF-1.4 test'),
+        )
+
+    def test_sctr_efectivo_requiere_aprobacion_y_certificado_vigente(self):
+        self.crear_certificado(Certificado.SCTR_PENSION, date.today() + timedelta(days=1))
+        self.crear_certificado(Certificado.SCTR_SALUD, date.today() + timedelta(days=1))
+
+        self.assertTrue(self.trabajador.sctr_pension_efectivo)
+        self.assertTrue(self.trabajador.sctr_salud_efectivo)
+
+    def test_sctr_efectivo_es_falso_si_falta_el_archivo(self):
+        pension = self.crear_certificado(Certificado.SCTR_PENSION, date.today() + timedelta(days=1))
+        self.crear_certificado(Certificado.SCTR_SALUD, date.today() + timedelta(days=1))
+        pension.archivo.storage.delete(pension.archivo.name)
+
+        self.assertFalse(self.trabajador.sctr_pension_efectivo)
+        self.assertTrue(self.trabajador.sctr_salud_efectivo)
+
+    def test_sctr_efectivo_es_falso_si_esta_vencido(self):
+        self.crear_certificado(Certificado.SCTR_PENSION, date.today() - timedelta(days=1))
+        self.crear_certificado(Certificado.SCTR_SALUD, date.today() + timedelta(days=1))
+
+        self.assertFalse(self.trabajador.sctr_pension_efectivo)
+        self.assertTrue(self.trabajador.sctr_salud_efectivo)

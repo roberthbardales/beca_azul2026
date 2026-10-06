@@ -1,4 +1,5 @@
 from datetime import timedelta
+from unicodedata import combining, normalize
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -6,7 +7,8 @@ from django.conf import settings
 from django.core.exceptions import PermissionDenied
 from django.core.mail import EmailMultiAlternatives
 from django.db import transaction
-from django.db.models import Count, Exists, OuterRef, Prefetch, Q
+from django.db.models import Count, Exists, Func, OuterRef, Prefetch, Q, Value
+from django.db.models.functions import Concat, Lower
 from django.http import FileResponse, Http404, HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
@@ -18,6 +20,7 @@ from applications.users.mixins import (
     AdministrarEmpresasMixin,
     AdministrarTrabajadoresMixin,
     BecaAzulRequiredMixin,
+    ConsultarTrabajadoresMixin,
     GestionarIncidenciasMixin,
     TrabajadorEmpresaPermisoMixin,
     UsuarioGaritaRequiredMixin,
@@ -33,6 +36,7 @@ from .forms import (
     EmpresaForm,
     IncidenciaForm,
     SCTRForm,
+    SCTRSaludForm,
     HomologacionForm,
     TrabajadorEmpresaForm,
     TrabajadorForm,
@@ -67,13 +71,14 @@ class DashboardView(LoginRequiredMixin, View):
             User.PLANTA,
         ):
             raise PermissionDenied
+        Empresa.sincronizar_homologaciones()
         hoy = timezone.localdate()
         limite_30 = hoy + timedelta(days=30)
         limite_60 = hoy + timedelta(days=60)
 
         total_empresas = Empresa.objects.count()
         empresas_activas = Empresa.objects.filter(activo=True).count()
-        empresas_habilitadas = Empresa.objects.filter(homologado=True).count()
+        empresas_habilitadas = Empresa.objects.filter(homologacion=True).count()
 
         total_trabajadores = Trabajador.objects.count()
         trabajadores_habilitados = Trabajador.objects.filter(habilitado=True).count()
@@ -206,6 +211,7 @@ class ReportesView(LoginRequiredMixin, View):
             User.ADMINISTRADOR, User.BECA_AZUL, User.PLANTA, User.USUARIO_EMPRESA
         ):
             raise PermissionDenied
+        Empresa.sincronizar_homologaciones()
 
         reporte = request.POST.get('reporte') or request.GET.get('reporte', 'vencimientos')
         if reporte not in self.reportes:
@@ -230,7 +236,8 @@ class ReportesView(LoginRequiredMixin, View):
             )
         elif reporte == 'vencimientos_empresa':
             certificados = certificados.filter(
-                tipo__in=(Certificado.HOMOLOGACION, Certificado.SCTR)
+                empresa__isnull=False,
+                tipo__in=(Certificado.HOMOLOGACION, Certificado.SCTR_PENSION, Certificado.SCTR_SALUD),
             )
 
         context = {
@@ -249,7 +256,7 @@ class ReportesView(LoginRequiredMixin, View):
                 fecha_vencimiento__gte=hoy, fecha_vencimiento__lte=limite_30
             ).count(),
             'trabajadores_no_habilitados': trabajadores.filter(habilitado=False).count(),
-            'empresas_pendientes': empresas.filter(homologado=False).count(),
+            'empresas_pendientes': empresas.filter(homologacion=False).count(),
         }
 
         if reporte in ('vencimientos', 'vencimientos_empresa'):
@@ -276,11 +283,13 @@ class EmpresaListView(VerEmpresasMixin, ListView):
     paginate_by = 20
 
     def get_queryset(self):
+        Empresa.sincronizar_homologaciones()
         queryset = Empresa.objects.annotate(
             total_trabajadores=Count('trabajadores', distinct=True),
             total_usuarios=Count('usuarios', distinct=True),
         ).prefetch_related(
-            Prefetch('certificados', queryset=Certificado.objects.filter(tipo=Certificado.SCTR), to_attr='sctr_certificados'),
+            Prefetch('certificados', queryset=Certificado.objects.filter(tipo=Certificado.SCTR_PENSION), to_attr='sctr_pension_certificados'),
+            Prefetch('certificados', queryset=Certificado.objects.filter(tipo=Certificado.SCTR_SALUD), to_attr='sctr_salud_certificados'),
             Prefetch('certificados', queryset=Certificado.objects.filter(tipo=Certificado.HOMOLOGACION), to_attr='homologacion_certificados'),
         ).order_by('-activo', 'nombre')
         q = self.request.GET.get('q', '').strip()
@@ -292,61 +301,20 @@ class EmpresaListView(VerEmpresasMixin, ListView):
         estado = self.request.GET.get('estado', '').strip()
         if estado in ('0', '1'):
             queryset = queryset.filter(activo=(estado == '1'))
-        homologado = self.request.GET.get('homologado', '').strip()
-        if homologado in ('0', '1'):
-            queryset = queryset.filter(homologado=(homologado == '1'))
+        homologacion = self.request.GET.get('homologacion', '').strip()
+        if homologacion in ('0', '1'):
+            queryset = queryset.filter(homologacion=(homologacion == '1'))
         return queryset
 
     def get_context_data(self, **kwargs):
         kwargs.setdefault('q', self.request.GET.get('q', ''))
         kwargs.setdefault('estado', self.request.GET.get('estado', ''))
-        kwargs.setdefault('homologado', self.request.GET.get('homologado', ''))
-        return super().get_context_data(**kwargs)
-
-
-class EmpresaBuscarView(LoginRequiredMixin, ListView):
-    model = Empresa
-    template_name = 'control/empresas/buscar.html'
-    context_object_name = 'empresas'
-    paginate_by = 20
-    login_url = reverse_lazy('app_users:login')
-
-    def dispatch(self, request, *args, **kwargs):
-        if request.user.role == User.USUARIO_EMPRESA:
-            raise PermissionDenied
-        return super().dispatch(request, *args, **kwargs)
-
-    def get_queryset(self):
-        queryset = Empresa.objects.annotate(
-            total_trabajadores=Count('trabajadores', distinct=True)
-        ).order_by('-homologado', 'nombre')
-        if self.request.user.role == User.GARITA:
-            return queryset
-        q = self.request.GET.get('q', '').strip()
-        if q:
-            queryset = queryset.filter(
-                Q(nombre__icontains=q)
-                | Q(ruc__icontains=q)
-            )
-        estado = self.request.GET.get('estado', '').strip()
-        if estado in ('0', '1'):
-            queryset = queryset.filter(activo=(estado == '1'))
-        habilitado = self.request.GET.get('habilitado', '').strip()
-        if habilitado in ('0', '1'):
-            queryset = queryset.filter(homologado=(habilitado == '1'))
-        return queryset
-
-    def get_paginate_by(self, queryset):
-        if self.request.user.role == User.GARITA:
-            return None
-        return self.paginate_by
-
-    def get_context_data(self, **kwargs):
-        kwargs.setdefault('q', self.request.GET.get('q', ''))
-        kwargs.setdefault('estado', self.request.GET.get('estado', ''))
-        kwargs.setdefault('habilitado', self.request.GET.get('habilitado', ''))
+        kwargs.setdefault('homologacion', self.request.GET.get('homologacion', ''))
         kwargs.setdefault('es_garita', self.request.user.role == User.GARITA)
-        return super().get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
+        for empresa in context['empresas']:
+            empresa.invalidar_homologacion_si_corresponde()
+        return context
 
 
 class EmpresaCreateView(AdministrarEmpresasMixin, CreateView):
@@ -383,23 +351,55 @@ class EmpresaToggleView(BecaAzulRequiredMixin, View):
         return redirect('app_control:empresa_detalle', pk=empresa.pk)
 
 
+class EmpresaSCTRToggleView(BecaAzulRequiredMixin, View):
+    def post(self, request, pk, tipo):
+        empresa = get_object_or_404(Empresa, pk=pk)
+        estados = {
+            'pension': ('sctr_pension_aprobado', Certificado.SCTR_PENSION, 'sctr_pension'),
+            'salud': ('sctr_salud_aprobado', Certificado.SCTR_SALUD, 'sctr_salud'),
+        }
+        try:
+            field_name, certificate_type, worker_field = estados[tipo]
+        except KeyError:
+            raise Http404
+
+        aprobado = not getattr(empresa, field_name)
+        if aprobado and not empresa.sctr_empresa_vigente(certificate_type):
+            messages.error(request, f'No se puede aprobar el SCTR {tipo} sin un certificado empresarial vigente.')
+            return redirect('app_control:empresa_detalle', pk=empresa.pk)
+
+        setattr(empresa, field_name, aprobado)
+        empresa.save(update_fields=[field_name])
+        empresa.trabajadores.update(**{worker_field: aprobado})
+        estado = 'aprobado' if aprobado else 'desaprobado'
+        messages.success(request, f'El SCTR {tipo} de "{empresa.nombre}" fue {estado} para sus trabajadores.')
+        return redirect('app_control:empresa_detalle', pk=empresa.pk)
+
+
 class EmpresaHomologacionToggleView(BecaAzulRequiredMixin, View):
     def post(self, request, pk):
         empresa = get_object_or_404(Empresa, pk=pk)
-        if not empresa.homologado:
+        empresa.invalidar_homologacion_si_corresponde()
+        if not empresa.homologacion:
             certificados = {
                 certificado.tipo: certificado
                 for certificado in empresa.certificados.filter(
-                    tipo__in=(Certificado.SCTR, Certificado.HOMOLOGACION)
+                    tipo__in=(Certificado.SCTR_PENSION, Certificado.SCTR_SALUD, Certificado.HOMOLOGACION)
                 )
             }
-            sctr = certificados.get(Certificado.SCTR)
+            sctr_pension = certificados.get(Certificado.SCTR_PENSION)
+            sctr_salud = certificados.get(Certificado.SCTR_SALUD)
             homologacion = certificados.get(Certificado.HOMOLOGACION)
-            tiene_sctr = (
-                sctr
-                and sctr.archivo
-                and sctr.archivo.storage.exists(sctr.archivo.name)
-                and sctr.fecha_vencimiento >= timezone.localdate()
+            hoy = timezone.localdate()
+            tiene_sctr_pension = bool(
+                sctr_pension and sctr_pension.archivo
+                and sctr_pension.archivo.storage.exists(sctr_pension.archivo.name)
+                and sctr_pension.fecha_vencimiento >= hoy
+            )
+            tiene_sctr_salud = bool(
+                sctr_salud and sctr_salud.archivo
+                and sctr_salud.archivo.storage.exists(sctr_salud.archivo.name)
+                and sctr_salud.fecha_vencimiento >= hoy
             )
             tiene_homologacion = (
                 homologacion
@@ -407,15 +407,17 @@ class EmpresaHomologacionToggleView(BecaAzulRequiredMixin, View):
                 and homologacion.archivo.storage.exists(homologacion.archivo.name)
                 and homologacion.fecha_vencimiento >= timezone.localdate()
             )
-            if not tiene_sctr:
-                messages.error(request, 'Falta subir el SCTR.')
+            if not tiene_sctr_pension:
+                messages.error(request, 'Falta subir el SCTR pensión o está vencido.')
+            if not tiene_sctr_salud:
+                messages.error(request, 'Falta subir el SCTR salud o está vencido.')
             if not tiene_homologacion:
                 messages.error(request, 'Falta subir el certificado de homologación.')
-            if not tiene_sctr or not tiene_homologacion:
+            if not tiene_sctr_pension or not tiene_sctr_salud or not tiene_homologacion:
                 return redirect('app_control:empresa_detalle', pk=empresa.pk)
-        empresa.homologado = not empresa.homologado
-        empresa.save(update_fields=['homologado'])
-        estado = 'aprobada' if empresa.homologado else 'desaprobada'
+        empresa.homologacion = not empresa.homologacion
+        empresa.save(update_fields=['homologacion'])
+        estado = 'aprobada' if empresa.homologacion else 'desaprobada'
         messages.success(request, f'La homologación de "{empresa.nombre}" fue {estado}.')
         return redirect('app_control:empresa_detalle', pk=empresa.pk)
 
@@ -426,7 +428,7 @@ class EmpresaCertificadoView(BecaAzulRequiredMixin, View):
             Certificado,
             pk=pk,
             empresa__isnull=False,
-            tipo__in=(Certificado.SCTR, Certificado.HOMOLOGACION),
+            tipo__in=(Certificado.SCTR_PENSION, Certificado.SCTR_SALUD, Certificado.HOMOLOGACION),
         )
         if not certificado.archivo or not certificado.archivo.storage.exists(certificado.archivo.name):
             raise Http404
@@ -481,22 +483,34 @@ class EmpresaDetailView(LoginRequiredMixin, DetailView):
         return queryset
 
     def get_context_data(self, **kwargs):
+        self.object.invalidar_homologacion_si_corresponde()
         trabajadores = self.object.trabajadores.order_by('apellidos', 'nombres')
-        sctr = self.object.certificados.filter(tipo=Certificado.SCTR).first()
+        sctr_pension = self.object.certificados.filter(tipo=Certificado.SCTR_PENSION).first()
+        sctr_salud = self.object.certificados.filter(tipo=Certificado.SCTR_SALUD).first()
         homologacion = self.object.certificados.filter(tipo=Certificado.HOMOLOGACION).first()
         hoy = timezone.localdate()
-        sctr_valido = bool(
-            sctr
-            and sctr.archivo
-            and sctr.archivo.storage.exists(sctr.archivo.name)
-            and sctr.fecha_vencimiento >= hoy
-        )
-        homologacion_valida = bool(
+        def certificado_valido(certificado):
+            return bool(
+                certificado
+                and certificado.archivo
+                and certificado.archivo.storage.exists(certificado.archivo.name)
+                and certificado.fecha_vencimiento >= hoy
+            )
+
+        sctr_pension_valido = certificado_valido(sctr_pension)
+        sctr_salud_valido = certificado_valido(sctr_salud)
+        homologacion_vigente = bool(
             homologacion
             and homologacion.archivo
             and homologacion.archivo.storage.exists(homologacion.archivo.name)
             and homologacion.fecha_vencimiento >= hoy
         )
+        homologacion_archivo_existe = bool(
+            homologacion
+            and homologacion.archivo
+            and homologacion.archivo.storage.exists(homologacion.archivo.name)
+        )
+        homologacion_valida = homologacion_vigente
         kwargs.setdefault('total_trabajadores', trabajadores.count())
         kwargs.setdefault(
             'empresa_trabajadores_chart',
@@ -509,10 +523,17 @@ class EmpresaDetailView(LoginRequiredMixin, DetailView):
             },
         )
         kwargs.setdefault('total_usuarios', self.object.usuarios.count())
-        kwargs.setdefault('sctr', sctr)
-        kwargs.setdefault('sctr_valido', sctr_valido)
+        kwargs.setdefault('sctr', sctr_pension)
+        kwargs.setdefault('sctr_pension', sctr_pension)
+        kwargs.setdefault('sctr_salud', sctr_salud)
+        kwargs.setdefault('sctr_pension_valido', sctr_pension_valido)
+        kwargs.setdefault('sctr_salud_valido', sctr_salud_valido)
+        kwargs.setdefault('sctr_pension_aprobado', self.object.sctr_pension_aprobado)
+        kwargs.setdefault('sctr_salud_aprobado', self.object.sctr_salud_aprobado)
+        kwargs.setdefault('sctr_valido', sctr_pension_valido and sctr_salud_valido)
         kwargs.setdefault('homologacion', homologacion)
         kwargs.setdefault('homologacion_valida', homologacion_valida)
+        kwargs.setdefault('homologacion_archivo_existe', homologacion_archivo_existe)
         kwargs.setdefault(
             'trabajadores_por_estado',
             [
@@ -524,6 +545,7 @@ class EmpresaDetailView(LoginRequiredMixin, DetailView):
 
 
 class EmpresaSCTRUpdateView(LoginRequiredMixin, UpdateView):
+    certificate_type = Certificado.SCTR_PENSION
     model = Certificado
     form_class = SCTRForm
     template_name = 'control/empresas/sctr_form.html'
@@ -541,7 +563,7 @@ class EmpresaSCTRUpdateView(LoginRequiredMixin, UpdateView):
     def get_queryset(self):
         return Certificado.objects.filter(
             empresa=self.request.user.empresa,
-            tipo=Certificado.SCTR,
+            tipo=self.certificate_type,
         )
 
     def get_object(self, queryset=None):
@@ -556,6 +578,7 @@ class EmpresaSCTRUpdateView(LoginRequiredMixin, UpdateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['empresa'] = self.request.user.empresa
+        context['sctr_titulo'] = 'SCTR pensión'
         return context
 
     def form_valid(self, form):
@@ -567,6 +590,16 @@ class EmpresaSCTRUpdateView(LoginRequiredMixin, UpdateView):
 
     def get_success_url(self):
         return reverse('app_control:empresa_detalle', args=[self.request.user.empresa.pk])
+
+
+class EmpresaSCTRSaludUpdateView(EmpresaSCTRUpdateView):
+    form_class = SCTRSaludForm
+    certificate_type = Certificado.SCTR_SALUD
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['sctr_titulo'] = 'SCTR salud'
+        return context
 
 
 class EmpresaHomologacionUpdateView(EmpresaSCTRUpdateView):
@@ -617,7 +650,6 @@ class TrabajadorListView(VerTrabajadoresMixin, ListView):
         'dni': ('dni',),
         'nombre': ('apellidos', 'nombres'),
         'empresa': ('empresa__nombre', 'apellidos', 'nombres'),
-        'cargo': ('cargo', 'apellidos', 'nombres'),
         'induccion': ('tiene_induccion', 'apellidos', 'nombres'),
         'aptitud_medica': ('tiene_aptitud_medica', 'apellidos', 'nombres'),
     }
@@ -630,6 +662,13 @@ class TrabajadorListView(VerTrabajadoresMixin, ListView):
     def get_queryset(self):
         certificados = Certificado.objects.filter(trabajador=OuterRef('pk'))
         queryset = Trabajador.objects.select_related('empresa').prefetch_related(
+            Prefetch(
+                'empresa__certificados',
+                queryset=Certificado.objects.filter(
+                    tipo__in=(Certificado.SCTR_PENSION, Certificado.SCTR_SALUD)
+                ),
+                to_attr='sctr_certificados_heredados',
+            ),
             Prefetch(
                 'certificados',
                 queryset=Certificado.objects.filter(tipo=Certificado.CURSOS),
@@ -653,7 +692,6 @@ class TrabajadorListView(VerTrabajadoresMixin, ListView):
                 Q(dni__icontains=q)
                 | Q(nombres__icontains=q)
                 | Q(apellidos__icontains=q)
-                | Q(cargo__icontains=q)
                 | Q(empresa__nombre__icontains=q)
             )
         habilitacion = self.request.GET.get('habilitacion', '').strip()
@@ -682,14 +720,14 @@ class TrabajadorListView(VerTrabajadoresMixin, ListView):
             'dni': 'DNI',
             'nombre': 'Nombre completo',
              'empresa': 'Empresa',
-            'cargo': 'Cargo',
-            'sctr': 'SCTR',
+             'sctr_pension': 'SCTR pensión',
+             'sctr_salud': 'SCTR salud',
              'induccion': 'Inducción',
             'aptitud_medica': 'Aptitud médica',
         })
         kwargs['sortable_columns'].update({codigo.lower(): label for codigo, label in Certificado.CURSO_CHOICES})
-        kwargs['sortable_columns']['habilitacion'] = 'Habilitación'
         kwargs['sortable_columns']['estado'] = 'Estado'
+        kwargs['sortable_columns']['habilitacion'] = 'Habilitación'
         kwargs.setdefault('cursos_columnas', Certificado.CURSO_CHOICES)
         kwargs.setdefault('es_empresa', self.request.user.role == User.USUARIO_EMPRESA)
         kwargs.setdefault('es_garita', self.request.user.role == User.GARITA)
@@ -708,37 +746,58 @@ class EmpresaTrabajadoresGaritaView(UsuarioGaritaRequiredMixin, TrabajadorListVi
         return super().get_context_data(**kwargs)
 
 
-class TrabajadorBuscarView(LoginRequiredMixin, View):
+class TrabajadorBuscarView(ConsultarTrabajadoresMixin, View):
     template_name = 'control/trabajadores/buscar.html'
     login_url = reverse_lazy('app_users:login')
 
     def get(self, request):
-        if (
-            request.user.role == User.USUARIO_EMPRESA
-            and (not request.user.empresa or not request.user.empresa.activo)
-        ):
-            raise PermissionDenied
         q = request.GET.get('q', '').strip()
         trabajador = None
         resultados = 0
+        trabajadores = []
         if q:
-            queryset = Trabajador.objects.select_related('empresa')
+            sin_tildes = Func(
+                Lower(Concat('nombres', Value(' '), 'apellidos')),
+                Value('áéíóúüñ'),
+                Value('aeiouun'),
+                function='TRANSLATE',
+            )
+            dni_sin_tildes = Func(
+                Lower('dni'),
+                Value('áéíóúüñ'),
+                Value('aeiouun'),
+                function='TRANSLATE',
+            )
+            queryset = Trabajador.objects.select_related('empresa').annotate(
+                nombre_completo_sin_tildes=sin_tildes,
+                dni_sin_tildes=dni_sin_tildes,
+            )
             if request.user.role == User.USUARIO_EMPRESA:
                 queryset = queryset.filter(empresa=request.user.empresa)
-            queryset = queryset.filter(
-                Q(dni__icontains=q)
-                | Q(nombres__icontains=q)
-                | Q(apellidos__icontains=q)
-            )
+            tokens = [
+                ''.join(
+                    char for char in normalize('NFKD', token.casefold())
+                    if not combining(char)
+                )
+                for token in q.split()
+            ]
+            for token in tokens:
+                queryset = queryset.filter(
+                    Q(dni_sin_tildes__icontains=token)
+                    | Q(nombre_completo_sin_tildes__icontains=token)
+                )
+            queryset = queryset.order_by('apellidos', 'nombres', 'dni')
+            trabajadores = list(queryset)
             resultados = queryset.count()
             if resultados == 1:
-                trabajador = queryset.first()
+                trabajador = trabajadores[0]
         context = {
             'q': q,
             'trabajador': trabajador,
+            'trabajadores': trabajadores,
             'resultados': resultados,
             'es_empresa': request.user.role == User.USUARIO_EMPRESA,
-            'puede_ver_detalle': request.user.role in (
+            'puede_ver_detalle': request.user.is_superuser or request.user.role in (
                 User.ADMINISTRADOR,
                 User.BECA_AZUL,
                 User.PLANTA,
@@ -778,6 +837,12 @@ class TrabajadorDetailView(VerTrabajadorDetalleMixin, DetailView):
     def get_context_data(self, **kwargs):
         certificados_lista = list(self.object.certificados.all().order_by('-fecha_emision'))
         certificados = {certificado.tipo: certificado for certificado in certificados_lista}
+        certificados_empresa = {
+            certificado.tipo: certificado
+            for certificado in self.object.empresa.certificados.filter(
+                tipo__in=(Certificado.SCTR_PENSION, Certificado.SCTR_SALUD)
+            )
+        }
         cursos = {
             certificado.curso: certificado
             for certificado in certificados_lista
@@ -786,9 +851,13 @@ class TrabajadorDetailView(VerTrabajadorDetalleMixin, DetailView):
         obligatorios = set(self.object.cursos_obligatorios.values_list('curso', flat=True))
         kwargs.setdefault('certificados', certificados_lista)
         kwargs.setdefault('certificados_requeridos', [
+            {'tipo': Certificado.SCTR_PENSION, 'label': 'SCTR pensión', 'objeto': certificados_empresa.get(Certificado.SCTR_PENSION), 'heredado': True},
+            {'tipo': Certificado.SCTR_SALUD, 'label': 'SCTR salud', 'objeto': certificados_empresa.get(Certificado.SCTR_SALUD), 'heredado': True},
             {'tipo': Certificado.INDUCCION, 'label': 'Inducción', 'objeto': certificados.get(Certificado.INDUCCION)},
             {'tipo': Certificado.APTITUD_MEDICA, 'label': 'Aptitud médica', 'objeto': certificados.get(Certificado.APTITUD_MEDICA)},
         ])
+        kwargs.setdefault('sctr_pension_vigente', self.object.sctr_pension_efectivo)
+        kwargs.setdefault('sctr_salud_vigente', self.object.sctr_salud_efectivo)
         kwargs.setdefault('cursos', [
             {'codigo': codigo, 'nombre': label, 'certificado': cursos.get(codigo), 'obligatorio': codigo in obligatorios}
             for codigo, label in Certificado.CURSO_CHOICES
@@ -839,14 +908,33 @@ class TrabajadorSCTRView(BecaAzulRequiredMixin, View):
             )
             return redirect('app_control:trabajador_detalle', pk=trabajador.pk)
         estado = request.POST.get('estado')
+        tipo = request.POST.get('tipo')
+        if tipo not in ('sctr_pension', 'sctr_salud'):
+            messages.error(request, 'Tipo de SCTR no válido.')
+            return redirect('app_control:trabajador_detalle', pk=trabajador.pk)
         if estado not in ('0', '1'):
             messages.error(request, 'Estado de SCTR no válido.')
         else:
-            trabajador.sctr = estado == '1'
-            trabajador.save(update_fields=['sctr'])
+            aprobado = estado == '1'
+            if aprobado:
+                certificado_tipo = {
+                    'sctr_pension': Certificado.SCTR_PENSION,
+                    'sctr_salud': Certificado.SCTR_SALUD,
+                }[tipo]
+                certificado = trabajador.empresa.certificados.filter(tipo=certificado_tipo).first()
+                vigente = bool(
+                    certificado and certificado.archivo
+                    and certificado.archivo.storage.exists(certificado.archivo.name)
+                    and certificado.fecha_vencimiento >= timezone.localdate()
+                )
+                if not vigente:
+                    messages.error(request, 'No se puede aprobar el SCTR sin un certificado vigente.')
+                    return redirect('app_control:trabajador_detalle', pk=trabajador.pk)
+            setattr(trabajador, tipo, aprobado)
+            trabajador.save(update_fields=[tipo])
             messages.success(
                 request,
-                f'El SCTR de "{trabajador}" fue {"aprobado" if trabajador.sctr else "desaprobado"}.',
+                f'El SCTR {"de pensión" if tipo == "sctr_pension" else "de salud"} de "{trabajador}" fue {"aprobado" if aprobado else "desaprobado"}.',
             )
         return redirect('app_control:trabajador_detalle', pk=trabajador.pk)
 
@@ -1022,6 +1110,12 @@ class TrabajadorEmpresaDetailView(TrabajadorEmpresaBaseMixin, DetailView):
     def get_context_data(self, **kwargs):
         certificados_lista = list(self.object.certificados.all().order_by('-fecha_emision'))
         certificados = {certificado.tipo: certificado for certificado in certificados_lista}
+        certificados_empresa = {
+            certificado.tipo: certificado
+            for certificado in self.object.empresa.certificados.filter(
+                tipo__in=(Certificado.SCTR_PENSION, Certificado.SCTR_SALUD)
+            )
+        }
         cursos = {
             certificado.curso: certificado
             for certificado in certificados_lista
@@ -1030,9 +1124,13 @@ class TrabajadorEmpresaDetailView(TrabajadorEmpresaBaseMixin, DetailView):
         obligatorios = set(self.object.cursos_obligatorios.values_list('curso', flat=True))
         kwargs.setdefault('certificados', certificados_lista)
         kwargs.setdefault('certificados_requeridos', [
+            {'tipo': Certificado.SCTR_PENSION, 'label': 'SCTR pensión', 'objeto': certificados_empresa.get(Certificado.SCTR_PENSION), 'heredado': True},
+            {'tipo': Certificado.SCTR_SALUD, 'label': 'SCTR salud', 'objeto': certificados_empresa.get(Certificado.SCTR_SALUD), 'heredado': True},
             {'tipo': Certificado.INDUCCION, 'label': 'Inducción', 'objeto': certificados.get(Certificado.INDUCCION)},
             {'tipo': Certificado.APTITUD_MEDICA, 'label': 'Aptitud médica', 'objeto': certificados.get(Certificado.APTITUD_MEDICA)},
         ])
+        kwargs.setdefault('sctr_pension_vigente', self.object.sctr_pension_efectivo)
+        kwargs.setdefault('sctr_salud_vigente', self.object.sctr_salud_efectivo)
         kwargs.setdefault('cursos', [
             {'codigo': codigo, 'nombre': label, 'certificado': cursos.get(codigo), 'obligatorio': codigo in obligatorios}
             for codigo, label in Certificado.CURSO_CHOICES
@@ -1070,6 +1168,9 @@ class TrabajadorEmpresaCreateView(TrabajadorEmpresaBaseMixin, CreateView):
         if not formset.is_valid():
             return self.render_to_response(self.get_context_data(form=form, certificado_formset=formset))
         form.instance.empresa = self.request.user.empresa
+        empresa = self.request.user.empresa
+        form.instance.sctr_pension = empresa.sctr_pension_aprobado and empresa.sctr_empresa_vigente(Certificado.SCTR_PENSION)
+        form.instance.sctr_salud = empresa.sctr_salud_aprobado and empresa.sctr_empresa_vigente(Certificado.SCTR_SALUD)
         with transaction.atomic():
             self.object = form.save()
             for certificado_form in formset:

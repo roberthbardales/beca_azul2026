@@ -5,10 +5,10 @@ from .models import Certificado, Empresa, Incidencia, Trabajador
 
 @admin.register(Empresa)
 class EmpresaAdmin(admin.ModelAdmin):
-    list_display = ('nombre', 'ruc', 'correo', 'homologado', 'activo')
+    list_display = ('nombre', 'ruc', 'correo', 'homologacion', 'activo')
     search_fields = ('nombre', 'ruc', 'correo')
-    list_filter = ('homologado', 'activo')
-    readonly_fields = ('homologado',)
+    list_filter = ('homologacion', 'activo')
+    readonly_fields = ('homologacion',)
     list_per_page = 20
 
 

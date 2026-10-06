@@ -1,5 +1,155 @@
 [
   {
+    "model": "control.certificado",
+    "pk": 464,
+    "fields": {
+      "created": "2026-09-24T05:13:53.506Z",
+      "modified": "2026-09-24T05:13:53.506Z",
+      "empresa": 21,
+      "trabajador": null,
+      "tipo": "SCTR_SALUD",
+      "curso": null,
+      "fecha_emision": "2026-08-25",
+      "fecha_vencimiento": "2027-03-23",
+      "archivo": "certificados/demo/sctr_1.pdf"
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 465,
+    "fields": {
+      "created": "2026-09-24T05:13:53.506Z",
+      "modified": "2026-09-24T05:13:53.506Z",
+      "empresa": 21,
+      "trabajador": null,
+      "tipo": "HOMOLOGACION",
+      "curso": null,
+      "fecha_emision": "2026-08-25",
+      "fecha_vencimiento": "2027-03-23",
+      "archivo": "certificados/demo/sctr_1.pdf"
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 466,
+    "fields": {
+      "created": "2026-09-24T05:13:53.506Z",
+      "modified": "2026-09-24T05:13:53.506Z",
+      "empresa": 22,
+      "trabajador": null,
+      "tipo": "SCTR_SALUD",
+      "curso": null,
+      "fecha_emision": "2026-08-25",
+      "fecha_vencimiento": "2027-03-23",
+      "archivo": "certificados/demo/sctr_2.pdf"
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 467,
+    "fields": {
+      "created": "2026-09-24T05:13:53.506Z",
+      "modified": "2026-09-24T05:13:53.506Z",
+      "empresa": 22,
+      "trabajador": null,
+      "tipo": "HOMOLOGACION",
+      "curso": null,
+      "fecha_emision": "2026-08-25",
+      "fecha_vencimiento": "2027-03-23",
+      "archivo": "certificados/demo/sctr_2.pdf"
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 468,
+    "fields": {
+      "created": "2026-09-24T05:13:53.506Z",
+      "modified": "2026-09-24T05:13:53.506Z",
+      "empresa": 23,
+      "trabajador": null,
+      "tipo": "SCTR_SALUD",
+      "curso": null,
+      "fecha_emision": "2026-08-25",
+      "fecha_vencimiento": "2027-03-23",
+      "archivo": "certificados/demo/sctr_3.pdf"
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 469,
+    "fields": {
+      "created": "2026-09-24T05:13:53.506Z",
+      "modified": "2026-09-24T05:13:53.506Z",
+      "empresa": 23,
+      "trabajador": null,
+      "tipo": "HOMOLOGACION",
+      "curso": null,
+      "fecha_emision": "2026-08-25",
+      "fecha_vencimiento": "2027-03-23",
+      "archivo": "certificados/demo/sctr_3.pdf"
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 470,
+    "fields": {
+      "created": "2026-09-24T05:13:53.506Z",
+      "modified": "2026-09-24T05:13:53.506Z",
+      "empresa": 24,
+      "trabajador": null,
+      "tipo": "SCTR_SALUD",
+      "curso": null,
+      "fecha_emision": "2026-08-25",
+      "fecha_vencimiento": "2027-03-23",
+      "archivo": "certificados/demo/sctr_4.pdf"
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 471,
+    "fields": {
+      "created": "2026-09-24T05:13:53.506Z",
+      "modified": "2026-09-24T05:13:53.506Z",
+      "empresa": 24,
+      "trabajador": null,
+      "tipo": "HOMOLOGACION",
+      "curso": null,
+      "fecha_emision": "2026-08-25",
+      "fecha_vencimiento": "2027-03-23",
+      "archivo": "certificados/demo/sctr_4.pdf"
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 472,
+    "fields": {
+      "created": "2026-09-24T05:13:53.506Z",
+      "modified": "2026-09-24T05:13:53.506Z",
+      "empresa": 25,
+      "trabajador": null,
+      "tipo": "SCTR_SALUD",
+      "curso": null,
+      "fecha_emision": "2026-08-25",
+      "fecha_vencimiento": "2027-03-23",
+      "archivo": "certificados/demo/sctr_5.pdf"
+    }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 473,
+    "fields": {
+      "created": "2026-09-24T05:13:53.506Z",
+      "modified": "2026-09-24T05:13:53.506Z",
+      "empresa": 25,
+      "trabajador": null,
+      "tipo": "HOMOLOGACION",
+      "curso": null,
+      "fecha_emision": "2026-08-25",
+      "fecha_vencimiento": "2027-03-23",
+      "archivo": "certificados/demo/sctr_5.pdf"
+    }
+  },
+  {
     "model": "control.empresa",
     "pk": 21,
     "fields": {
@@ -8,8 +158,8 @@
       "nombre": "Apple",
       "ruc": "20100000001",
       "correo": "apple@gmail.com",
-      "fecha_fundacion": "1976-04-01",
-      "homologado": false,
+      "representante_legal": "",
+      "homologacion": false,
       "activo": true
     }
   },
@@ -22,8 +172,8 @@
       "nombre": "Google",
       "ruc": "20100000002",
       "correo": "google@gmail.com",
-      "fecha_fundacion": "1998-09-04",
-      "homologado": false,
+      "representante_legal": "",
+      "homologacion": false,
       "activo": true
     }
   },
@@ -36,8 +186,8 @@
       "nombre": "Microsoft",
       "ruc": "20100000003",
       "correo": "microsoft@gmail.com",
-      "fecha_fundacion": "1975-04-04",
-      "homologado": false,
+      "representante_legal": "",
+      "homologacion": false,
       "activo": true
     }
   },
@@ -50,8 +200,8 @@
       "nombre": "Amazon",
       "ruc": "20100000004",
       "correo": "amazon@gmail.com",
-      "fecha_fundacion": "1994-07-05",
-      "homologado": false,
+      "representante_legal": "",
+      "homologacion": false,
       "activo": true
     }
   },
@@ -64,8 +214,8 @@
       "nombre": "Tesla",
       "ruc": "20100000005",
       "correo": "tesla@gmail.com",
-      "fecha_fundacion": "2003-07-01",
-      "homologado": false,
+      "representante_legal": "",
+      "homologacion": false,
       "activo": true
     }
   },
@@ -78,8 +228,8 @@
       "nombre": "Samsung",
       "ruc": "20100000006",
       "correo": "samsung@gmail.com",
-      "fecha_fundacion": "1938-03-01",
-      "homologado": false,
+      "representante_legal": "",
+      "homologacion": false,
       "activo": true
     }
   },
@@ -92,8 +242,8 @@
       "nombre": "Toyota",
       "ruc": "20100000007",
       "correo": "toyota@gmail.com",
-      "fecha_fundacion": "1937-08-28",
-      "homologado": false,
+      "representante_legal": "",
+      "homologacion": false,
       "activo": true
     }
   },
@@ -106,8 +256,8 @@
       "nombre": "Adobe",
       "ruc": "20100000008",
       "correo": "adobe@gmail.com",
-      "fecha_fundacion": "1982-12-01",
-      "homologado": false,
+      "representante_legal": "",
+      "homologacion": false,
       "activo": true
     }
   },
@@ -120,8 +270,8 @@
       "nombre": "Oracle",
       "ruc": "20100000009",
       "correo": "oracle@gmail.com",
-      "fecha_fundacion": "1977-06-16",
-      "homologado": false,
+      "representante_legal": "",
+      "homologacion": false,
       "activo": true
     }
   },
@@ -134,8 +284,8 @@
       "nombre": "Netflix",
       "ruc": "20100000010",
       "correo": "netflix@gmail.com",
-      "fecha_fundacion": "1997-08-29",
-      "homologado": false,
+      "representante_legal": "",
+      "homologacion": false,
       "activo": true
     }
   },
@@ -1277,7 +1427,7 @@
       "modified": "2026-09-24T05:13:53.506Z",
       "empresa": 21,
       "trabajador": null,
-      "tipo": "SCTR",
+      "tipo": "SCTR_PENSION",
       "curso": null,
       "fecha_emision": "2026-08-25",
       "fecha_vencimiento": "2027-03-23",
@@ -1622,7 +1772,7 @@
       "modified": "2026-09-24T05:13:53.542Z",
       "empresa": 22,
       "trabajador": null,
-      "tipo": "SCTR",
+      "tipo": "SCTR_PENSION",
       "curso": null,
       "fecha_emision": "2026-08-25",
       "fecha_vencimiento": "2027-03-23",
@@ -1967,7 +2117,7 @@
       "modified": "2026-09-24T05:13:53.580Z",
       "empresa": 23,
       "trabajador": null,
-      "tipo": "SCTR",
+      "tipo": "SCTR_PENSION",
       "curso": null,
       "fecha_emision": "2026-08-25",
       "fecha_vencimiento": "2027-03-23",
@@ -2312,7 +2462,7 @@
       "modified": "2026-09-24T05:13:53.637Z",
       "empresa": 24,
       "trabajador": null,
-      "tipo": "SCTR",
+      "tipo": "SCTR_PENSION",
       "curso": null,
       "fecha_emision": "2026-08-25",
       "fecha_vencimiento": "2027-03-23",
@@ -2657,7 +2807,7 @@
       "modified": "2026-09-24T05:13:53.683Z",
       "empresa": 25,
       "trabajador": null,
-      "tipo": "SCTR",
+      "tipo": "SCTR_PENSION",
       "curso": null,
       "fecha_emision": "2026-08-25",
       "fecha_vencimiento": "2027-03-23",
@@ -3002,7 +3152,7 @@
       "modified": "2026-09-24T05:13:53.725Z",
       "empresa": 26,
       "trabajador": null,
-      "tipo": "SCTR",
+      "tipo": "SCTR_PENSION",
       "curso": null,
       "fecha_emision": "2026-08-25",
       "fecha_vencimiento": "2027-03-23",
@@ -3347,7 +3497,7 @@
       "modified": "2026-09-24T05:13:53.770Z",
       "empresa": 27,
       "trabajador": null,
-      "tipo": "SCTR",
+      "tipo": "SCTR_PENSION",
       "curso": null,
       "fecha_emision": "2026-08-25",
       "fecha_vencimiento": "2027-03-23",
@@ -3692,7 +3842,7 @@
       "modified": "2026-09-24T05:13:53.825Z",
       "empresa": 28,
       "trabajador": null,
-      "tipo": "SCTR",
+      "tipo": "SCTR_PENSION",
       "curso": null,
       "fecha_emision": "2026-08-25",
       "fecha_vencimiento": "2027-03-23",
@@ -4037,7 +4187,7 @@
       "modified": "2026-09-24T05:13:53.862Z",
       "empresa": 29,
       "trabajador": null,
-      "tipo": "SCTR",
+      "tipo": "SCTR_PENSION",
       "curso": null,
       "fecha_emision": "2026-08-25",
       "fecha_vencimiento": "2027-03-23",
@@ -4382,7 +4532,7 @@
       "modified": "2026-09-24T05:13:53.902Z",
       "empresa": 30,
       "trabajador": null,
-      "tipo": "SCTR",
+      "tipo": "SCTR_PENSION",
       "curso": null,
       "fecha_emision": "2026-08-25",
       "fecha_vencimiento": "2027-03-23",
@@ -7710,5 +7860,55 @@
       "curso": "IZAJE",
       "trabajador": 102
     }
+  },
+  {
+    "model": "control.certificado",
+    "pk": 474,
+    "fields": {"created": "2026-09-24T05:13:53.506Z", "modified": "2026-09-24T05:13:53.506Z", "empresa": 26, "trabajador": null, "tipo": "SCTR_SALUD", "curso": null, "fecha_emision": "2026-08-25", "fecha_vencimiento": "2027-03-23", "archivo": "certificados/demo/sctr_6.pdf"}
+  },
+  {
+    "model": "control.certificado",
+    "pk": 475,
+    "fields": {"created": "2026-09-24T05:13:53.506Z", "modified": "2026-09-24T05:13:53.506Z", "empresa": 26, "trabajador": null, "tipo": "HOMOLOGACION", "curso": null, "fecha_emision": "2026-08-25", "fecha_vencimiento": "2027-03-23", "archivo": "certificados/demo/sctr_6.pdf"}
+  },
+  {
+    "model": "control.certificado",
+    "pk": 476,
+    "fields": {"created": "2026-09-24T05:13:53.506Z", "modified": "2026-09-24T05:13:53.506Z", "empresa": 27, "trabajador": null, "tipo": "SCTR_SALUD", "curso": null, "fecha_emision": "2026-08-25", "fecha_vencimiento": "2027-03-23", "archivo": "certificados/demo/sctr_7.pdf"}
+  },
+  {
+    "model": "control.certificado",
+    "pk": 477,
+    "fields": {"created": "2026-09-24T05:13:53.506Z", "modified": "2026-09-24T05:13:53.506Z", "empresa": 27, "trabajador": null, "tipo": "HOMOLOGACION", "curso": null, "fecha_emision": "2026-08-25", "fecha_vencimiento": "2027-03-23", "archivo": "certificados/demo/sctr_7.pdf"}
+  },
+  {
+    "model": "control.certificado",
+    "pk": 478,
+    "fields": {"created": "2026-09-24T05:13:53.506Z", "modified": "2026-09-24T05:13:53.506Z", "empresa": 28, "trabajador": null, "tipo": "SCTR_SALUD", "curso": null, "fecha_emision": "2026-08-25", "fecha_vencimiento": "2027-03-23", "archivo": "certificados/demo/sctr_8.pdf"}
+  },
+  {
+    "model": "control.certificado",
+    "pk": 479,
+    "fields": {"created": "2026-09-24T05:13:53.506Z", "modified": "2026-09-24T05:13:53.506Z", "empresa": 28, "trabajador": null, "tipo": "HOMOLOGACION", "curso": null, "fecha_emision": "2026-08-25", "fecha_vencimiento": "2027-03-23", "archivo": "certificados/demo/sctr_8.pdf"}
+  },
+  {
+    "model": "control.certificado",
+    "pk": 480,
+    "fields": {"created": "2026-09-24T05:13:53.506Z", "modified": "2026-09-24T05:13:53.506Z", "empresa": 29, "trabajador": null, "tipo": "SCTR_SALUD", "curso": null, "fecha_emision": "2026-08-25", "fecha_vencimiento": "2027-03-23", "archivo": "certificados/demo/sctr_9.pdf"}
+  },
+  {
+    "model": "control.certificado",
+    "pk": 481,
+    "fields": {"created": "2026-09-24T05:13:53.506Z", "modified": "2026-09-24T05:13:53.506Z", "empresa": 29, "trabajador": null, "tipo": "HOMOLOGACION", "curso": null, "fecha_emision": "2026-08-25", "fecha_vencimiento": "2027-03-23", "archivo": "certificados/demo/sctr_9.pdf"}
+  },
+  {
+    "model": "control.certificado",
+    "pk": 482,
+    "fields": {"created": "2026-09-24T05:13:53.506Z", "modified": "2026-09-24T05:13:53.506Z", "empresa": 30, "trabajador": null, "tipo": "SCTR_SALUD", "curso": null, "fecha_emision": "2026-08-25", "fecha_vencimiento": "2027-03-23", "archivo": "certificados/demo/sctr_10.pdf"}
+  },
+  {
+    "model": "control.certificado",
+    "pk": 483,
+    "fields": {"created": "2026-09-24T05:13:53.506Z", "modified": "2026-09-24T05:13:53.506Z", "empresa": 30, "trabajador": null, "tipo": "HOMOLOGACION", "curso": null, "fecha_emision": "2026-08-25", "fecha_vencimiento": "2027-03-23", "archivo": "certificados/demo/sctr_10.pdf"}
   }
 ]

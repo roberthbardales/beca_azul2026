@@ -10,15 +10,16 @@ urlpatterns = [
     path('reportes/', views.ReportesView.as_view(), name='reportes'),
 
     # Empresas
-    path('empresas/buscar/', views.EmpresaBuscarView.as_view(), name='empresa_buscar'),
     path('empresas/', views.EmpresaListView.as_view(), name='empresa_lista'),
     path('empresas/crear/', views.EmpresaCreateView.as_view(), name='empresa_crear'),
     path('empresas/<int:pk>/sctr/editar/', views.EmpresaSCTRUpdateView.as_view(), name='empresa_sctr_editar'),
+    path('empresas/<int:pk>/sctr-salud/editar/', views.EmpresaSCTRSaludUpdateView.as_view(), name='empresa_sctr_salud_editar'),
     path('empresas/<int:pk>/homologacion/editar/', views.EmpresaHomologacionUpdateView.as_view(), name='empresa_homologacion_editar'),
     path('empresas/<int:pk>/', views.EmpresaDetailView.as_view(), name='empresa_detalle'),
     path('empresas/<int:pk>/trabajadores/', views.EmpresaTrabajadoresGaritaView.as_view(), name='empresa_trabajadores_garita'),
     path('empresas/<int:pk>/editar/', views.EmpresaUpdateView.as_view(), name='empresa_editar'),
     path('empresas/<int:pk>/toggle/', views.EmpresaToggleView.as_view(), name='empresa_toggle'),
+    path('empresas/<int:pk>/sctr/<str:tipo>/toggle/', views.EmpresaSCTRToggleView.as_view(), name='empresa_sctr_toggle'),
     path('empresas/<int:pk>/homologacion/toggle/', views.EmpresaHomologacionToggleView.as_view(), name='empresa_homologacion_toggle'),
     path('empresas/certificados/<int:pk>/ver/', views.EmpresaCertificadoView.as_view(), name='empresa_certificado_ver'),
     path('empresas/<int:pk>/eliminar/', views.EmpresaDeleteView.as_view(), name='empresa_eliminar'),

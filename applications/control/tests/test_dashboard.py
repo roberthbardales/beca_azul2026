@@ -68,6 +68,51 @@ class DashboardViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, 'Reportes')
 
+    def test_superusuario_puede_ver_detalle_desde_el_buscador(self):
+        self.user.is_superuser = True
+        self.user.save(update_fields=['is_superuser'])
+
+        response = self.client.get(
+            reverse('app_control:trabajador_buscar'),
+            {'q': self.trabajador.dni},
+        )
+
+        self.assertContains(response, 'Ver detalle completo')
+        self.assertContains(
+            response,
+            reverse('app_control:trabajador_detalle', args=[self.trabajador.pk]),
+        )
+
+    def test_buscador_muestra_todas_las_coincidencias(self):
+        segundo = Trabajador.objects.create(
+            empresa=self.empresa,
+            dni='87654321',
+            nombres='Ana María',
+            apellidos='Prueba',
+        )
+
+        response = self.client.get(
+            reverse('app_control:trabajador_buscar'),
+            {'q': 'Prueba'},
+        )
+
+        self.assertEqual(response.context['resultados'], 2)
+        self.assertContains(response, self.trabajador.dni)
+        self.assertContains(response, segundo.dni)
+
+    def test_buscador_ignora_tildes_y_acepta_nombre_completo(self):
+        self.trabajador.nombres = 'Rosa María'
+        self.trabajador.apellidos = 'Torres Cárdenas'
+        self.trabajador.save(update_fields=['nombres', 'apellidos'])
+
+        for termino in ('cardenas', 'rosa maria', 'Rosa María Torres Cárdenas'):
+            response = self.client.get(
+                reverse('app_control:trabajador_buscar'),
+                {'q': termino},
+            )
+            self.assertEqual(response.context['resultados'], 1, termino)
+            self.assertEqual(response.context['trabajador'], self.trabajador)
+
     def test_grafica_agrupa_trabajadores_por_estado_e_incluye_inactivos(self):
         self.trabajador.activo = False
         self.trabajador.habilitado = False

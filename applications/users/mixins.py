@@ -37,7 +37,7 @@ class ConsultaUsuariosPermisoMixin(BaseRolePermisoMixin):
 
 
 class VerEmpresasMixin(BaseRolePermisoMixin):
-    required_roles = (User.ADMINISTRADOR, User.BECA_AZUL, User.PLANTA)
+    required_roles = (User.ADMINISTRADOR, User.BECA_AZUL, User.PLANTA, User.GARITA)
 
 
 class AdministrarEmpresasMixin(BaseRolePermisoMixin):
@@ -46,6 +46,17 @@ class AdministrarEmpresasMixin(BaseRolePermisoMixin):
 
 class VerTrabajadoresMixin(BaseRolePermisoMixin):
     required_roles = (User.ADMINISTRADOR, User.BECA_AZUL, User.PLANTA, User.USUARIO_EMPRESA)
+
+
+class ConsultarTrabajadoresMixin(BaseRolePermisoMixin):
+    required_roles = (User.ADMINISTRADOR, User.BECA_AZUL, User.PLANTA, User.USUARIO_EMPRESA, User.GARITA)
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.role == User.USUARIO_EMPRESA and (
+            not request.user.empresa or not request.user.empresa.activo
+        ):
+            raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)
 
 
 class VerTrabajadorDetalleMixin(BaseRolePermisoMixin):

@@ -4,7 +4,7 @@ from uuid import uuid4
 from django.conf import settings
 from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
 from django.db import models
-from django.db.models import Q
+from django.db.models import Prefetch, Q
 from django.utils import timezone
 from model_utils.models import TimeStampedModel
 
@@ -19,7 +19,8 @@ class CursoTipo(models.TextChoices):
 
 
 class CertificadoTipo(models.TextChoices):
-    SCTR = 'SCTR', 'SCTR'
+    SCTR_PENSION = 'SCTR_PENSION', 'SCTR pensión'
+    SCTR_SALUD = 'SCTR_SALUD', 'SCTR salud'
     HOMOLOGACION = 'HOMOLOGACION', 'Homologación'
     INDUCCION = 'INDUCCION', 'Inducción'
     CURSOS = 'CURSOS', 'Cursos'
@@ -54,9 +55,11 @@ class Empresa(TimeStampedModel):
     nombre = models.CharField(max_length=150)
     ruc = models.CharField(max_length=11, unique=True)
     correo = models.EmailField(unique=True)
-    fecha_fundacion = models.DateField(null=True, blank=True)
+    representante_legal = models.CharField(max_length=150, blank=True)
 
-    homologado = models.BooleanField(default=False, db_index=True)
+    homologacion = models.BooleanField(default=False, db_index=True)
+    sctr_pension_aprobado = models.BooleanField(default=False)
+    sctr_salud_aprobado = models.BooleanField(default=False)
     activo = models.BooleanField(default=True)
 
     class Meta:
@@ -67,10 +70,54 @@ class Empresa(TimeStampedModel):
     def __str__(self):
         return self.nombre
 
+    def _certificado_vigente(self, tipo, attr_name):
+        certificados = getattr(self, attr_name, None)
+        if certificados is None:
+            certificado = self.certificados.filter(tipo=tipo).first()
+        else:
+            certificado = certificados[0] if certificados else None
+        return bool(certificado and certificado.esta_vigente)
+
+    @property
+    def sctr_pension_vigente(self):
+        return self._certificado_vigente(CertificadoTipo.SCTR_PENSION, 'sctr_pension_certificados')
+
+    @property
+    def sctr_salud_vigente(self):
+        return self._certificado_vigente(CertificadoTipo.SCTR_SALUD, 'sctr_salud_certificados')
+
+    @property
+    def homologacion_vigente(self):
+        return self._certificado_vigente(CertificadoTipo.HOMOLOGACION, 'homologacion_certificados')
+
+    def invalidar_homologacion_si_corresponde(self):
+        if self.homologacion and not self.homologacion_vigente:
+            type(self).objects.filter(pk=self.pk, homologacion=True).update(homologacion=False)
+            self.homologacion = False
+            return True
+        return False
+
+    def sctr_empresa_vigente(self, tipo):
+        attr_name = {
+            CertificadoTipo.SCTR_PENSION: 'sctr_pension_certificados',
+            CertificadoTipo.SCTR_SALUD: 'sctr_salud_certificados',
+        }[tipo]
+        return self._certificado_vigente(tipo, attr_name)
+
+    @classmethod
+    def sincronizar_homologaciones(cls):
+        empresas = cls.objects.filter(homologacion=True).prefetch_related(
+            Prefetch(
+                'certificados',
+                queryset=Certificado.objects.filter(tipo=CertificadoTipo.HOMOLOGACION),
+                to_attr='homologacion_certificados',
+            )
+        )
+        for empresa in empresas:
+            empresa.invalidar_homologacion_si_corresponde()
+
     def clean(self):
         super().clean()
-        if self.fecha_fundacion and self.fecha_fundacion > timezone.localdate():
-            raise ValidationError({'fecha_fundacion': 'La fecha de fundación no puede ser futura.'})
 
 class Trabajador(TimeStampedModel):
     DNI = TipoDocumento.DNI
@@ -85,7 +132,8 @@ class Trabajador(TimeStampedModel):
     apellidos = models.CharField(max_length=150)
     cargo = models.CharField(max_length=150, blank=True)
 
-    sctr = models.BooleanField(default=False)
+    sctr_pension = models.BooleanField(default=False)
+    sctr_salud = models.BooleanField(default=False)
     habilitado = models.BooleanField(default=True, db_index=True)
     activo = models.BooleanField(default=True)
 
@@ -103,6 +151,27 @@ class Trabajador(TimeStampedModel):
 
     def __str__(self):
         return f'{self.nombres} {self.apellidos}'
+
+    @property
+    def sctr(self):
+        """Compatibility alias for code that still reads the old field."""
+        return self.sctr_pension
+
+    def _sctr_empresa_vigente(self, tipo):
+        certificados = getattr(self.empresa, 'sctr_certificados_heredados', None)
+        if certificados is None:
+            certificado = self.empresa.certificados.filter(tipo=tipo).first()
+        else:
+            certificado = next((item for item in certificados if item.tipo == tipo), None)
+        return bool(certificado and certificado.esta_vigente)
+
+    @property
+    def sctr_pension_efectivo(self):
+        return self.sctr_pension and self._sctr_empresa_vigente(CertificadoTipo.SCTR_PENSION)
+
+    @property
+    def sctr_salud_efectivo(self):
+        return self.sctr_salud and self._sctr_empresa_vigente(CertificadoTipo.SCTR_SALUD)
 
 
 class CursoObligatorio(TimeStampedModel):
@@ -134,7 +203,9 @@ class Incidencia(TimeStampedModel):
 
 class Certificado(TimeStampedModel):
 
-    SCTR = CertificadoTipo.SCTR
+    SCTR_PENSION = CertificadoTipo.SCTR_PENSION
+    SCTR_SALUD = CertificadoTipo.SCTR_SALUD
+    SCTR = SCTR_PENSION
     HOMOLOGACION = CertificadoTipo.HOMOLOGACION
     INDUCCION = CertificadoTipo.INDUCCION
     CURSOS = CertificadoTipo.CURSOS
@@ -170,13 +241,13 @@ class Certificado(TimeStampedModel):
             ),
             models.UniqueConstraint(
                 fields=('empresa', 'tipo'),
-                condition=Q(empresa__isnull=False, tipo__in=(CertificadoTipo.SCTR, CertificadoTipo.HOMOLOGACION)),
+                condition=Q(empresa__isnull=False, tipo__in=(CertificadoTipo.SCTR_PENSION, CertificadoTipo.SCTR_SALUD, CertificadoTipo.HOMOLOGACION)),
                 name='certificado_unico_empresa_tipo',
             ),
             models.CheckConstraint(
                 check=(
                     Q(
-                        tipo__in=(CertificadoTipo.SCTR, CertificadoTipo.HOMOLOGACION),
+                        tipo__in=(CertificadoTipo.SCTR_PENSION, CertificadoTipo.SCTR_SALUD, CertificadoTipo.HOMOLOGACION),
                         empresa__isnull=False,
                         trabajador__isnull=True,
                         curso__isnull=True,
@@ -206,11 +277,19 @@ class Certificado(TimeStampedModel):
         curso = f' - {self.get_curso_display()}' if self.curso else ''
         return f'{self.get_tipo_display()}{curso} - {self.trabajador or self.empresa}'
 
+    @property
+    def esta_vigente(self):
+        return bool(
+            self.archivo
+            and self.archivo.storage.exists(self.archivo.name)
+            and self.fecha_vencimiento >= timezone.localdate()
+        )
+
     def clean(self):
         super().clean()
         errores = {}
 
-        if self.tipo in (self.SCTR, self.HOMOLOGACION):
+        if self.tipo in (self.SCTR_PENSION, self.SCTR_SALUD, self.HOMOLOGACION):
             if not self.empresa_id or self.trabajador_id or self.curso:
                 errores[NON_FIELD_ERRORS] = (
                     'Este certificado debe pertenecer a una empresa y no tener trabajador ni curso.',

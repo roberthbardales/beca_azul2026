@@ -9,6 +9,6 @@
     {% elif reporte_actual == 'trabajadores' %}
      <thead><tr><th>Trabajador</th><th>Documento</th><th>Empresa</th><th>Cargo</th><th>Estado</th></tr></thead><tbody>{% for fila in filas %}<tr><td>{{ fila }}</td><td>{{ fila.dni }}</td><td>{{ fila.empresa }}</td><td>{{ fila.cargo|default:'-' }}</td><td>{% if fila.habilitado %}Habilitado{% else %}No habilitado{% endif %}</td></tr>{% endfor %}</tbody>
     {% else %}
-    <thead><tr><th>Empresa</th><th>RUC</th><th>Trabajadores</th><th>Homologación</th><th>Estado</th></tr></thead><tbody>{% for fila in filas %}<tr><td>{{ fila.nombre }}</td><td>{{ fila.ruc }}</td><td>{{ fila.total_trabajadores }}</td><td>{% if fila.homologado %}Homologada{% else %}Pendiente{% endif %}</td><td>{% if fila.activo %}Activa{% else %}Inactiva{% endif %}</td></tr>{% endfor %}</tbody>
+    <thead><tr><th>Empresa</th><th>RUC</th><th>Trabajadores</th><th>Homologación</th><th>Estado</th></tr></thead><tbody>{% for fila in filas %}<tr><td>{{ fila.nombre }}</td><td>{{ fila.ruc }}</td><td>{{ fila.total_trabajadores }}</td><td>{% if fila.homologacion %}Homologada{% else %}Pendiente{% endif %}</td><td>{% if fila.activo %}Activa{% else %}Inactiva{% endif %}</td></tr>{% endfor %}</tbody>
     {% endif %}
 </table>

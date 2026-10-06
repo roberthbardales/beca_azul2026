@@ -10,7 +10,10 @@
         <div>
           <h1 class="text-2xl font-bold text-[#0f172a]">Mi perfil</h1>
         </div>
-        <a class="btn btn-primary shrink-0" href="{% url 'app_users:editar_perfil' %}">Editar perfil</a>
+        <div class="flex shrink-0 flex-wrap justify-end gap-2">
+          <a class="btn btn-secondary" href="{% url 'app_users:user-update' %}">Cambiar contraseña</a>
+          <a class="btn btn-primary" href="{% url 'app_users:editar_perfil' %}">Editar perfil</a>
+        </div>
       </div>
 
       <div class="space-y-6">

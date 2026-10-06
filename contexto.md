@@ -26,13 +26,22 @@ plantillas HTML del lado del servidor y PostgreSQL.
 - `/empresas/`: consulta y administración de empresas.
 - `/trabajadores/`: listado y búsqueda de trabajadores.
 - `/trabajadores/<id>/`: detalle general del trabajador.
-- `/trabajadores/empresa/<id>/`: detalle del trabajador para su empresa.
-- `/certificados/crear/`, `/certificados/<id>/editar/` y `/certificados/<id>/eliminar/`:
-  creación, edición y eliminación de certificados según el rol.
+- `/trabajadores/empresa/<id>/`: detalle, edición y certificados de cursos para
+  Usuario Empresa.
+- `/certificados/crear/<trabajador_id>/`, `/certificados/<id>/editar/` y
+  `/certificados/<id>/eliminar/`: gestión de certificados de trabajadores por
+  Beca Azul.
+- `/media/certificados/empresa_<id>/...`: descarga protegida de archivos según
+  el rol y la empresa asociada.
 - `/admin/`: administración nativa de Django.
 
 La creación pública de usuarios está deshabilitada. La gestión se realiza desde
 `/users/gestion/`.
+
+El inicio de sesión redirige a cada usuario según su rol: dashboard para los
+roles administrativos, lista de trabajadores para Usuario Empresa y búsqueda
+de trabajadores para Usuario Garita. Cada usuario puede consultar y editar su
+propio perfil y cambiar su contraseña.
 
 ## Usuarios y roles
 
@@ -51,9 +60,10 @@ Esto es independiente del valor guardado en `User.role`.
 
 ### Empresa
 
-Una empresa tiene nombre, RUC, correo, fecha de fundación, estado activo y
-estado de homologación. También puede tener un certificado SCTR y uno de
-homologación. La eliminación está protegida cuando existen relaciones.
+Una empresa tiene nombre, RUC, correo, representante legal, estado activo y
+estado de homologación. También puede tener certificados SCTR de pensión, SCTR
+de salud y homologación. La eliminación está protegida cuando existen
+relaciones.
 
 ### Trabajador
 
@@ -62,14 +72,19 @@ También contiene:
 
 - `activo`: controla si el registro está activo.
 - `habilitado`: estado operativo, independiente de `activo`.
-- `sctr`: aprobación del SCTR del trabajador por Beca Azul.
+- `sctr_pension`: aprobación manual del SCTR pensión por Beca Azul.
+- `sctr_salud`: aprobación manual del SCTR salud por Beca Azul.
+
+Los certificados SCTR no se cargan por trabajador. Se heredan de la empresa a
+la que pertenece y sus fechas de emisión y vencimiento se toman de allí.
 
 Desactivar un trabajador también lo deja no habilitado. Reactivarlo no cambia
 automáticamente su estado de habilitación.
 
 ### Certificados
 
-Los certificados registran tipo, fechas y archivo PDF. Los certificados de
+Los certificados registran tipo, fechas y archivo PDF. Los SCTR pensión, SCTR
+salud y homologación pertenecen a la empresa. Los certificados de
 Inducción y Aptitud médica pertenecen al trabajador y son independientes de los
 cursos. Los cursos permiten un certificado por categoría y trabajador.
 
@@ -109,10 +124,15 @@ trabajadores inactivos.
 
 ## Certificados y carga de archivos
 
-Usuario Empresa carga y administra los certificados de su empresa y sus
-trabajadores. Puede cargar cursos aunque todavía no sean obligatorios. Beca Azul,
-Administrador y Planta pueden consultar los certificados desde los detalles
-permitidos, sin gestionar su contenido mediante las vistas normales.
+Usuario Empresa carga y administra el SCTR y la homologación de su empresa, así
+como los certificados de sus trabajadores dentro de los límites de sus vistas.
+Beca Azul, Administrador y Planta pueden consultar los certificados desde los
+detalles permitidos, sin gestionar su contenido mediante las vistas normales.
+
+Las vistas específicas de certificados de cursos para Usuario Empresa solo
+permiten cursos marcados como obligatorios. El formulario de alta o edición de
+trabajadores también permite cargar los cursos del trabajador, y la empresa solo
+puede operar sobre trabajadores de su propia empresa.
 
 Antes de mostrar o descargar documentos de empresa se comprueba que el archivo
 físico exista en el storage. Un registro sin archivo físico puede conservarse
@@ -134,6 +154,9 @@ de gráficas de estados y vencimientos. Los reportes permiten consultar datos
 globales a los roles administrativos y datos limitados a su empresa a Usuario
 Empresa.
 
+La consulta está disponible para Administrador, Beca Azul, Planta y Usuario
+Empresa. Solo Beca Azul puede enviar reportes por correo mediante `POST`.
+
 ## Configuración y comprobaciones
 
 La configuración local se realiza mediante `.env`. No deben publicarse claves,
@@ -147,6 +170,38 @@ python manage.py check
 python manage.py makemigrations --check
 python manage.py test
 ```
+
+## Carga inicial en VPS
+
+El proyecto utiliza un único fixture de datos iniciales:
+
+`fixtures/seed.json`
+
+Este archivo contiene empresas, trabajadores, usuarios, certificados y cursos
+obligatorios. No se debe cargar un segundo fixture para completar esos datos.
+
+En una base de datos nueva, el orden es:
+
+```text
+python manage.py migrate
+python manage.py loaddata seed
+python manage.py check
+```
+
+El fixture no reemplaza las migraciones. Los archivos de migración de todas las
+aplicaciones deben estar desplegados antes de ejecutar `migrate`.
+
+Los certificados demo del fixture usan rutas bajo
+`media/certificados/demo/`; esos archivos deben desplegarse junto con el
+fixture. La ruta guardada en la base de datos no crea el PDF físicamente.
+
+Para regenerar datos demo desde cero se puede usar:
+
+```text
+python manage.py seed_demo --clear
+```
+
+Este comando es destructivo y no debe ejecutarse sobre datos reales.
 
 Las autorizaciones se validan siempre en backend mediante mixins, querysets
 restringidos y comprobaciones explícitas; ocultar botones no es una medida de
