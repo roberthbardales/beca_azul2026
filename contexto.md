@@ -31,6 +31,8 @@ plantillas HTML del lado del servidor y PostgreSQL.
 - `/certificados/crear/<trabajador_id>/`, `/certificados/<id>/editar/` y
   `/certificados/<id>/eliminar/`: gestión de certificados de trabajadores por
   Beca Azul.
+- `/certificados/<id>/validar/`: aprobación o desaprobación de Inducción,
+  Aptitud médica y cursos por Beca Azul.
 - `/media/certificados/empresa_<id>/...`: descarga protegida de archivos según
   el rol y la empresa asociada.
 - `/admin/`: administración nativa de Django.
@@ -71,22 +73,35 @@ Pertenece a una empresa y registra documento, nombres, apellidos y cargo.
 También contiene:
 
 - `activo`: controla si el registro está activo.
-- `habilitado`: estado operativo, independiente de `activo`.
-- `sctr_pension`: aprobación manual del SCTR pensión por Beca Azul.
-- `sctr_salud`: aprobación manual del SCTR salud por Beca Azul.
+- `habilitado`: decisión manual de habilitación por Beca Azul.
+- `habilitado_efectivo`: estado operativo calculado en tiempo real.
 
 Los certificados SCTR no se cargan por trabajador. Se heredan de la empresa a
 la que pertenece y sus fechas de emisión y vencimiento se toman de allí.
 
-Desactivar un trabajador también lo deja no habilitado. Reactivarlo no cambia
-automáticamente su estado de habilitación.
+Un trabajador solo está efectivamente habilitado si está activo, su empresa está
+activa, la habilitación manual está activa y la empresa tiene SCTR pensión, SCTR
+salud y homologación aprobados, con archivo físico existente y vigente.
+También debe tener Inducción y Aptitud médica validadas y vigentes, además de
+todos los cursos obligatorios para ese trabajador validados y vigentes. Los
+cursos que no son obligatorios no afectan la habilitación.
+Desactivar un trabajador lo deja no habilitado. Reactivarlo no cambia la
+decisión manual, pero el estado efectivo vuelve a calcularse con todos los
+requisitos vigentes.
 
 ### Certificados
 
-Los certificados registran tipo, fechas y archivo PDF. Los SCTR pensión, SCTR
+Los certificados registran tipo, fechas, archivo PDF cuando corresponde y estado
+de validación. Los SCTR pensión, SCTR
 salud y homologación pertenecen a la empresa. Los certificados de
 Inducción y Aptitud médica pertenecen al trabajador y son independientes de los
 cursos. Los cursos permiten un certificado por categoría y trabajador.
+
+Inducción maneja fechas, pero no requiere archivo PDF. Aptitud médica y cursos
+requieren un PDF. Beca Azul valida explícitamente Inducción, Aptitud médica y
+cada curso obligatorio mediante un checkbutton. Si falta el archivo o aún no se
+valida, queda `Pendiente`; si vence, queda `Desaprobado`; solo un requisito
+validado, vigente y con su archivo requerido queda `Vigente`.
 
 Los seis cursos fijos son:
 
@@ -112,6 +127,8 @@ los seis cursos fijos. No crea ni modifica certificados.
 - Un curso puede ser obligatorio aunque todavía no tenga PDF.
 - Si es obligatorio y no existe constancia, el detalle muestra `Falta subir`.
 - Si ya existe una constancia, conserva sus fechas y estado documental.
+- La habilitación efectiva exige que cada curso obligatorio tenga PDF, esté
+  validado y vigente.
 - Al desactivar la obligación, la constancia y sus datos se conservan.
 - No existe todavía cálculo general de cumplimiento ni historial de cambios.
 
@@ -124,10 +141,13 @@ trabajadores inactivos.
 
 ## Certificados y carga de archivos
 
-Usuario Empresa carga y administra el SCTR y la homologación de su empresa, así
-como los certificados de sus trabajadores dentro de los límites de sus vistas.
-Beca Azul, Administrador y Planta pueden consultar los certificados desde los
-detalles permitidos, sin gestionar su contenido mediante las vistas normales.
+Usuario Empresa carga, administra y consulta en PDF el SCTR y la homologación de
+su empresa, así como los certificados de sus trabajadores dentro de los límites
+de sus vistas. Puede consultar sus certificados empresariales aunque estén
+vencidos, si el archivo físico existe.
+Beca Azul puede gestionar y validar certificados de trabajadores desde las
+vistas permitidas. Administrador y Planta pueden consultarlos desde los detalles
+permitidos, sin gestionar su contenido.
 
 Las vistas específicas de certificados de cursos para Usuario Empresa solo
 permiten cursos marcados como obligatorios. El formulario de alta o edición de
@@ -140,8 +160,11 @@ para permitir reemplazarlo.
 
 ## Estados y homologación
 
-La habilitación del trabajador se alterna desde un botón protegido de Beca Azul.
-El SCTR del trabajador es independiente del certificado SCTR de su empresa.
+La habilitación manual del trabajador se alterna desde un botón protegido de
+Beca Azul. El estado operativo se obtiene mediante `habilitado_efectivo` y
+considera trabajador activo, empresa activa, aprobaciones, archivos y vigencias.
+El SCTR que se utiliza para habilitar al trabajador corresponde a los
+certificados de su empresa.
 
 Beca Azul puede homologar una empresa solo si el SCTR y la homologación tienen
 archivo físico y ambos están vigentes. Puede deshomologarla posteriormente sin

@@ -41,6 +41,9 @@ class HomologacionToggleViewTests(TestCase):
                 fecha_vencimiento=date.today() + timedelta(days=30),
                 archivo=SimpleUploadedFile(nombre, b'%PDF-1.4 test'),
             )
+        self.empresa.sctr_pension_aprobado = True
+        self.empresa.sctr_salud_aprobado = True
+        self.empresa.save(update_fields=['sctr_pension_aprobado', 'sctr_salud_aprobado'])
         self.client.force_login(self.crear_usuario(User.BECA_AZUL))
 
         response = self.client.post(self.url)
@@ -85,7 +88,7 @@ class HomologacionToggleViewTests(TestCase):
 
         self.empresa.refresh_from_db()
         self.assertFalse(self.empresa.homologacion)
-        self.assertEqual(len(list(response.wsgi_request._messages)), 2)
+        self.assertEqual(len(list(response.wsgi_request._messages)), 3)
 
     def test_no_puede_aprobar_con_certificados_vencidos(self):
         for tipo, nombre in (
@@ -148,7 +151,7 @@ class HomologacionToggleViewTests(TestCase):
         self.assertTrue(response.context['sctr_pension_valido'])
         self.assertTrue(response.context['sctr_salud_valido'])
         self.assertFalse(response.context['homologacion_valida'])
-        self.assertContains(response, 'Pendiente de carga')
+        self.assertContains(response, 'Pendiente')
         self.assertContains(response, 'disabled')
 
     def test_detalle_habilita_aprobacion_con_ambos_archivos(self):

@@ -6,6 +6,7 @@ from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
 from django.db import models
 from django.db.models import Prefetch, Q
 from django.utils import timezone
+from django.utils.functional import cached_property
 from model_utils.models import TimeStampedModel
 
 
@@ -71,24 +72,53 @@ class Empresa(TimeStampedModel):
         return self.nombre
 
     def _certificado_vigente(self, tipo, attr_name):
-        certificados = getattr(self, attr_name, None)
-        if certificados is None:
-            certificado = self.certificados.filter(tipo=tipo).first()
-        else:
-            certificado = certificados[0] if certificados else None
+        certificado = self._certificado(tipo, attr_name)
         return bool(certificado and certificado.esta_vigente)
 
-    @property
+    def _certificado(self, tipo, attr_name):
+        certificados = getattr(self, attr_name, None)
+        if certificados is None:
+            certificados = getattr(self, 'certificados_habilitacion', None)
+        if certificados is None:
+            certificados = getattr(self, 'sctr_certificados_heredados', None)
+        if certificados is None:
+            return self.certificados.filter(tipo=tipo).first()
+        else:
+            return next((item for item in certificados if item.tipo == tipo), None)
+
+    def _certificado_estado(self, tipo, attr_name, aprobado=True):
+        certificado = self._certificado(tipo, attr_name)
+        if not certificado or not certificado.archivo or not certificado.archivo.storage.exists(certificado.archivo.name):
+            return 'Pendiente'
+        if not certificado.esta_vigente:
+            return 'Vencido'
+        if not aprobado:
+            return 'Desaprobado'
+        return 'Vigente'
+
+    @cached_property
     def sctr_pension_vigente(self):
         return self._certificado_vigente(CertificadoTipo.SCTR_PENSION, 'sctr_pension_certificados')
 
-    @property
+    @cached_property
     def sctr_salud_vigente(self):
         return self._certificado_vigente(CertificadoTipo.SCTR_SALUD, 'sctr_salud_certificados')
 
     @property
+    def sctr_pension_estado(self):
+        return self._certificado_estado(CertificadoTipo.SCTR_PENSION, 'sctr_pension_certificados', self.sctr_pension_aprobado)
+
+    @property
+    def sctr_salud_estado(self):
+        return self._certificado_estado(CertificadoTipo.SCTR_SALUD, 'sctr_salud_certificados', self.sctr_salud_aprobado)
+
+    @cached_property
     def homologacion_vigente(self):
         return self._certificado_vigente(CertificadoTipo.HOMOLOGACION, 'homologacion_certificados')
+
+    @property
+    def homologacion_estado(self):
+        return self._certificado_estado(CertificadoTipo.HOMOLOGACION, 'homologacion_certificados', self.homologacion)
 
     def invalidar_homologacion_si_corresponde(self):
         if self.homologacion and not self.homologacion_vigente:
@@ -137,6 +167,38 @@ class Trabajador(TimeStampedModel):
     habilitado = models.BooleanField(default=True, db_index=True)
     activo = models.BooleanField(default=True)
 
+    @cached_property
+    def habilitado_efectivo(self):
+        empresa = self.empresa
+        certificados = {
+            certificado.tipo: certificado
+            for certificado in self.certificados.all()
+            if certificado.tipo in (CertificadoTipo.INDUCCION, CertificadoTipo.APTITUD_MEDICA)
+        }
+        requisitos_trabajador = (
+            certificados.get(CertificadoTipo.INDUCCION),
+            certificados.get(CertificadoTipo.APTITUD_MEDICA),
+        )
+        cursos_obligatorios = self.cursos_obligatorios.values_list('curso', flat=True)
+        cursos = {
+            certificado.curso: certificado
+            for certificado in self.certificados.all()
+            if certificado.tipo == CertificadoTipo.CURSOS
+        }
+        return bool(
+            self.habilitado
+            and self.activo
+            and empresa.activo
+            and empresa.sctr_pension_aprobado
+            and empresa.sctr_salud_aprobado
+            and empresa.homologacion
+            and empresa.sctr_pension_vigente
+            and empresa.sctr_salud_vigente
+            and empresa.homologacion_vigente
+            and all(certificado and certificado.validacion_vigente for certificado in requisitos_trabajador)
+            and all(cursos.get(curso) and cursos[curso].validacion_vigente for curso in cursos_obligatorios)
+        )
+
     class Meta:
         ordering = ('empresa__nombre', 'apellidos', 'nombres')
         verbose_name = 'Trabajador'
@@ -167,11 +229,19 @@ class Trabajador(TimeStampedModel):
 
     @property
     def sctr_pension_efectivo(self):
-        return self.sctr_pension and self._sctr_empresa_vigente(CertificadoTipo.SCTR_PENSION)
+        return self.empresa.sctr_pension_aprobado and self._sctr_empresa_vigente(CertificadoTipo.SCTR_PENSION)
 
     @property
     def sctr_salud_efectivo(self):
-        return self.sctr_salud and self._sctr_empresa_vigente(CertificadoTipo.SCTR_SALUD)
+        return self.empresa.sctr_salud_aprobado and self._sctr_empresa_vigente(CertificadoTipo.SCTR_SALUD)
+
+    @property
+    def sctr_pension_estado(self):
+        return self.empresa.sctr_pension_estado
+
+    @property
+    def sctr_salud_estado(self):
+        return self.empresa.sctr_salud_estado
 
 
 class CursoObligatorio(TimeStampedModel):
@@ -220,6 +290,7 @@ class Certificado(TimeStampedModel):
     fecha_emision = models.DateField()
     fecha_vencimiento = models.DateField(db_index=True)
     archivo = models.FileField(upload_to=certificado_upload_path)
+    validado = models.BooleanField(default=False)
     class Meta:
         ordering = ('-created',)
         verbose_name = 'Certificado'
@@ -316,7 +387,21 @@ class Certificado(TimeStampedModel):
         self.full_clean()
         archivo_anterior = None
         if self.pk:
-            archivo_anterior = Certificado.objects.filter(pk=self.pk).values_list('archivo', flat=True).first()
+            anterior = Certificado.objects.get(pk=self.pk)
+            archivo_anterior = anterior.archivo.name
+            if (
+                self.trabajador_id
+                and self.tipo in (self.INDUCCION, self.APTITUD_MEDICA, self.CURSOS)
+                and not (set(kwargs.get('update_fields', ())) <= {'validado'})
+                and (
+                    self.fecha_emision != anterior.fecha_emision
+                    or self.fecha_vencimiento != anterior.fecha_vencimiento
+                    or self.archivo.name != anterior.archivo.name
+                )
+            ):
+                self.validado = False
+                if kwargs.get('update_fields') is not None:
+                    kwargs['update_fields'] = set(kwargs['update_fields']) | {'validado'}
         super().save(*args, **kwargs)
         if archivo_anterior and archivo_anterior != self.archivo.name:
             self._eliminar_archivo(archivo_anterior)
@@ -336,3 +421,27 @@ class Certificado(TimeStampedModel):
         if self.fecha_vencimiento <= hoy + timedelta(days=30):
             return 'Próximo a vencer'
         return 'Vigente'
+
+    @property
+    def validacion_vigente(self):
+        archivo_requerido = self.tipo != self.INDUCCION
+        archivo_disponible = bool(
+            self.archivo and self.archivo.storage.exists(self.archivo.name)
+        )
+        return bool(
+            self.validado
+            and self.fecha_vencimiento >= timezone.localdate()
+            and (not archivo_requerido or archivo_disponible)
+        )
+
+    @property
+    def validacion_estado(self):
+        if self.fecha_vencimiento < timezone.localdate():
+            return 'Desaprobado'
+        if self.tipo != self.INDUCCION and not (
+            self.archivo and self.archivo.storage.exists(self.archivo.name)
+        ):
+            return 'Pendiente'
+        if self.validacion_vigente:
+            return 'Vigente'
+        return 'Pendiente'

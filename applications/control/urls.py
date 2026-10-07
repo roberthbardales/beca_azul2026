@@ -36,7 +36,6 @@ urlpatterns = [
     path('trabajadores/<int:pk>/editar/', views.TrabajadorUpdateView.as_view(), name='trabajador_editar'),
     path('trabajadores/<int:pk>/habilitado/toggle/', views.TrabajadorHabilitadoToggleView.as_view(), name='trabajador_habilitado_toggle'),
     path('trabajadores/<int:pk>/cursos/<str:curso>/obligatorio/', views.TrabajadorCursoObligatorioToggleView.as_view(), name='trabajador_curso_obligatorio_toggle'),
-    path('trabajadores/<int:pk>/sctr/', views.TrabajadorSCTRView.as_view(), name='trabajador_sctr'),
     path('trabajadores/<int:pk>/toggle/', views.TrabajadorToggleView.as_view(), name='trabajador_toggle'),
     path('trabajadores/<int:pk>/eliminar/', views.TrabajadorDeleteView.as_view(), name='trabajador_eliminar'),
 
@@ -47,6 +46,7 @@ urlpatterns = [
     path('certificados/crear/<int:trabajador_pk>/', views.CertificadoCreateView.as_view(), name='certificado_crear'),
     path('certificados/<int:pk>/editar/', views.CertificadoUpdateView.as_view(), name='certificado_editar'),
     path('certificados/<int:pk>/eliminar/', views.CertificadoDeleteView.as_view(), name='certificado_eliminar'),
+    path('certificados/<int:pk>/validar/', views.CertificadoValidacionToggleView.as_view(), name='certificado_validar'),
 
     # Incidencias
     path('trabajadores/<int:trabajador_pk>/incidencias/crear/', views.IncidenciaCreateView.as_view(), name='incidencia_crear'),

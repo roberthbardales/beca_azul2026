@@ -82,6 +82,9 @@ class HomologacionManualTests(TestCase):
 class SctrEfectivoTests(TestCase):
     def setUp(self):
         self.empresa = Empresa.objects.create(nombre='Empresa', ruc='20123456789', correo='empresa@example.com')
+        self.empresa.sctr_pension_aprobado = True
+        self.empresa.sctr_salud_aprobado = True
+        self.empresa.save(update_fields=['sctr_pension_aprobado', 'sctr_salud_aprobado'])
         self.trabajador = Trabajador.objects.create(
             empresa=self.empresa,
             dni='12345678',
@@ -118,6 +121,15 @@ class SctrEfectivoTests(TestCase):
     def test_sctr_efectivo_es_falso_si_esta_vencido(self):
         self.crear_certificado(Certificado.SCTR_PENSION, date.today() - timedelta(days=1))
         self.crear_certificado(Certificado.SCTR_SALUD, date.today() + timedelta(days=1))
+
+        self.assertFalse(self.trabajador.sctr_pension_efectivo)
+        self.assertTrue(self.trabajador.sctr_salud_efectivo)
+
+    def test_sctr_efectivo_es_falso_si_no_esta_aprobado(self):
+        self.crear_certificado(Certificado.SCTR_PENSION, date.today() + timedelta(days=1))
+        self.crear_certificado(Certificado.SCTR_SALUD, date.today() + timedelta(days=1))
+        self.empresa.sctr_pension_aprobado = False
+        self.empresa.save(update_fields=['sctr_pension_aprobado'])
 
         self.assertFalse(self.trabajador.sctr_pension_efectivo)
         self.assertTrue(self.trabajador.sctr_salud_efectivo)

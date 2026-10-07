@@ -123,7 +123,7 @@ class DashboardViewTests(TestCase):
 
         self.assertEqual(estados['labels'], ['Empresa principal'])
         self.assertEqual(estados['habilitados'], [0])
-        self.assertEqual(estados['inhabilitados'], [0])
+        self.assertEqual(estados['inhabilitados'], [1])
 
     def test_grafica_agrupa_trabajadores_activos_por_empresa_y_estado(self):
         otra_empresa = Empresa.objects.create(nombre='Empresa secundaria', ruc='20987654321', correo='secundaria@example.com')
@@ -141,8 +141,8 @@ class DashboardViewTests(TestCase):
         estados = response.context['dashboard_charts']['trabajadores_empresa']
 
         self.assertEqual(estados['labels'], ['Empresa principal', 'Empresa secundaria'])
-        self.assertEqual(estados['habilitados'], [1, 0])
-        self.assertEqual(estados['inhabilitados'], [1, 1])
+        self.assertEqual(estados['habilitados'], [0, 0])
+        self.assertEqual(estados['inhabilitados'], [2, 2])
 
     def test_dashboard_cuenta_trabajadores_no_habilitados(self):
         self.trabajador.habilitado = False

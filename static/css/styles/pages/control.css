@@ -8,6 +8,8 @@
 .company-form-card .control-form-section { margin: 0 !important; }
 .company-form-card .control-form-section > div { margin-top: .35rem !important; }
 .company-form-card .control-action-bar { margin-top: 0 !important; }
+main input[type="checkbox"] { accent-color: #16a34a !important; }
+.control-detail-card button.bg-green-600 { background-color: #2563eb !important; }
 @media (min-width: 640px) {
     .company-form-card { padding: .75rem !important; }
 }
@@ -44,6 +46,11 @@ main .worker-form-card.rounded-xl.bg-white { border-radius: .5rem !important; }
 .control-form-page { background: var(--ink-50); }
 .company-sctr-card--registered { border-color: #a7f3d0 !important; background: rgba(236, 253, 245, .55) !important; }
 .company-sctr-card--pending { border-color: #fecaca !important; background: rgba(254, 242, 242, .65) !important; }
+.company-sctr-form .sctr-current-file { border-color: var(--primary-200); background: var(--primary-50); }
+.company-sctr-form { max-width: 36rem !important; }
+.company-sctr-form .sctr-form-section { background: #fff; box-shadow: 0 1px 2px rgba(16, 24, 40, .03); }
+.company-sctr-form .sctr-form-section .form-control { min-height: 2.75rem; }
+.company-sctr-form .sctr-form-actions .btn { min-height: 2.5rem; }
 .company-identity { column-gap: .75rem; row-gap: .25rem; }
 @media (min-width: 640px) {
     .worker-form-card { padding: .75rem !important; }

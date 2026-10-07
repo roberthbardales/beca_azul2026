@@ -1,10 +1,49 @@
 {% extends 'base.html' %}
+
 {% block title %}Editar Homologación | {{ empresa.nombre }}{% endblock %}
+
 {% block content %}
-<main class="mx-auto w-full max-w-3xl px-4 py-5 sm:px-6"><div class="company-sctr-form rounded-xl border border-gray-100 bg-white p-5 shadow-sm sm:p-7">
-<header class="mb-5 flex flex-col gap-3 border-b border-gray-100 pb-4 sm:flex-row sm:items-start sm:justify-between"><h1 class="mt-1 text-2xl font-bold tracking-tight text-[var(--ink-900)]">Homologación - {{ empresa.nombre }}</h1><span class="inline-flex h-fit w-fit rounded-full px-3 py-1 text-xs font-semibold {% if homologacion.pk %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">{% if homologacion.pk %}Registrada{% else %}Pendiente{% endif %}</span></header>
- {% if homologacion.pk and homologacion.archivo %}<div class="mb-5 flex flex-col gap-3 rounded-lg border border-[var(--primary-100)] bg-[var(--primary-50)] px-4 py-3 sm:flex-row sm:items-center sm:justify-between"><div class="min-w-0"><p class="text-xs font-semibold uppercase tracking-wide text-[var(--primary-700)]">Archivo actual</p><p class="mt-1 truncate text-sm font-medium text-[var(--ink-900)]">{{ homologacion.archivo.name|cut:'certificados/' }}</p></div>{% if request.user.role == '1' %}<a class="btn btn-secondary btn-sm shrink-0" href="{% url 'app_control:empresa_certificado_ver' homologacion.pk %}" target="_blank" rel="noopener">Ver PDF</a>{% endif %}</div>{% endif %}
-<form method="post" enctype="multipart/form-data" class="space-y-5">{% csrf_token %}<section class="space-y-3"><div><h2 class="text-sm font-semibold text-[var(--ink-900)]">Documento</h2><p class="mt-1 text-xs text-[var(--ink-500)]">Adjunta el documento de homologación en formato PDF.</p></div><div><label for="{{ form.archivo.id_for_label }}" class="mb-1 block text-sm font-medium text-[var(--ink-900)]">{{ form.archivo.label }}</label><input type="file" name="{{ form.archivo.html_name }}" id="{{ form.archivo.id_for_label }}" class="form-control" accept="application/pdf">{% for error in form.archivo.errors %}<p class="mt-1 text-xs text-red-600">{{ error }}</p>{% endfor %}</div></section>
-<section class="space-y-3 border-t border-gray-100 pt-4"><div class="grid gap-4 sm:grid-cols-2"><div><label for="{{ form.fecha_emision.id_for_label }}" class="mb-1 block text-sm font-medium text-[var(--ink-900)]">{{ form.fecha_emision.label }}</label>{{ form.fecha_emision }}{% for error in form.fecha_emision.errors %}<p class="mt-1 text-xs text-red-600">{{ error }}</p>{% endfor %}</div><div><label for="{{ form.fecha_vencimiento.id_for_label }}" class="mb-1 block text-sm font-medium text-[var(--ink-900)]">{{ form.fecha_vencimiento.label }}</label>{{ form.fecha_vencimiento }}{% for error in form.fecha_vencimiento.errors %}<p class="mt-1 text-xs text-red-600">{{ error }}</p>{% endfor %}</div></div></section>
-<div class="flex flex-col-reverse gap-3 border-t border-gray-100 pt-4 sm:flex-row sm:justify-end"><a class="btn btn-secondary" href="{% url 'app_control:empresa_detalle' empresa.pk %}">Volver</a><button type="submit" class="btn btn-primary">Guardar homologación</button></div></form></div></main>
+<main class="control-form-page min-h-full px-4 py-3 sm:px-6">
+    <div class="company-sctr-form mx-auto w-full max-w-xl rounded-2xl border border-[var(--ink-200)] bg-white p-4 shadow-sm sm:p-6">
+        <header class="sctr-form-header mb-4 flex flex-col gap-3 border-b border-[var(--ink-200)] pb-4 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+                <h1 class="mt-1 text-2xl font-bold tracking-tight text-[var(--ink-900)]">Homologación</h1>
+                <p class="mt-1 text-sm text-[var(--ink-500)]">{{ empresa.nombre }}</p>
+            </div>
+            <span class="inline-flex h-fit w-fit items-center rounded-full px-3 py-1.5 text-xs font-bold {% if homologacion.pk %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">{% if homologacion.pk %}Registrada{% else %}Pendiente{% endif %}</span>
+        </header>
+
+        {% if homologacion.pk and homologacion.archivo %}
+        <div class="sctr-current-file mb-4 flex flex-col gap-3 rounded-xl border px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+            <div class="min-w-0"><p class="text-xs font-bold uppercase tracking-wide text-[var(--primary-700)]">Archivo actual</p><p class="mt-1 truncate text-sm font-semibold text-[var(--ink-900)]">{{ homologacion.archivo.name|cut:'certificados/' }}</p></div>
+            {% if request.user.role == '1' or request.user.role == '3' %}<a class="btn btn-secondary btn-sm shrink-0" href="{% url 'app_control:empresa_certificado_ver' homologacion.pk %}" target="_blank" rel="noopener">Ver PDF</a>{% endif %}
+        </div>
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data" class="sctr-form space-y-3">
+            {% csrf_token %}
+            <section class="sctr-form-section rounded-xl border border-[var(--ink-200)] p-4 sm:p-5" aria-labelledby="homologacion-documento-heading">
+                <div class="mb-3"><h2 id="homologacion-documento-heading" class="text-base font-bold text-[var(--ink-900)]">Archivo PDF</h2>{% if homologacion.pk %}<p class="mt-1 text-sm text-[var(--ink-500)]">Reemplaza el archivo solo si necesitas actualizarlo.</p>{% endif %}</div>
+                <div>
+                    <label for="{{ form.archivo.id_for_label }}" class="mb-1 block text-sm font-medium text-[var(--ink-900)]">{{ form.archivo.label }}</label>
+                    <input type="file" name="{{ form.archivo.html_name }}" id="{{ form.archivo.id_for_label }}" class="form-control" accept="application/pdf">
+                    {% for error in form.archivo.errors %}<p class="mt-1 text-xs text-red-600">{{ error }}</p>{% endfor %}
+                </div>
+            </section>
+
+            <section class="sctr-form-section rounded-xl border border-[var(--ink-200)] p-4 sm:p-5" aria-labelledby="homologacion-vigencia-heading">
+                <div class="mb-3"><h2 id="homologacion-vigencia-heading" class="text-base font-bold text-[var(--ink-900)]">Vigencia</h2></div>
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <div><label for="{{ form.fecha_emision.id_for_label }}" class="mb-1 block text-sm font-medium text-[var(--ink-900)]">{{ form.fecha_emision.label }}</label>{{ form.fecha_emision }}{% for error in form.fecha_emision.errors %}<p class="mt-1 text-xs text-red-600">{{ error }}</p>{% endfor %}</div>
+                    <div><label for="{{ form.fecha_vencimiento.id_for_label }}" class="mb-1 block text-sm font-medium text-[var(--ink-900)]">{{ form.fecha_vencimiento.label }}</label>{{ form.fecha_vencimiento }}{% for error in form.fecha_vencimiento.errors %}<p class="mt-1 text-xs text-red-600">{{ error }}</p>{% endfor %}</div>
+                </div>
+            </section>
+
+            <div class="sctr-form-actions flex flex-col-reverse items-center justify-center gap-3 pt-4 sm:flex-row">
+                <a class="btn btn-secondary w-44" href="{% url 'app_control:empresa_detalle' empresa.pk %}">Cancelar</a>
+                <button type="submit" class="btn btn-primary w-44">Guardar cambios</button>
+            </div>
+        </form>
+    </div>
+</main>
 {% endblock %}

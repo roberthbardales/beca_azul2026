@@ -33,7 +33,16 @@ la vista no añade una restricción específica.
 - Crea, edita, activa, desactiva y elimina trabajadores.
 - Crea, edita y elimina certificados de trabajadores de Inducción, Aptitud
   médica y cursos.
-- Cambia la habilitación del trabajador y aprueba o desaprueba su SCTR.
+- Valida o desaprueba explícitamente Inducción, Aptitud médica y cada curso
+  obligatorio mediante `POST` en `/certificados/<id>/validar/`.
+- La Inducción requiere fechas, pero no PDF. Aptitud médica y cursos requieren
+  PDF. Si falta el PDF requerido o aún no fueron validados, quedan pendientes;
+  al vencer, quedan desaprobados.
+- Cambia la habilitación manual del trabajador. La habilitación efectiva además
+  exige trabajador y empresa activos, SCTR pensión y salud aprobados con archivo
+  físico vigente, homologación aprobada con archivo físico vigente, Inducción y
+  Aptitud médica validadas y vigentes, y todos los cursos obligatorios validados
+  y vigentes.
 - Crea, edita y elimina incidencias.
 - Consulta certificados desde los detalles permitidos.
 - Activa o desactiva manualmente cada uno de los seis cursos para cada trabajador.
@@ -61,6 +70,8 @@ falta el PDF, Usuario Empresa verá `Falta subir` y deberá cargarlo.
 - Debe tener una empresa asignada y activa.
 - Solo accede a su propia empresa y a sus trabajadores.
 - Consulta su empresa y administra los certificados SCTR y homologación de ella.
+- Puede ver en PDF los certificados de su propia empresa, aunque estén vencidos,
+  siempre que el archivo físico exista.
 - Crea y edita trabajadores de su empresa.
 - No puede activar ni desactivar trabajadores; esa operación está reservada a
   Beca Azul.
@@ -73,7 +84,7 @@ falta el PDF, Usuario Empresa verá `Falta subir` y deberá cargarlo.
   `Falta subir`.
 - Puede consultar si un curso está marcado como obligatorio, pero no puede cambiarlo.
 - No modifica Inducción, Aptitud médica ni la obligatoriedad de cursos.
-- No aprueba SCTR de trabajadores ni homologa/deshomologa empresas.
+- No aprueba SCTR ni homologa/deshomologa empresas.
 - No accede al dashboard general.
 - Sus reportes se limitan a su empresa y trabajadores.
 - No puede enviar reportes por correo.
@@ -98,6 +109,8 @@ falta el PDF, Usuario Empresa verá `Falta subir` y deberá cargarlo.
 - Un curso obligatorio puede no tener certificado todavía.
 - Sin certificado se muestra `Falta subir`.
 - Con certificado se muestran sus fechas y estado normal.
+- Un curso obligatorio sin PDF, sin validación o vencido no permite habilitar al
+  trabajador.
 - Desactivar la obligación no elimina el certificado ni sus fechas.
 - No se registra auditoría de quién cambió la obligación.
 - No se calcula un porcentaje ni estado general de cumplimiento.
@@ -113,6 +126,19 @@ falta el PDF, Usuario Empresa verá `Falta subir` y deberá cargarlo.
   `Certificado.CURSO_CHOICES`.
 - La existencia de una ruta de archivo en la base de datos no garantiza que el
   PDF exista físicamente; las vistas documentales comprueban el storage.
+
+## Habilitación efectiva
+
+- `habilitado` conserva la decisión manual de Beca Azul.
+- `habilitado_efectivo` es el estado operativo calculado en tiempo real.
+- Un trabajador solo está efectivamente habilitado si está activo, su empresa
+  está activa, cumple todos los requisitos empresariales de SCTR y homologación,
+  y tiene Inducción, Aptitud médica y todos sus cursos obligatorios validados y
+  vigentes.
+- Si falta un archivo, una aprobación o una vigencia, se considera no habilitado
+  sin necesidad de una tarea programada.
+- La acción de habilitar vuelve a validar todos los requisitos y muestra el
+  motivo cuando alguno no se cumple.
 
 ## Datos iniciales y despliegue
 

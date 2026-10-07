@@ -50,7 +50,7 @@ class EmpresaCertificadoViewTests(TestCase):
         self.assertEqual(b''.join(response.streaming_content), b'%PDF-1.4 test')
 
     def test_otros_roles_no_pueden_ver_pdf_de_empresa(self):
-        for role in (User.ADMINISTRADOR, User.PLANTA, User.USUARIO_EMPRESA):
+        for role in (User.ADMINISTRADOR, User.PLANTA):
             with self.subTest(role=role):
                 self.client.force_login(self.crear_usuario(role, f'{role}@example.com'))
                 self.assertEqual(self.client.get(self.url).status_code, 403)

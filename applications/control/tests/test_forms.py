@@ -55,19 +55,19 @@ class FormValidationTests(TestCase):
         self.assertFalse(form.is_valid())
         self.assertIn('dni', form.errors)
 
-    def test_trabajador_form_actualiza_sctr(self):
+    def test_trabajador_form_no_actualiza_sctr(self):
         form = TrabajadorForm(data={
             'empresa': self.empresa.pk,
             'tipo_documento': Trabajador.DNI,
             'dni': '87654321',
             'nombres': 'Nuevo',
             'apellidos': 'Trabajador',
-            'sctr': 'on',
         })
 
         self.assertTrue(form.is_valid(), form.errors)
         trabajador = form.save()
-        self.assertTrue(trabajador.sctr)
+        self.assertFalse(trabajador.sctr_pension)
+        self.assertFalse(trabajador.sctr_salud)
 
     def test_certificado_form_exige_curso(self):
         form = CertificadoForm(

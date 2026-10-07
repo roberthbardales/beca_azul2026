@@ -158,8 +158,6 @@ class SCTRSaludForm(SCTRForm):
 
 
 class TrabajadorForm(forms.ModelForm):
-    # Accept the old input name while clients migrate to the two separate flags.
-    sctr = forms.BooleanField(required=False)
     empresa = forms.ModelChoiceField(
         label='Empresa',
         queryset=Empresa.objects.filter(activo=True),
@@ -170,16 +168,8 @@ class TrabajadorForm(forms.ModelForm):
         model = Trabajador
         fields = (
             'empresa', 'tipo_documento', 'dni', 'nombres', 'apellidos',
-            'cargo', 'sctr_pension', 'sctr_salud',
+            'cargo',
         )
-
-    def save(self, commit=True):
-        trabajador = super().save(commit=False)
-        if 'sctr' in self.data:
-            trabajador.sctr_pension = self.cleaned_data.get('sctr', False)
-        if commit:
-            trabajador.save()
-        return trabajador
 
     def clean_dni(self):
         dni = self.cleaned_data.get('dni', '').strip()
@@ -216,7 +206,9 @@ class TrabajadorEmpresaForm(forms.ModelForm):
         if not self.instance.pk:
             for prefix in ('induccion', 'aptitud_medica'):
                 for suffix in ('archivo', 'fecha_emision', 'fecha_vencimiento'):
-                    self.fields[f'{prefix}_{suffix}'].required = True
+                    self.fields[f'{prefix}_{suffix}'].required = not (
+                        prefix == 'induccion' and suffix == 'archivo'
+                    )
         else:
             for certificado in self.instance.certificados.all():
                 if certificado.tipo in (Certificado.INDUCCION, Certificado.APTITUD_MEDICA):
@@ -256,6 +248,8 @@ class TrabajadorEmpresaForm(forms.ModelForm):
                     (f'{prefix}_fecha_emision', fecha_emision),
                     (f'{prefix}_fecha_vencimiento', fecha_vencimiento),
                 ):
+                    if prefix == 'induccion' and field_name == 'induccion_archivo':
+                        continue
                     if not value:
                         self.add_error(field_name, 'Complete archivo y fechas para registrar el certificado.')
             elif certificado_existente and (fecha_emision or fecha_vencimiento):
@@ -289,7 +283,7 @@ class TrabajadorEmpresaForm(forms.ModelForm):
                 certificado = Certificado.objects.filter(trabajador=trabajador, tipo=tipo).first()
                 if certificado and not any((archivo, fecha_emision, fecha_vencimiento)):
                     continue
-                if not certificado and not all((archivo, fecha_emision, fecha_vencimiento)):
+                if not certificado and not all((fecha_emision, fecha_vencimiento)):
                     continue
                 certificado = certificado or Certificado(trabajador=trabajador, tipo=tipo)
                 certificado.fecha_emision = fecha_emision
@@ -332,6 +326,7 @@ class CertificadoForm(forms.ModelForm):
             if choice[0] not in (Certificado.SCTR_PENSION, Certificado.SCTR_SALUD)
         )
         self.fields['curso'].required = False
+        self.fields['archivo'].required = False
         self.fields['archivo'].validators.append(validate_pdf)
 
     def clean(self):
@@ -340,6 +335,14 @@ class CertificadoForm(forms.ModelForm):
         curso = cleaned.get('curso')
         if tipo == Certificado.CURSOS and not curso:
             self.add_error('curso', 'El curso es obligatorio para los certificados de cursos.')
+        archivo = cleaned.get('archivo')
+        archivo_existente = bool(
+            self.instance.pk
+            and self.instance.archivo
+            and self.instance.archivo.storage.exists(self.instance.archivo.name)
+        )
+        if tipo in (Certificado.APTITUD_MEDICA, Certificado.CURSOS) and not (archivo or archivo_existente):
+            self.add_error('archivo', 'El archivo PDF es obligatorio para este certificado.')
         if tipo != Certificado.CURSOS and curso:
             self.add_error('curso', 'El curso solo aplica a los certificados de cursos.')
         trabajador = self.trabajador or self.instance.trabajador
