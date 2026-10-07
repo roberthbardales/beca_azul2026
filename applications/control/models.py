@@ -11,12 +11,12 @@ from model_utils.models import TimeStampedModel
 
 
 class CursoTipo(models.TextChoices):
-    CALIENTE = 'CALIENTE', 'Caliente'
-    ALTURA = 'ALTURA', 'Altura'
-    ESPACIO_CONFINADO = 'ESPACIO_CONFINADO', 'Espacio confinado'
-    ELECTRICO = 'ELECTRICO', 'Eléctrico'
-    EXCAVACION = 'EXCAVACION', 'Excavación'
-    IZAJE = 'IZAJE', 'Izaje'
+    CALIENTE = 'CALIENTE', 'T. Caliente.'
+    ALTURA = 'ALTURA', 'T. Altura.'
+    ESPACIO_CONFINADO = 'ESPACIO_CONFINADO', 'T. Esp. Confinado.'
+    ELECTRICO = 'ELECTRICO', 'T. Eléctricos.'
+    EXCAVACION = 'EXCAVACION', 'T. Exca./ Perf'
+    IZAJE = 'IZAJE', 'T. de izaje.'
 
 
 class CertificadoTipo(models.TextChoices):
@@ -121,7 +121,14 @@ class Empresa(TimeStampedModel):
         return self._certificado_estado(CertificadoTipo.HOMOLOGACION, 'homologacion_certificados', self.homologacion)
 
     def invalidar_homologacion_si_corresponde(self):
-        if self.homologacion and not self.homologacion_vigente:
+        homologacion_valida = (
+            self.homologacion_vigente
+            and self.sctr_pension_aprobado
+            and self.sctr_salud_aprobado
+            and self.sctr_empresa_vigente(CertificadoTipo.SCTR_PENSION)
+            and self.sctr_empresa_vigente(CertificadoTipo.SCTR_SALUD)
+        )
+        if self.homologacion and not homologacion_valida:
             type(self).objects.filter(pk=self.pk, homologacion=True).update(homologacion=False)
             self.homologacion = False
             return True
@@ -242,6 +249,100 @@ class Trabajador(TimeStampedModel):
     @property
     def sctr_salud_estado(self):
         return self.empresa.sctr_salud_estado
+
+    @property
+    def sctr_pension_estado_detalle(self):
+        if self.empresa.sctr_pension_aprobado and self.sctr_pension_efectivo:
+            return 'Aprobado y vigente'
+        if self.empresa.sctr_pension_aprobado:
+            return 'Aprobado, vencido'
+        return 'Desaprobado'
+
+    @property
+    def sctr_salud_estado_detalle(self):
+        if self.empresa.sctr_salud_aprobado and self.sctr_salud_efectivo:
+            return 'Aprobado y vigente'
+        if self.empresa.sctr_salud_aprobado:
+            return 'Aprobado, vencido'
+        return 'Desaprobado'
+
+    def _estado_certificado_trabajador(self, tipo, curso=None):
+        certificados = getattr(self, 'certificados_lista', None)
+        if certificados is None:
+            certificados = self.certificados.all()
+        certificado = next(
+            (
+                item for item in certificados
+                if item.tipo == tipo and (curso is None or item.curso == curso)
+            ),
+            None,
+        )
+        return certificado.estado if certificado else 'Pendiente'
+
+    def _estado_validacion_certificado(self, tipo):
+        certificados = getattr(self, 'certificados_lista', None)
+        if certificados is None:
+            certificados = self.certificados.all()
+        certificado = next((item for item in certificados if item.tipo == tipo), None)
+        if not certificado:
+            return 'Pendiente'
+        if certificado.fecha_vencimiento < timezone.localdate():
+            return 'Vencido'
+        return 'Vigente' if certificado.validacion_vigente else 'Pendiente'
+
+    @property
+    def estado_induccion(self):
+        return self._estado_validacion_certificado(CertificadoTipo.INDUCCION)
+
+    @property
+    def estado_aptitud_medica(self):
+        return self._estado_validacion_certificado(CertificadoTipo.APTITUD_MEDICA)
+
+    def estado_curso(self, curso):
+        cursos_obligatorios = getattr(self, 'cursos_obligatorios_lista', None)
+        if cursos_obligatorios is None:
+            cursos_obligatorios = self.cursos_obligatorios.values_list('curso', flat=True)
+        else:
+            cursos_obligatorios = [requisito.curso for requisito in cursos_obligatorios]
+        if curso not in cursos_obligatorios:
+            return '-'
+
+        certificados = getattr(self, 'certificados_lista', None)
+        if certificados is None:
+            certificados = self.certificados.all()
+        certificado = next(
+            (item for item in certificados if item.tipo == CertificadoTipo.CURSOS and item.curso == curso),
+            None,
+        )
+        if not certificado:
+            return 'Pendiente'
+        if certificado.fecha_vencimiento < timezone.localdate():
+            return 'Vencido'
+        return 'Vigente' if certificado.validacion_vigente else 'Pendiente'
+
+    @property
+    def estado_curso_caliente(self):
+        return self.estado_curso('CALIENTE')
+
+    @property
+    def estado_curso_altura(self):
+        return self.estado_curso('ALTURA')
+
+    @property
+    def estado_curso_espacio_confinado(self):
+        return self.estado_curso('ESPACIO_CONFINADO')
+
+    @property
+    def estado_curso_electrico(self):
+        return self.estado_curso('ELECTRICO')
+
+    @property
+    def estado_curso_excavacion(self):
+        return self.estado_curso('EXCAVACION')
+
+    @property
+    def estado_curso_izaje(self):
+        return self.estado_curso('IZAJE')
 
 
 class CursoObligatorio(TimeStampedModel):

@@ -193,3 +193,14 @@ class HomologacionToggleViewTests(TestCase):
         self.empresa.refresh_from_db()
         self.assertFalse(self.empresa.homologacion)
         self.assertFalse(response.context['empresa'].homologacion)
+
+    def test_detalle_invalida_homologacion_si_sctr_salud_no_esta_aprobado(self):
+        self.client.force_login(self.crear_usuario(User.BECA_AZUL))
+        self.empresa.homologacion = True
+        self.empresa.sctr_pension_aprobado = True
+        self.empresa.sctr_salud_aprobado = False
+        self.empresa.save(update_fields=['homologacion', 'sctr_pension_aprobado', 'sctr_salud_aprobado'])
+
+        response = self.client.get(reverse('app_control:empresa_detalle', args=[self.empresa.pk]))
+
+        self.assertFalse(response.context['empresa'].homologacion)

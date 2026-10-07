@@ -35,7 +35,14 @@ class Command(BaseCommand):
             Empresa.objects.all().delete()
 
             for empresa_index, empresa_nombre in enumerate(empresas_nombres, start=1):
-                empresa = Empresa.objects.create(nombre=empresa_nombre, ruc=f'201000000{empresa_index:02d}')
+                empresa = Empresa.objects.create(
+                    nombre=empresa_nombre,
+                    ruc=f'201000000{empresa_index:02d}',
+                    correo=f'{empresa_nombre.lower()}-empresa@gmail.com',
+                    homologacion=True,
+                    sctr_pension_aprobado=True,
+                    sctr_salud_aprobado=True,
+                )
                 User.objects.create(
                     email=f'{empresa_nombre.lower()}@gmail.com', password=password,
                     first_name='Usuario', last_name=empresa_nombre, role=User.USUARIO_EMPRESA,
@@ -57,11 +64,13 @@ class Command(BaseCommand):
                         trabajador=trabajador, tipo=Certificado.INDUCCION,
                         fecha_emision=hoy - timedelta(days=30), fecha_vencimiento=hoy + timedelta(days=180),
                         archivo=f'certificados/demo/induccion_{empresa_index}_{trabajador_index}.pdf',
+                        validado=True,
                     )
                     Certificado.objects.create(
                         trabajador=trabajador, tipo=Certificado.APTITUD_MEDICA,
                         fecha_emision=hoy - timedelta(days=30), fecha_vencimiento=hoy + timedelta(days=10 if trabajador_index == 3 else 180),
                         archivo=f'certificados/demo/aptitud_{empresa_index}_{trabajador_index}.pdf',
+                        validado=True,
                     )
                     for curso in cursos[:cantidad_cursos]:
                         vencimiento = hoy - timedelta(days=5) if trabajador_index == 2 else hoy + timedelta(days=15 if trabajador_index == 1 else 180)
@@ -69,10 +78,17 @@ class Command(BaseCommand):
                             trabajador=trabajador, tipo=Certificado.CURSOS, curso=curso,
                             fecha_emision=hoy - timedelta(days=30), fecha_vencimiento=vencimiento,
                             archivo=f'certificados/demo/curso_{empresa_index}_{trabajador_index}_{curso.lower()}.pdf',
+                            validado=trabajador_index != 2,
                         )
+                for tipo in (Certificado.SCTR_PENSION, Certificado.SCTR_SALUD):
+                    Certificado.objects.create(
+                        empresa=empresa, tipo=tipo,
+                        fecha_emision=hoy - timedelta(days=30), fecha_vencimiento=hoy + timedelta(days=180),
+                        archivo=f'certificados/demo/sctr_{empresa_index}.pdf',
+                    )
                 Certificado.objects.create(
-                    empresa=empresa, tipo=Certificado.SCTR,
+                    empresa=empresa, tipo=Certificado.HOMOLOGACION,
                     fecha_emision=hoy - timedelta(days=30), fecha_vencimiento=hoy + timedelta(days=180),
-                    archivo=f'certificados/demo/sctr_{empresa_index}.pdf',
+                    archivo=f'certificados/demo/homologacion_{empresa_index}.pdf',
                 )
         self.stdout.write(self.style.SUCCESS('Datos demo cargados correctamente.'))

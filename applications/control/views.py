@@ -56,7 +56,28 @@ class TrabajadorActivoRequiredMixin:
                 trabajador = Trabajador.objects.filter(certificados__pk=kwargs['pk']).first()
             elif self.model is Incidencia:
                 trabajador = Trabajador.objects.filter(incidencias__pk=kwargs['pk']).first()
-        if trabajador and not trabajador.activo:
+        if trabajador and (not trabajador.activo or not trabajador.empresa.activo):
+            raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)
+
+
+class EmpresaActivaRequiredMixin:
+    def dispatch(self, request, *args, **kwargs):
+        empresa = None
+        if 'trabajador_pk' in kwargs:
+            empresa = Empresa.objects.filter(trabajadores__pk=kwargs['trabajador_pk']).first()
+        elif 'pk' in kwargs:
+            if getattr(self, 'model', None) is Empresa:
+                empresa = Empresa.objects.filter(pk=kwargs['pk']).first()
+            elif getattr(self, 'model', None) is Trabajador:
+                empresa = Empresa.objects.filter(trabajadores__pk=kwargs['pk']).first()
+            elif getattr(self, 'model', None) is Certificado:
+                empresa = Empresa.objects.filter(
+                    Q(certificados__pk=kwargs['pk']) | Q(trabajadores__certificados__pk=kwargs['pk'])
+                ).first()
+            elif getattr(self, 'model', None) is Incidencia:
+                empresa = Empresa.objects.filter(trabajadores__incidencias__pk=kwargs['pk']).first()
+        if empresa and not empresa.activo:
             raise PermissionDenied
         return super().dispatch(request, *args, **kwargs)
 
@@ -346,7 +367,7 @@ class EmpresaCreateView(AdministrarEmpresasMixin, CreateView):
         return super().form_valid(form)
 
 
-class EmpresaUpdateView(BecaAzulRequiredMixin, UpdateView):
+class EmpresaUpdateView(EmpresaActivaRequiredMixin, BecaAzulRequiredMixin, UpdateView):
     model = Empresa
     form_class = EmpresaForm
     template_name = 'control/empresas/form.html'
@@ -360,8 +381,20 @@ class EmpresaUpdateView(BecaAzulRequiredMixin, UpdateView):
 class EmpresaToggleView(BecaAzulRequiredMixin, View):
     def post(self, request, pk):
         empresa = get_object_or_404(Empresa, pk=pk)
-        empresa.activo = not empresa.activo
-        empresa.save(update_fields=['activo'])
+        with transaction.atomic():
+            empresa.activo = not empresa.activo
+            if empresa.activo:
+                usuarios = empresa.usuarios.filter(is_active_before_empresa_deactivation=True)
+                usuarios.update(is_active=True, is_active_before_empresa_deactivation=None)
+                empresa.usuarios.filter(is_active_before_empresa_deactivation=False).update(
+                    is_active_before_empresa_deactivation=None
+                )
+            else:
+                for usuario in empresa.usuarios.all():
+                    usuario.is_active_before_empresa_deactivation = usuario.is_active
+                    usuario.is_active = False
+                    usuario.save(update_fields=['is_active', 'is_active_before_empresa_deactivation'])
+            empresa.save(update_fields=['activo'])
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return JsonResponse({'activo': empresa.activo, 'nombre': empresa.nombre})
         estado = 'activada' if empresa.activo else 'desactivada'
@@ -369,7 +402,7 @@ class EmpresaToggleView(BecaAzulRequiredMixin, View):
         return redirect('app_control:empresa_detalle', pk=empresa.pk)
 
 
-class EmpresaSCTRToggleView(BecaAzulRequiredMixin, View):
+class EmpresaSCTRToggleView(EmpresaActivaRequiredMixin, BecaAzulRequiredMixin, View):
     def post(self, request, pk, tipo):
         empresa = get_object_or_404(Empresa, pk=pk)
         estados = {
@@ -394,7 +427,7 @@ class EmpresaSCTRToggleView(BecaAzulRequiredMixin, View):
         return redirect('app_control:empresa_detalle', pk=empresa.pk)
 
 
-class EmpresaHomologacionToggleView(BecaAzulRequiredMixin, View):
+class EmpresaHomologacionToggleView(EmpresaActivaRequiredMixin, BecaAzulRequiredMixin, View):
     def post(self, request, pk):
         empresa = get_object_or_404(Empresa, pk=pk)
         empresa.invalidar_homologacion_si_corresponde()
@@ -660,7 +693,7 @@ class EmpresaHomologacionUpdateView(EmpresaSCTRUpdateView):
         return response
 
 
-class EmpresaDeleteView(BecaAzulRequiredMixin, DeleteView):
+class EmpresaDeleteView(EmpresaActivaRequiredMixin, BecaAzulRequiredMixin, DeleteView):
     model = Empresa
     template_name = 'control/empresas/confirm_delete.html'
     context_object_name = 'empresa'
@@ -710,9 +743,15 @@ class TrabajadorListView(VerTrabajadoresMixin, ListView):
             ),
             Prefetch(
                 'certificados',
-                queryset=Certificado.objects.filter(tipo=Certificado.CURSOS),
-                to_attr='cursos_lista',
-            )
+                queryset=Certificado.objects.filter(
+                    tipo__in=(Certificado.INDUCCION, Certificado.APTITUD_MEDICA, Certificado.CURSOS)
+                ),
+                to_attr='certificados_lista',
+            ),
+            Prefetch(
+                'cursos_obligatorios',
+                to_attr='cursos_obligatorios_lista',
+            ),
         ).annotate(
             tiene_induccion=Exists(certificados.filter(tipo=Certificado.INDUCCION)),
             tiene_aptitud_medica=Exists(certificados.filter(tipo=Certificado.APTITUD_MEDICA)),
@@ -727,12 +766,22 @@ class TrabajadorListView(VerTrabajadoresMixin, ListView):
             queryset = queryset.filter(empresa=self.request.user.empresa)
         q = self.request.GET.get('q', '').strip()
         if q:
-            queryset = queryset.filter(
-                Q(dni__icontains=q)
-                | Q(nombres__icontains=q)
-                | Q(apellidos__icontains=q)
-                | Q(empresa__nombre__icontains=q)
+            sin_tildes = Func(
+                Lower(Concat('nombres', Value(' '), 'apellidos')),
+                Value('áéíóúüñ'),
+                Value('aeiouun'),
+                function='TRANSLATE',
             )
+            termino = ''.join(
+                char for char in normalize('NFKD', q.casefold())
+                if not combining(char)
+            )
+            queryset = queryset.annotate(nombre_completo_sin_tildes=sin_tildes)
+            dni_queryset = queryset.filter(dni__iexact=q)
+            tokens = termino.split()
+            for token in tokens:
+                queryset = queryset.filter(nombre_completo_sin_tildes__icontains=token)
+            queryset = queryset | dni_queryset
         habilitacion = self.request.GET.get('habilitacion', '').strip()
         if habilitacion in ('1', '0'):
             esperado = habilitacion == '1'
@@ -772,6 +821,7 @@ class TrabajadorListView(VerTrabajadoresMixin, ListView):
         kwargs.setdefault('cursos_columnas', Certificado.CURSO_CHOICES)
         kwargs.setdefault('es_empresa', self.request.user.role == User.USUARIO_EMPRESA)
         kwargs.setdefault('es_garita', self.request.user.role == User.GARITA)
+        kwargs.setdefault('es_beca_azul', self.request.user.role == User.BECA_AZUL)
         if kwargs['es_empresa']:
             kwargs['sortable_columns'].pop('empresa', None)
         kwargs.setdefault('empresa', getattr(self.request.user, 'empresa', None))
@@ -848,7 +898,7 @@ class TrabajadorBuscarView(ConsultarTrabajadoresMixin, View):
         return render(request, self.template_name, context)
 
 
-class TrabajadorUpdateView(TrabajadorActivoRequiredMixin, AdministrarTrabajadoresMixin, UpdateView):
+class TrabajadorUpdateView(EmpresaActivaRequiredMixin, TrabajadorActivoRequiredMixin, AdministrarTrabajadoresMixin, UpdateView):
     model = Trabajador
     form_class = TrabajadorForm
     template_name = 'control/trabajadores/form.html'
@@ -960,6 +1010,11 @@ class CertificadoValidacionToggleView(BecaAzulRequiredMixin, View):
             trabajador__isnull=False,
             tipo__in=(Certificado.INDUCCION, Certificado.APTITUD_MEDICA, Certificado.CURSOS),
         )
+        if not certificado.trabajador.empresa.activo:
+            raise PermissionDenied
+        if not certificado.trabajador.activo:
+            messages.error(request, 'No se puede modificar la validación porque el trabajador está desactivado.')
+            return redirect('app_control:trabajador_detalle', pk=certificado.trabajador_id)
         if certificado.tipo == Certificado.CURSOS and not certificado.trabajador.cursos_obligatorios.filter(
             curso=certificado.curso
         ).exists():
@@ -985,6 +1040,8 @@ class CertificadoValidacionToggleView(BecaAzulRequiredMixin, View):
 class TrabajadorHabilitadoToggleView(BecaAzulRequiredMixin, View):
     def post(self, request, pk):
         trabajador = get_object_or_404(Trabajador, pk=pk)
+        if not trabajador.empresa.activo:
+            raise PermissionDenied
         if not trabajador.activo:
             messages.error(
                 request,
@@ -1034,6 +1091,8 @@ class TrabajadorHabilitadoToggleView(BecaAzulRequiredMixin, View):
 class TrabajadorCursoObligatorioToggleView(BecaAzulRequiredMixin, View):
     def post(self, request, pk, curso):
         trabajador = get_object_or_404(Trabajador, pk=pk)
+        if not trabajador.empresa.activo:
+            raise PermissionDenied
         if not trabajador.activo:
             messages.error(request, 'No se puede modificar la obligatoriedad de cursos porque el trabajador está desactivado.')
             return redirect('app_control:trabajador_detalle', pk=trabajador.pk)
@@ -1048,6 +1107,8 @@ class TrabajadorCursoObligatorioToggleView(BecaAzulRequiredMixin, View):
 class TrabajadorToggleView(AdministrarTrabajadoresMixin, View):
     def post(self, request, pk):
         trabajador = get_object_or_404(Trabajador, pk=pk)
+        if not trabajador.empresa.activo:
+            raise PermissionDenied
         trabajador.activo = not trabajador.activo
         if not trabajador.activo:
             trabajador.habilitado = False
@@ -1357,7 +1418,7 @@ class TrabajadorEmpresaUpdateView(TrabajadorActivoRequiredMixin, TrabajadorEmpre
         return HttpResponseRedirect(self.get_success_url())
 
 
-class TrabajadorEmpresaToggleView(BecaAzulRequiredMixin, View):
+class TrabajadorEmpresaToggleView(EmpresaActivaRequiredMixin, BecaAzulRequiredMixin, View):
     def post(self, request, pk):
         trabajador = get_object_or_404(Trabajador, pk=pk)
         trabajador.activo = not trabajador.activo
@@ -1371,7 +1432,7 @@ class TrabajadorEmpresaToggleView(BecaAzulRequiredMixin, View):
         return redirect('app_control:trabajador_detalle', pk=trabajador.pk)
 
 
-class TrabajadorEmpresaDeleteView(BecaAzulRequiredMixin, DeleteView):
+class TrabajadorEmpresaDeleteView(EmpresaActivaRequiredMixin, BecaAzulRequiredMixin, DeleteView):
     model = Trabajador
     template_name = 'control/trabajadores/confirm_delete.html'
     context_object_name = 'trabajador'
@@ -1397,7 +1458,7 @@ class CertificadoEmpresaCreateView(TrabajadorActivoRequiredMixin, TrabajadorEmpr
         if request.method == 'GET':
             trabajador = self.get_trabajador()
             curso = request.GET.get('curso')
-            if request.GET.get('tipo') == Certificado.CURSOS and not CursoObligatorio.objects.filter(
+            if request.GET.get('tipo') != Certificado.CURSOS or not curso or not CursoObligatorio.objects.filter(
                 trabajador=trabajador,
                 curso=curso,
             ).exists():
@@ -1415,6 +1476,7 @@ class CertificadoEmpresaCreateView(TrabajadorActivoRequiredMixin, TrabajadorEmpr
         form.instance.trabajador = self.get_trabajador()
         form.instance.tipo = Certificado.CURSOS
         form.fields['tipo'].disabled = True
+        form.fields['curso'].disabled = True
         return form
 
     def get_trabajador(self):

@@ -113,6 +113,23 @@ class DashboardViewTests(TestCase):
             self.assertEqual(response.context['resultados'], 1, termino)
             self.assertEqual(response.context['trabajador'], self.trabajador)
 
+    def test_lista_busca_nombre_completo_por_palabras_y_dni_exacto(self):
+        self.trabajador.nombres = 'Peter'
+        self.trabajador.apellidos = 'Parker'
+        self.trabajador.save(update_fields=['nombres', 'apellidos'])
+
+        response = self.client.get(
+            reverse('app_control:trabajador_lista'),
+            {'q': 'parker peter'},
+        )
+        self.assertContains(response, self.trabajador.dni)
+
+        response = self.client.get(
+            reverse('app_control:trabajador_lista'),
+            {'q': self.trabajador.dni[:-1]},
+        )
+        self.assertNotContains(response, self.trabajador.dni)
+
     def test_grafica_agrupa_trabajadores_por_estado_e_incluye_inactivos(self):
         self.trabajador.activo = False
         self.trabajador.habilitado = False

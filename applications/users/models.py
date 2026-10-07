@@ -39,6 +39,7 @@ class User(AbstractBaseUser, PermissionsMixin,TimeStampedModel):
     phone = models.CharField(max_length=15, blank=True)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
+    is_active_before_empresa_deactivation = models.BooleanField(null=True, blank=True)
 
     empresa = models.ForeignKey(
         'control.Empresa',

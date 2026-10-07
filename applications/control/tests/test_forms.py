@@ -28,6 +28,12 @@ class PdfValidationTests(SimpleTestCase):
         with self.assertRaisesMessage(ValidationError, 'El archivo no contiene un PDF válido.'):
             validate_pdf(archivo)
 
+    def test_rejects_pdf_over_one_mb(self):
+        archivo = SimpleUploadedFile('documento.pdf', b'%PDF-' + b'x' * (1024 * 1024))
+
+        with self.assertRaisesMessage(ValidationError, 'El archivo PDF no puede superar 1 MB.'):
+            validate_pdf(archivo)
+
 
 class FormValidationTests(TestCase):
     def setUp(self):

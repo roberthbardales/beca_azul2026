@@ -29,12 +29,19 @@ la vista no añade una restricción específica.
 
 - Gestiona usuarios Planta, Empresa y Garita.
 - Gestiona empresas, incluyendo activación, desactivación y homologación.
+- Una homologación solo se mantiene aprobada si SCTR pensión y salud están
+  aprobados y vigentes, y el certificado de homologación tiene archivo vigente.
+  Si falla cualquiera de esas condiciones, se invalida automáticamente.
 - Consulta trabajadores de todas las empresas.
+- En `/trabajadores/` puede buscar por DNI completo o por palabras del nombre y
+  apellido, sin distinguir tildes. El DNI no admite coincidencias parciales.
 - Crea, edita, activa, desactiva y elimina trabajadores.
 - Crea, edita y elimina certificados de trabajadores de Inducción, Aptitud
   médica y cursos.
 - Valida o desaprueba explícitamente Inducción, Aptitud médica y cada curso
   obligatorio mediante `POST` en `/certificados/<id>/validar/`.
+- No puede validar ni desaprobar certificados de un trabajador inactivo. Las
+  casillas aparecen deshabilitadas y el backend rechaza igualmente el `POST`.
 - La Inducción requiere fechas, pero no PDF. Aptitud médica y cursos requieren
   PDF. Si falta el PDF requerido o aún no fueron validados, quedan pendientes;
   al vencer, quedan desaprobados.
@@ -47,6 +54,9 @@ la vista no añade una restricción específica.
 - Consulta certificados desde los detalles permitidos.
 - Activa o desactiva manualmente cada uno de los seis cursos para cada trabajador.
 - Puede modificar esa obligatoriedad solo en trabajadores activos.
+- Las validaciones de Inducción, Aptitud médica y cursos también quedan
+  bloqueadas para trabajadores inactivos: las casillas se muestran
+  deshabilitadas y el backend rechaza el `POST`.
 - Puede hacerlo mediante `POST` en `/trabajadores/<id>/cursos/<curso>/obligatorio/`.
 - No modifica Inducción ni Aptitud médica mediante esta configuración.
 - Accede al dashboard y a reportes globales.

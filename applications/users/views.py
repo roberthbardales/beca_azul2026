@@ -15,7 +15,13 @@ from .forms import (
     UpdatePasswordForm,
     UsuarioGestionForm,
 )
-from .mixins import CrearUsuariosPermisoMixin, ConsultaUsuariosPermisoMixin, GestionUsuariosPermisoMixin
+from .mixins import (
+    CrearUsuariosPermisoMixin,
+    ConsultaUsuariosPermisoMixin,
+    EmpresaActivaSessionRequiredMixin,
+    EmpresaUsuarioActivaRequiredMixin,
+    GestionUsuariosPermisoMixin,
+)
 from .models import User
 from . import services
 
@@ -60,7 +66,7 @@ class LogoutView(LoginRequiredMixin, View):
         return HttpResponseRedirect(reverse('app_users:login'))
 
 
-class UpdatePasswordView(LoginRequiredMixin, FormView):
+class UpdatePasswordView(EmpresaActivaSessionRequiredMixin, LoginRequiredMixin, FormView):
     template_name = 'users/cambiar_password.html'
     form_class = UpdatePasswordForm
     success_url = reverse_lazy('app_users:login')
@@ -83,7 +89,7 @@ class UpdatePasswordView(LoginRequiredMixin, FormView):
         return super().form_valid(form)
 
 
-class DashboardView(LoginRequiredMixin, View):
+class DashboardView(EmpresaActivaSessionRequiredMixin, LoginRequiredMixin, View):
     def get(self, request):
         if not request.user.is_superuser and request.user.role not in (
             User.ADMINISTRADOR,
@@ -94,7 +100,7 @@ class DashboardView(LoginRequiredMixin, View):
         return HttpResponseRedirect(reverse('app_control:dashboard'))
 
 
-class MiPerfilView(LoginRequiredMixin, TemplateView):
+class MiPerfilView(EmpresaActivaSessionRequiredMixin, LoginRequiredMixin, TemplateView):
     template_name = 'users/perfil.html'
     login_url = reverse_lazy('app_users:login')
 
@@ -104,7 +110,7 @@ class MiPerfilView(LoginRequiredMixin, TemplateView):
         return context
 
 
-class EditarPerfilView(LoginRequiredMixin, UpdateView):
+class EditarPerfilView(EmpresaActivaSessionRequiredMixin, LoginRequiredMixin, UpdateView):
     model = User
     form_class = PerfilForm
     template_name = 'users/editar_perfil.html'
@@ -203,7 +209,7 @@ class UsuarioCreateView(CrearUsuariosPermisoMixin, CreateView):
         return super().form_valid(form)
 
 
-class UsuarioUpdateView(GestionUsuariosPermisoMixin, UpdateView):
+class UsuarioUpdateView(EmpresaUsuarioActivaRequiredMixin, GestionUsuariosPermisoMixin, UpdateView):
     model = User
     form_class = UsuarioGestionForm
     template_name = 'users/usuarios/form.html'
@@ -230,7 +236,7 @@ class UsuarioUpdateView(GestionUsuariosPermisoMixin, UpdateView):
         return super().form_valid(form)
 
 
-class UsuarioToggleView(GestionUsuariosPermisoMixin, View):
+class UsuarioToggleView(EmpresaUsuarioActivaRequiredMixin, GestionUsuariosPermisoMixin, View):
     def post(self, request, pk):
         user = request.user
         if user.role == User.BECA_AZUL:
@@ -243,6 +249,8 @@ class UsuarioToggleView(GestionUsuariosPermisoMixin, View):
             usuario = get_object_or_404(User, pk=pk)
         else:
             usuario = get_object_or_404(User, pk=pk, role__in=[User.BECA_AZUL, User.PLANTA, User.GARITA])
+        if usuario.empresa_id and not usuario.empresa.activo:
+            raise PermissionDenied
         if usuario.pk == request.user.pk:
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return JsonResponse({'error': 'No puedes desactivar tu propia cuenta.'}, status=400)
@@ -257,7 +265,7 @@ class UsuarioToggleView(GestionUsuariosPermisoMixin, View):
         return redirect('app_users:usuario_lista')
 
 
-class UsuarioDeleteView(GestionUsuariosPermisoMixin, DeleteView):
+class UsuarioDeleteView(EmpresaUsuarioActivaRequiredMixin, GestionUsuariosPermisoMixin, DeleteView):
     model = User
     template_name = 'users/usuarios/confirm_delete.html'
     context_object_name = 'usuario'
@@ -284,7 +292,7 @@ class UsuarioDeleteView(GestionUsuariosPermisoMixin, DeleteView):
         return HttpResponseRedirect(self.get_success_url())
 
 
-class UsuarioPasswordResetView(GestionUsuariosPermisoMixin, FormView):
+class UsuarioPasswordResetView(EmpresaUsuarioActivaRequiredMixin, GestionUsuariosPermisoMixin, FormView):
     template_name = 'users/usuarios/reset_password.html'
     form_class = ResetPasswordForm
     success_url = reverse_lazy('app_users:usuario_lista')

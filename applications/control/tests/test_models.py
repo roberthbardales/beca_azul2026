@@ -4,8 +4,9 @@ from tempfile import TemporaryDirectory
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
+from django.db.models import Prefetch
 
-from ..models import Certificado, CursoTipo, Empresa, Trabajador, certificado_upload_path
+from ..models import Certificado, CursoObligatorio, CursoTipo, Empresa, Trabajador, certificado_upload_path
 
 
 class CertificadoModelTests(TestCase):
@@ -54,6 +55,23 @@ class CertificadoModelTests(TestCase):
 
         with self.assertRaises(ValueError):
             certificado_upload_path(certificado, 'certificado.pdf')
+
+    def test_estado_curso_usa_cursos_obligatorios_prefijados(self):
+        CursoObligatorio.objects.create(trabajador=self.trabajador, curso=CursoTipo.ALTURA)
+        Certificado.objects.create(
+            trabajador=self.trabajador,
+            tipo=Certificado.CURSOS,
+            curso=CursoTipo.ALTURA,
+            fecha_emision=date.today(),
+            fecha_vencimiento=date.today() + timedelta(days=30),
+            archivo=SimpleUploadedFile('altura.pdf', b'contenido'),
+            validado=True,
+        )
+        trabajador = Trabajador.objects.prefetch_related(
+            Prefetch('cursos_obligatorios', to_attr='cursos_obligatorios_lista'),
+        ).get(pk=self.trabajador.pk)
+
+        self.assertEqual(trabajador.estado_curso_altura, 'Vigente')
 
 
 class HomologacionManualTests(TestCase):

@@ -28,6 +28,25 @@ class GestionUsuariosPermisoMixin(BaseRolePermisoMixin):
     required_roles = (User.ADMINISTRADOR, User.BECA_AZUL)
 
 
+class EmpresaUsuarioActivaRequiredMixin:
+    def dispatch(self, request, *args, **kwargs):
+        usuario = User.objects.filter(pk=kwargs.get('pk')).select_related('empresa').first()
+        if usuario and usuario.empresa_id and not usuario.empresa.activo:
+            raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)
+
+
+class EmpresaActivaSessionRequiredMixin:
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return super().dispatch(request, *args, **kwargs)
+        if request.user.role == User.USUARIO_EMPRESA and (
+            not request.user.empresa_id or not request.user.empresa.activo
+        ):
+            raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)
+
+
 class CrearUsuariosPermisoMixin(BaseRolePermisoMixin):
     required_roles = (User.ADMINISTRADOR, User.BECA_AZUL)
 

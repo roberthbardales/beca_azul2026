@@ -6,7 +6,7 @@ from django.utils import timezone
 
 from .models import Certificado, Empresa, Incidencia, Trabajador
 
-MAX_PDF_SIZE = 2 * 1024 * 1024
+MAX_PDF_SIZE = 1 * 1024 * 1024
 PDF_SIGNATURE = b'%PDF-'
 DATE_RANGE_ERROR = 'La fecha no puede ser anterior a la emisión.'
 CERTIFICATE_DATE_RANGE_ERROR = 'La fecha de vencimiento no puede ser anterior a la fecha de emisión.'
@@ -25,7 +25,7 @@ def validate_pdf(value):
     if not value.name.lower().endswith('.pdf'):
         raise ValidationError('El archivo debe estar en formato PDF.')
     if value.size > MAX_PDF_SIZE:
-        raise ValidationError('El archivo PDF no puede superar los 2 MB.')
+        raise ValidationError('El archivo PDF no puede superar 1 MB.')
     position = value.tell()
     try:
         value.seek(0)

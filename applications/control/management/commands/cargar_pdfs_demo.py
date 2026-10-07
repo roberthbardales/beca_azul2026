@@ -28,8 +28,8 @@ class Command(BaseCommand):
         no_pdf = [str(path.name) for path in archivos.values() if path.suffix.lower() != '.pdf']
         if no_pdf:
             raise CommandError(f'Estos archivos no tienen extensión PDF: {", ".join(no_pdf)}')
-        if any(path.stat().st_size > 2 * 1024 * 1024 for path in archivos.values()):
-            raise CommandError('Todos los PDF deben pesar como máximo 2 MB.')
+        if any(path.stat().st_size > 1 * 1024 * 1024 for path in archivos.values()):
+            raise CommandError('Todos los PDF deben pesar como máximo 1 MB.')
 
         empresa = Empresa.objects.order_by('pk').first()
         trabajador = Trabajador.objects.filter(empresa=empresa).order_by('pk').first() if empresa else None

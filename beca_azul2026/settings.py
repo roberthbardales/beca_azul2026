@@ -158,7 +158,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # CERTIFICADOS (validacion de archivos)
 # --------------------------------------------------
 CERTIF_EXTENSIONES = ['.pdf']
-CERTIF_TAMANO_MAX_MB = 5
+CERTIF_TAMANO_MAX_MB = 1
 
 # --------------------------------------------------
 # DEFAULT PRIMARY KEY

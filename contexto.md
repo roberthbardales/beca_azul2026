@@ -45,6 +45,10 @@ roles administrativos, lista de trabajadores para Usuario Empresa y búsqueda
 de trabajadores para Usuario Garita. Cada usuario puede consultar y editar su
 propio perfil y cambiar su contraseña.
 
+El listado de `/trabajadores/` permite buscar por DNI completo o por palabras
+del nombre y apellido, en cualquier orden y sin distinguir tildes. No permite
+coincidencias parciales del DNI.
+
 ## Usuarios y roles
 
 | Código | Rol |
@@ -132,6 +136,10 @@ los seis cursos fijos. No crea ni modifica certificados.
 - Al desactivar la obligación, la constancia y sus datos se conservan.
 - No existe todavía cálculo general de cumplimiento ni historial de cambios.
 
+Los trabajadores inactivos no pueden modificar la obligatoriedad de cursos ni
+validar certificados. Los interruptores y casillas de validación se muestran
+deshabilitados y las vistas también rechazan los cambios enviados directamente.
+
 La ruta de configuración es:
 
 `POST /trabajadores/<id>/cursos/<curso>/obligatorio/`
@@ -166,9 +174,10 @@ considera trabajador activo, empresa activa, aprobaciones, archivos y vigencias.
 El SCTR que se utiliza para habilitar al trabajador corresponde a los
 certificados de su empresa.
 
-Beca Azul puede homologar una empresa solo si el SCTR y la homologación tienen
-archivo físico y ambos están vigentes. Puede deshomologarla posteriormente sin
-volver a cumplir esa validación.
+Beca Azul puede homologar una empresa solo si los SCTR de pensión y salud están
+aprobados, tienen archivo físico vigente, y el certificado de homologación
+también tiene archivo físico vigente. Si cualquiera de esas aprobaciones o
+vigencias deja de cumplirse, la homologación se invalida automáticamente.
 
 ## Dashboard y reportes
 
