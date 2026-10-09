@@ -89,18 +89,10 @@
                   <fieldset class="control-form-section border-t border-gray-100 pt-3"><legend class="mb-2 text-sm font-semibold text-[#0f172a]">Certificados</legend>
                       {{ certificado_formset.management_form }}
                         <div class="app-table-wrap responsive-table"><table class="app-table worker-data-table w-full min-w-[520px]"><thead><tr><th>Tipo</th><th>Archivo PDF</th><th>Emisión</th><th>Vencimiento</th></tr></thead><tbody id="certificados-fijos">
-                           <tr><td>Inducción</td><td>{{ form.induccion_archivo }}{% for error in form.induccion_archivo.errors %}<div class="text-xs text-red-600">{{ error }}</div>{% endfor %}</td><td>{{ form.induccion_fecha_emision }}{{ form.induccion_fecha_emision.errors }}</td><td>{{ form.induccion_fecha_vencimiento }}{{ form.induccion_fecha_vencimiento.errors }}</td></tr>
-                          <tr><td>Aptitud médica</td><td>{{ form.aptitud_medica_archivo }}{% for error in form.aptitud_medica_archivo.errors %}<div class="text-xs text-red-600">{{ error }}</div>{% endfor %}</td><td>{{ form.aptitud_medica_fecha_emision }}{{ form.aptitud_medica_fecha_emision.errors }}</td><td>{{ form.aptitud_medica_fecha_vencimiento }}{{ form.aptitud_medica_fecha_vencimiento.errors }}</td></tr>
+                           <tr><td>Inducción <span class="text-red-600">*</span></td><td>{{ form.induccion_archivo }}{% for error in form.induccion_archivo.errors %}<div class="text-xs text-red-600">{{ error }}</div>{% endfor %}</td><td>{{ form.induccion_fecha_emision }}{{ form.induccion_fecha_emision.errors }}</td><td>{{ form.induccion_fecha_vencimiento }}{{ form.induccion_fecha_vencimiento.errors }}</td></tr>
+                          <tr><td>Aptitud médica <span class="text-red-600">*</span></td><td>{{ form.aptitud_medica_archivo }}{% for error in form.aptitud_medica_archivo.errors %}<div class="text-xs text-red-600">{{ error }}</div>{% endfor %}</td><td>{{ form.aptitud_medica_fecha_emision }}{{ form.aptitud_medica_fecha_emision.errors }}</td><td>{{ form.aptitud_medica_fecha_vencimiento }}{{ form.aptitud_medica_fecha_vencimiento.errors }}</td></tr>
                        </tbody></table></div>
                  </fieldset>
-                  <fieldset class="control-form-section border-t border-gray-100 pt-3"><legend class="mb-2 text-sm font-semibold text-[#0f172a]">Cursos</legend>
-                         <div class="app-table-wrap responsive-table"><table class="app-table worker-data-table w-full min-w-[620px]"><thead><tr><th>Curso</th><th>Archivo PDF</th><th>Emisión</th><th>Vencimiento</th></tr></thead><tbody id="certificados-opcionales">
-                       {% for certificado_form in certificado_formset %}
- <tr data-certificado-form><td>{% if certificado_form.curso.value == 'CALIENTE' %}Caliente{% elif certificado_form.curso.value == 'ALTURA' %}Altura{% elif certificado_form.curso.value == 'ESPACIO_CONFINADO' %}Espacio confinado{% elif certificado_form.curso.value == 'ELECTRICO' %}Eléctrico{% elif certificado_form.curso.value == 'EXCAVACION' %}Excavación{% elif certificado_form.curso.value == 'IZAJE' %}Izaje{% endif %}{{ certificado_form.tipo }}{{ certificado_form.curso }}{{ certificado_form.curso.errors }}</td><td>{% if certificado_form.initial.archivo %}<a href="{{ certificado_form.initial.archivo.url }}" target="_blank" rel="noopener" class="text-xs text-blue-700 underline">PDF actual</a><br>{% endif %}{{ certificado_form.archivo }}{{ certificado_form.archivo.errors }}</td><td>{{ certificado_form.fecha_emision }}{{ certificado_form.fecha_emision.errors }}</td><td>{{ certificado_form.fecha_vencimiento }}{{ certificado_form.fecha_vencimiento.errors }}</td></tr>
-                       {% endfor %}
-                       </tbody></table></div>
-                       {% if certificado_formset.non_form_errors %}<div class="text-xs text-red-600">{{ certificado_formset.non_form_errors }}</div>{% endif %}
-                  </fieldset>
                  {% endif %}
 
                 <footer class="control-action-bar flex flex-col-reverse gap-2 border-t border-gray-100 pt-3 sm:flex-row sm:items-center">
@@ -115,9 +107,29 @@
                 {% if not object %}
                 const today = new Date();
                 const todayValue = [today.getFullYear(), String(today.getMonth() + 1).padStart(2, '0'), String(today.getDate()).padStart(2, '0')].join('-');
-                ['id_induccion_fecha_emision', 'id_aptitud_medica_fecha_emision'].forEach((fieldId) => {
-                    const field = document.getElementById(fieldId);
-                    if (field && !field.value) field.value = todayValue;
+                const certificateDateFields = {
+                    induccion_archivo: ['id_induccion_fecha_emision', 'id_induccion_fecha_vencimiento'],
+                    aptitud_medica_archivo: ['id_aptitud_medica_fecha_emision', 'id_aptitud_medica_fecha_vencimiento'],
+                };
+                Object.entries(certificateDateFields).forEach(([fileFieldId, dateFieldIds]) => {
+                    const fileField = document.getElementById(`id_${fileFieldId}`);
+                    const dateFields = dateFieldIds.map((fieldId) => document.getElementById(fieldId));
+                    if (!fileField) return;
+
+                    const updateDateFields = () => {
+                        const hasFile = fileField.files.length > 0;
+                        dateFields.forEach((field) => {
+                            if (!field) return;
+                            field.disabled = !hasFile;
+                            if (hasFile && field.id.endsWith('_fecha_emision') && !field.value) {
+                                field.value = todayValue;
+                            }
+                            if (!hasFile) field.value = '';
+                        });
+                    };
+
+                    updateDateFields();
+                    fileField.addEventListener('change', updateDateFields);
                 });
                 {% endif %}
 

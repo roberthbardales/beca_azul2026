@@ -5,6 +5,7 @@ from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.db.models import Prefetch
+from django.db import IntegrityError, transaction
 
 from ..models import Certificado, CursoObligatorio, CursoTipo, Empresa, Trabajador, certificado_upload_path
 
@@ -56,6 +57,18 @@ class CertificadoModelTests(TestCase):
         with self.assertRaises(ValueError):
             certificado_upload_path(certificado, 'certificado.pdf')
 
+    def test_bulk_create_rechaza_certificado_con_propietario_inconsistente(self):
+        certificado = Certificado(
+            trabajador=self.trabajador,
+            tipo=Certificado.SCTR_PENSION,
+            fecha_emision=date.today(),
+            fecha_vencimiento=date.today() + timedelta(days=1),
+        )
+
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                Certificado.objects.bulk_create([certificado])
+
     def test_estado_curso_usa_cursos_obligatorios_prefijados(self):
         CursoObligatorio.objects.create(trabajador=self.trabajador, curso=CursoTipo.ALTURA)
         Certificado.objects.create(
@@ -73,8 +86,57 @@ class CertificadoModelTests(TestCase):
 
         self.assertEqual(trabajador.estado_curso_altura, 'Vigente')
 
+    def test_certificado_curso_sin_archivo_no_se_considera_validado(self):
+        certificado = Certificado.objects.create(
+            trabajador=self.trabajador,
+            tipo=Certificado.CURSOS,
+            curso=CursoTipo.ALTURA,
+            fecha_emision=date.today(),
+            fecha_vencimiento=date.today() + timedelta(days=30),
+            archivo='certificados/no-existe.pdf',
+            validado=True,
+        )
+
+        self.assertEqual(certificado.estado, 'Pendiente')
+        self.assertEqual(certificado.validacion_estado, 'Pendiente')
+        self.assertFalse(certificado.validacion_vigente)
+
 
 class HomologacionManualTests(TestCase):
+    def test_empresa_rechaza_sctr_aprobado_sin_certificado_vigente(self):
+        empresa = Empresa.objects.create(
+            nombre='Empresa',
+            ruc='20123456789',
+            correo='empresa@example.com',
+            sctr_pension_aprobado=True,
+        )
+
+        with self.assertRaises(ValidationError):
+            empresa.full_clean()
+
+    def test_empresa_no_puede_homologarse_sin_ambos_sctr_aprobados(self):
+        empresa = Empresa.objects.create(
+            nombre='Empresa',
+            ruc='20123456789',
+            correo='empresa@example.com',
+            homologacion=True,
+            sctr_pension_aprobado=True,
+            sctr_salud_aprobado=False,
+        )
+
+        with self.assertRaises(ValidationError):
+            empresa.full_clean()
+
+    def test_empresa_rechaza_ruc_invalido(self):
+        empresa = Empresa(
+            nombre='Empresa',
+            ruc='ABC',
+            correo='empresa@example.com',
+        )
+
+        with self.assertRaises(ValidationError):
+            empresa.full_clean()
+
     def test_cambiar_empresa_no_actualiza_la_homologacion(self):
         empresa_anterior = Empresa.objects.create(nombre='Anterior', ruc='20123456789', correo='anterior@example.com')
         empresa_nueva = Empresa.objects.create(nombre='Nueva', ruc='20987654321', correo='nueva@example.com')
@@ -108,18 +170,17 @@ class SctrEfectivoTests(TestCase):
             dni='12345678',
             nombres='Ana',
             apellidos='Prueba',
-            sctr_pension=True,
-            sctr_salud=True,
         )
 
     def crear_certificado(self, tipo, vencimiento):
-        return Certificado.objects.create(
+        certificado = Certificado.objects.create(
             empresa=self.empresa,
             tipo=tipo,
             fecha_emision=date.today() - timedelta(days=1),
             fecha_vencimiento=vencimiento,
             archivo=SimpleUploadedFile(f'{tipo.lower()}.pdf', b'%PDF-1.4 test'),
         )
+        return certificado
 
     def test_sctr_efectivo_requiere_aprobacion_y_certificado_vigente(self):
         self.crear_certificado(Certificado.SCTR_PENSION, date.today() + timedelta(days=1))

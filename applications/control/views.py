@@ -31,7 +31,6 @@ from applications.users.mixins import (
 from applications.users.models import User
 
 from .forms import (
-    CertificadoCargaFormSet,
     CertificadoForm,
     EmpresaForm,
     IncidenciaForm,
@@ -101,7 +100,11 @@ class DashboardView(LoginRequiredMixin, View):
         empresas_activas = Empresa.objects.filter(activo=True).count()
         empresas_habilitadas = Empresa.objects.filter(homologacion=True).count()
 
+
         total_trabajadores = Trabajador.objects.count()
+        inducciones = Certificado.objects.filter(tipo=Certificado.INDUCCION)
+        inducciones_vigentes = sum(certificado.validacion_vigente for certificado in inducciones)
+        inducciones_vencidas = inducciones.filter(fecha_vencimiento__lt=hoy).count()
         certificados_empresa = Certificado.objects.filter(
             tipo__in=(Certificado.SCTR_PENSION, Certificado.SCTR_SALUD, Certificado.HOMOLOGACION)
         )
@@ -116,6 +119,22 @@ class DashboardView(LoginRequiredMixin, View):
         )
         trabajadores_habilitados = sum(trabajador.habilitado_efectivo for trabajador in trabajadores)
         trabajadores_deshabilitados = len(trabajadores) - trabajadores_habilitados
+        trabajadores_sctr_salud = sum(trabajador.sctr_salud_efectivo for trabajador in trabajadores)
+        trabajadores_sctr_pension = sum(trabajador.sctr_pension_efectivo for trabajador in trabajadores)
+        cursos_vigentes = []
+        for codigo, etiqueta in Certificado.CURSO_CHOICES:
+            certificados_curso = Certificado.objects.filter(
+                tipo=Certificado.CURSOS,
+                curso=codigo,
+            )
+            cursos_vigentes.append(
+                {
+                    'codigo': codigo,
+                    'nombre': etiqueta,
+                    'total': sum(certificado.validacion_vigente for certificado in certificados_curso),
+                }
+            )
+
 
         total_certificados = Certificado.objects.count()
         certificados_sin_vencimiento = 0
@@ -170,6 +189,20 @@ class DashboardView(LoginRequiredMixin, View):
             ),
         ).order_by('nombre')
 
+        meses = []
+        mes_actual = hoy.replace(day=1)
+        for _ in range(6):
+            siguiente = mes_actual.replace(day=28) + timedelta(days=4)
+            fin_mes = siguiente.replace(day=1) - timedelta(days=1)
+            meses.append({
+                'label': mes_actual.strftime('%b %Y').capitalize(),
+                'total': Certificado.objects.filter(
+                    fecha_vencimiento__gte=mes_actual,
+                    fecha_vencimiento__lte=fin_mes,
+                ).count(),
+            })
+            mes_actual = siguiente.replace(day=1)
+
         context = {
             'total_empresas': total_empresas,
             'empresas_activas': empresas_activas,
@@ -177,8 +210,13 @@ class DashboardView(LoginRequiredMixin, View):
             'empresas_habilitadas': empresas_habilitadas,
             'empresas_deshabilitadas': total_empresas - empresas_habilitadas,
             'total_trabajadores': total_trabajadores,
+            'inducciones_vigentes': inducciones_vigentes,
+            'inducciones_vencidas': inducciones_vencidas,
             'trabajadores_habilitados': trabajadores_habilitados,
             'trabajadores_deshabilitados': trabajadores_deshabilitados,
+            'trabajadores_sctr_salud': trabajadores_sctr_salud,
+            'trabajadores_sctr_pension': trabajadores_sctr_pension,
+            'cursos_vigentes': cursos_vigentes,
             'total_certificados': total_certificados,
             'certificados_vencidos': certificados_vencidos,
             'certificados_sin_vencimiento': certificados_sin_vencimiento,
@@ -206,6 +244,7 @@ class DashboardView(LoginRequiredMixin, View):
                     'proximos': [empresa.proximos for empresa in vencimientos_por_empresa],
                     'vencidos': [empresa.vencidos for empresa in vencimientos_por_empresa],
                 },
+                'vencimientos_mensuales': meses,
             },
         }
         return render(request, self.template_name, context)
@@ -406,11 +445,11 @@ class EmpresaSCTRToggleView(EmpresaActivaRequiredMixin, BecaAzulRequiredMixin, V
     def post(self, request, pk, tipo):
         empresa = get_object_or_404(Empresa, pk=pk)
         estados = {
-            'pension': ('sctr_pension_aprobado', Certificado.SCTR_PENSION, 'sctr_pension'),
-            'salud': ('sctr_salud_aprobado', Certificado.SCTR_SALUD, 'sctr_salud'),
+            'pension': ('sctr_pension_aprobado', Certificado.SCTR_PENSION),
+            'salud': ('sctr_salud_aprobado', Certificado.SCTR_SALUD),
         }
         try:
-            field_name, certificate_type, worker_field = estados[tipo]
+            field_name, certificate_type = estados[tipo]
         except KeyError:
             raise Http404
 
@@ -421,7 +460,6 @@ class EmpresaSCTRToggleView(EmpresaActivaRequiredMixin, BecaAzulRequiredMixin, V
 
         setattr(empresa, field_name, aprobado)
         empresa.save(update_fields=[field_name])
-        empresa.trabajadores.update(**{worker_field: aprobado})
         estado = 'aprobado' if aprobado else 'desaprobado'
         messages.success(request, f'El SCTR {tipo} de "{empresa.nombre}" fue {estado} para sus trabajadores.')
         return redirect('app_control:empresa_detalle', pk=empresa.pk)
@@ -571,6 +609,16 @@ class EmpresaDetailView(LoginRequiredMixin, DetailView):
 
         sctr_pension_valido = certificado_valido(sctr_pension)
         sctr_salud_valido = certificado_valido(sctr_salud)
+        sctr_pension_archivo_existe = bool(
+            sctr_pension
+            and sctr_pension.archivo
+            and sctr_pension.archivo.storage.exists(sctr_pension.archivo.name)
+        )
+        sctr_salud_archivo_existe = bool(
+            sctr_salud
+            and sctr_salud.archivo
+            and sctr_salud.archivo.storage.exists(sctr_salud.archivo.name)
+        )
         homologacion_vigente = bool(
             homologacion
             and homologacion.archivo
@@ -600,6 +648,8 @@ class EmpresaDetailView(LoginRequiredMixin, DetailView):
         kwargs.setdefault('sctr_salud', sctr_salud)
         kwargs.setdefault('sctr_pension_valido', sctr_pension_valido)
         kwargs.setdefault('sctr_salud_valido', sctr_salud_valido)
+        kwargs.setdefault('sctr_pension_archivo_existe', sctr_pension_archivo_existe)
+        kwargs.setdefault('sctr_salud_archivo_existe', sctr_salud_archivo_existe)
         kwargs.setdefault('sctr_pension_aprobado', self.object.sctr_pension_aprobado)
         kwargs.setdefault('sctr_salud_aprobado', self.object.sctr_salud_aprobado)
         kwargs.setdefault('sctr_valido', sctr_pension_valido and sctr_salud_valido)
@@ -940,6 +990,11 @@ class TrabajadorDetailView(VerTrabajadorDetalleMixin, DetailView):
                 tipo__in=(Certificado.SCTR_PENSION, Certificado.SCTR_SALUD)
             )
         }
+        for certificado in certificados_lista + list(certificados_empresa.values()):
+            certificado.archivo_existe = bool(
+                certificado.archivo
+                and certificado.archivo.storage.exists(certificado.archivo.name)
+            )
         cursos = {
             certificado.curso: certificado
             for certificado in certificados_lista
@@ -956,8 +1011,7 @@ class TrabajadorDetailView(VerTrabajadorDetalleMixin, DetailView):
         for certificado in certificados_validables:
             certificado.puede_validarse = bool(
                 certificado.fecha_vencimiento >= timezone.localdate()
-                and certificado.archivo
-                and certificado.archivo.storage.exists(certificado.archivo.name)
+                and certificado.archivo_existe
             )
             certificado.validacion_bloqueada_por_vencimiento = (
                 certificado.fecha_vencimiento < timezone.localdate()
@@ -1019,6 +1073,11 @@ class CertificadoValidacionToggleView(BecaAzulRequiredMixin, View):
             curso=certificado.curso
         ).exists():
             messages.error(request, 'Solo se pueden validar cursos habilitados previamente.')
+            return redirect('app_control:trabajador_detalle', pk=certificado.trabajador_id)
+        if not certificado.archivo or not certificado.archivo.storage.exists(certificado.archivo.name):
+            certificado.validado = False
+            certificado.save(update_fields=['validado'])
+            messages.error(request, 'No se puede validar el certificado porque falta el archivo PDF.')
             return redirect('app_control:trabajador_detalle', pk=certificado.trabajador_id)
         if certificado.fecha_vencimiento < timezone.localdate():
             certificado.validado = False
@@ -1318,33 +1377,9 @@ class TrabajadorEmpresaCreateView(TrabajadorEmpresaBaseMixin, CreateView):
         kwargs['empresa'] = self.request.user.empresa
         return kwargs
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context.setdefault(
-            'certificado_formset',
-            CertificadoCargaFormSet(
-                initial=[{'tipo': Certificado.CURSOS, 'curso': curso} for curso, label in Certificado.CURSO_CHOICES],
-                prefix='certificados',
-            ),
-        )
-        return context
-
-
     def form_valid(self, form):
-        formset = CertificadoCargaFormSet(self.request.POST, self.request.FILES, prefix='certificados')
-        if not formset.is_valid():
-            return self.render_to_response(self.get_context_data(form=form, certificado_formset=formset))
         form.instance.empresa = self.request.user.empresa
-        with transaction.atomic():
-            self.object = form.save()
-            for certificado_form in formset:
-                if certificado_form.cleaned_data and all(
-                    certificado_form.cleaned_data.get(field)
-                    for field in ('curso', 'archivo', 'fecha_emision', 'fecha_vencimiento')
-                ):
-                    certificado = certificado_form.save(commit=False)
-                    certificado.trabajador = self.object
-                    certificado.save()
+        self.object = form.save()
         messages.success(
             self.request,
             f'El trabajador "{self.object}" fue registrado correctamente.',
@@ -1364,52 +1399,8 @@ class TrabajadorEmpresaUpdateView(TrabajadorActivoRequiredMixin, TrabajadorEmpre
         kwargs['empresa'] = self.request.user.empresa
         return kwargs
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        certificados = {
-            certificado.curso: certificado
-            for certificado in self.object.certificados.filter(tipo=Certificado.CURSOS)
-        }
-        initial = []
-        for curso, label in Certificado.CURSO_CHOICES:
-            certificado = certificados.get(curso)
-            initial.append({
-                'tipo': Certificado.CURSOS,
-                'curso': curso,
-                'fecha_emision': certificado.fecha_emision.isoformat() if certificado else '',
-                'fecha_vencimiento': certificado.fecha_vencimiento.isoformat() if certificado else '',
-                'archivo': certificado.archivo if certificado else '',
-            })
-        context.setdefault('certificado_formset', CertificadoCargaFormSet(initial=initial, prefix='certificados'))
-        return context
-
     def form_valid(self, form):
-        formset = CertificadoCargaFormSet(self.request.POST, self.request.FILES, prefix='certificados')
-        if not formset.is_valid():
-            return self.render_to_response(self.get_context_data(form=form, certificado_formset=formset))
-        with transaction.atomic():
-            self.object = form.save()
-            cursos_existentes = {
-                certificado.curso: certificado
-                for certificado in self.object.certificados.filter(tipo=Certificado.CURSOS)
-            }
-            for certificado_form in formset:
-                if certificado_form.cleaned_data:
-                    curso = certificado_form.cleaned_data.get('curso')
-                    if not curso or not all(certificado_form.cleaned_data.get(field) for field in ('fecha_emision', 'fecha_vencimiento')):
-                        continue
-                    certificado = cursos_existentes.get(curso, Certificado())
-                    certificado.tipo = Certificado.CURSOS
-                    certificado.curso = curso
-                    certificado.fecha_emision = certificado_form.cleaned_data['fecha_emision']
-                    certificado.fecha_vencimiento = certificado_form.cleaned_data['fecha_vencimiento']
-                    archivo = certificado_form.cleaned_data.get('archivo')
-                    if archivo:
-                        certificado.archivo = archivo
-                    elif not certificado.pk:
-                        continue
-                    certificado.trabajador = self.object
-                    certificado.save()
+        self.object = form.save()
         messages.success(
             self.request,
             f'El trabajador "{self.object}" fue actualizado correctamente.',
@@ -1513,7 +1504,7 @@ class CertificadoEmpresaCreateView(TrabajadorActivoRequiredMixin, TrabajadorEmpr
         return response
 
     def get_success_url(self):
-        return reverse('app_control:trabajador_empresa_detalle', args=[self.trabajador.pk])
+        return reverse('app_control:trabajador_detalle', args=[self.trabajador.pk])
 
 
 class CertificadoEmpresaUpdateView(TrabajadorActivoRequiredMixin, TrabajadorEmpresaBaseMixin, UpdateView):
@@ -1551,7 +1542,7 @@ class CertificadoEmpresaUpdateView(TrabajadorActivoRequiredMixin, TrabajadorEmpr
         return HttpResponseRedirect(self.get_success_url())
 
     def get_success_url(self):
-        return reverse('app_control:trabajador_empresa_detalle', args=[self.object.trabajador.pk])
+        return reverse('app_control:trabajador_detalle', args=[self.object.trabajador.pk])
 
 
 class CertificadoEmpresaDeleteView(TrabajadorActivoRequiredMixin, TrabajadorEmpresaBaseMixin, DeleteView):
@@ -1575,4 +1566,4 @@ class CertificadoEmpresaDeleteView(TrabajadorActivoRequiredMixin, TrabajadorEmpr
         trabajador_pk = self.object.trabajador.pk
         self.object.delete()
         messages.success(self.request, 'Certificado eliminado correctamente.')
-        return HttpResponseRedirect(reverse('app_control:trabajador_empresa_detalle', args=[trabajador_pk]))
+        return HttpResponseRedirect(reverse('app_control:trabajador_detalle', args=[trabajador_pk]))

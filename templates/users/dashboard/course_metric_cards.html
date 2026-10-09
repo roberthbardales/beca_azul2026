@@ -1,0 +1,22 @@
+<section class="mt-5" aria-labelledby="metric-cursos-title">
+    <h2 id="metric-cursos-title" class="mb-3 text-sm font-semibold uppercase tracking-wide text-[#64748b]">
+        Cursos vigentes por tipo
+    </h2>
+    <div class="dashboard-course-metrics grid items-stretch gap-4 sm:grid-cols-2 lg:grid-cols-6">
+        {% for curso in cursos_vigentes %}
+            <article class="dashboard-metric rounded-lg border border-gray-100 bg-white p-4 shadow-sm"
+                     aria-labelledby="metric-curso-{{ curso.codigo|lower }}">
+                <h3 id="metric-curso-{{ curso.codigo|lower }}" class="text-xs font-semibold uppercase tracking-wide text-[#A5A5A5]">
+                    {{ curso.nombre }}
+                </h3>
+                <div class="dashboard-card-content">
+                    <p class="text-3xl font-bold tabular-nums text-[#0f172a]">{{ curso.total }}</p>
+                    <span class="inline-flex items-center gap-1.5 rounded-full bg-green-100 px-2.5 py-1 text-xs font-semibold text-green-600">
+                        <span class="h-1.5 w-1.5 rounded-full bg-current" aria-hidden="true"></span>
+                        trabajadores
+                    </span>
+                </div>
+            </article>
+        {% endfor %}
+    </div>
+</section>

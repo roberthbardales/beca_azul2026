@@ -2,7 +2,7 @@
     var dataElement = document.getElementById('dashboard-charts-data');
     if (!dataElement) return;
 
-    var chartIds = ['estado-cumplimiento', 'trabajadores-por-estado'];
+    var chartIds = ['estado-cumplimiento', 'trabajadores-por-empresa', 'vencimientos-mensuales'];
 
     function showChartError(message) {
         chartIds.forEach(function (id) {
@@ -32,7 +32,8 @@
     if (!data || !Array.isArray(data.cumplimiento) || !data.trabajadores_empresa ||
             !Array.isArray(data.trabajadores_empresa.labels) ||
             !Array.isArray(data.trabajadores_empresa.habilitados) ||
-            !Array.isArray(data.trabajadores_empresa.inhabilitados)) {
+            !Array.isArray(data.trabajadores_empresa.inhabilitados) ||
+            !Array.isArray(data.vencimientos_mensuales)) {
         showChartError('No hay datos válidos para generar las gráficas.');
         return;
     }
@@ -65,7 +66,10 @@
     var emptyStatePlugin = {
         id: 'emptyState',
         afterDraw: function (chart) {
-            if (total(chart.data.datasets[0].data) !== 0) return;
+            var chartTotal = chart.data.datasets.reduce(function (sum, dataset) {
+                return sum + total(dataset.data);
+            }, 0);
+            if (chartTotal !== 0) return;
             var area = chart.chartArea;
             var ctx = chart.ctx;
             ctx.save();
@@ -101,11 +105,14 @@
     var complianceTotal = total(data.cumplimiento);
     var complianceLegend = document.getElementById('cumplimiento-legend');
     var complianceCanvas = document.getElementById('estado-cumplimiento');
-    var workersStatusCanvas = document.getElementById('trabajadores-por-estado');
+    var workersStatusCanvas = document.getElementById('trabajadores-por-empresa');
     if (!complianceLegend || !complianceCanvas || !workersStatusCanvas) {
         showChartError('No fue posible preparar las gráficas.');
         return;
     }
+
+    var workersChartCanvas = workersStatusCanvas.parentElement;
+    workersChartCanvas.style.height = Math.max(256, data.trabajadores_empresa.labels.length * 44) + 'px';
 
     complianceLegend.innerHTML = doughnutLabels.map(function (label, index) {
         var value = data.cumplimiento[index];
@@ -148,9 +155,21 @@
     new Chart(workersStatusCanvas, {
         type: 'bar', plugins: [emptyStatePlugin],
         data: { labels: data.trabajadores_empresa.labels, datasets: [
-            { label: 'Habilitados', data: data.trabajadores_empresa.habilitados, backgroundColor: '#10b981', borderRadius: 4, borderSkipped: false },
-            { label: 'Inhabilitados', data: data.trabajadores_empresa.inhabilitados, backgroundColor: '#ef4444', borderRadius: 4, borderSkipped: false }
+            { label: 'Habilitados', data: data.trabajadores_empresa.habilitados, backgroundColor: '#10b981', borderRadius: 4, borderSkipped: false, barThickness: 14, maxBarThickness: 18 },
+            { label: 'Inhabilitados', data: data.trabajadores_empresa.inhabilitados, backgroundColor: '#ef4444', borderRadius: 4, borderSkipped: false, barThickness: 14, maxBarThickness: 18 }
         ] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' }, tooltip: tooltipOptions(' trabajadores') }, scales: { y: { beginAtZero: true, ticks: { precision: 0, padding: 8 }, border: { display: false }, grid: { color: gridColor } }, x: { border: { display: false }, grid: { display: false }, ticks: { maxRotation: 45, minRotation: 0, padding: 8 } } } }
+        options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' }, tooltip: tooltipOptions(' trabajadores') }, scales: { x: { beginAtZero: true, ticks: { precision: 0, padding: 8 }, border: { display: false }, grid: { color: gridColor } }, y: { border: { display: false }, grid: { display: false }, ticks: { padding: 8 } } } }
+    });
+
+    var expiryTrendCanvas = document.getElementById('vencimientos-mensuales');
+    if (!expiryTrendCanvas) return;
+
+    new Chart(expiryTrendCanvas, {
+        type: 'line', plugins: [emptyStatePlugin],
+        data: {
+            labels: data.vencimientos_mensuales.map(function (item) { return item.label; }),
+            datasets: [{ label: 'Vencimientos', data: data.vencimientos_mensuales.map(function (item) { return item.total; }), borderColor: '#ff7a29', backgroundColor: 'rgba(255, 122, 41, .12)', fill: true, tension: .3, pointRadius: 4, pointBackgroundColor: '#ff7a29' }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: tooltipOptions(' certificados') }, scales: { y: { beginAtZero: true, ticks: { precision: 0 }, border: { display: false }, grid: { color: gridColor } }, x: { border: { display: false }, grid: { display: false } } } }
     });
 })();

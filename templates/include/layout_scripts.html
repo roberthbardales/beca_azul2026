@@ -52,7 +52,7 @@
             });
         }
 
-        document.querySelectorAll('.toast').forEach(function (toast) {
+        document.querySelectorAll('.toast:not([data-persistent-toast])').forEach(function (toast) {
             function dismissToast() {
                 toast.classList.add('is-closing');
                 toast.addEventListener('transitionend', function () {

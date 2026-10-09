@@ -4,9 +4,10 @@
 {% block title %}Dashboard | Sistema de Control{% endblock %}
 
 {% block content %}
-<section class="dashboard-page" aria-labelledby="dashboard-title">
+<section class="dashboard-page" aria-label="Panel principal">
     {% include 'users/dashboard/page_header.html' %}
     {% include 'users/dashboard/metric_cards.html' %}
+    {% include 'users/dashboard/course_metric_cards.html' %}
     {% include 'users/dashboard/charts.html' %}
 
 </section>

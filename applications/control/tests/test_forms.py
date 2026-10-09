@@ -49,6 +49,46 @@ class FormValidationTests(TestCase):
             'fecha_vencimiento': date.today() + timedelta(days=1),
         }
 
+    def test_crear_trabajador_empresa_exige_induccion_y_aptitud_medica(self):
+        form = TrabajadorEmpresaForm(
+            data={
+                'tipo_documento': Trabajador.DNI,
+                'dni': '87654321',
+                'nombres': 'Nuevo',
+                'apellidos': 'Trabajador',
+                'induccion_fecha_emision': date.today().isoformat(),
+                'induccion_fecha_vencimiento': (date.today() + timedelta(days=1)).isoformat(),
+                'aptitud_medica_fecha_emision': date.today().isoformat(),
+                'aptitud_medica_fecha_vencimiento': (date.today() + timedelta(days=1)).isoformat(),
+            },
+            files={
+                'induccion_archivo': SimpleUploadedFile('induccion.pdf', b'%PDF-1.4 induccion'),
+            },
+            empresa=self.empresa,
+        )
+
+        self.assertFalse(form.is_valid())
+        self.assertIn('aptitud_medica_archivo', form.errors)
+
+    def test_crear_trabajador_empresa_exige_fechas_de_ambos_certificados(self):
+        form = TrabajadorEmpresaForm(
+            data={
+                'tipo_documento': Trabajador.DNI,
+                'dni': '87654321',
+                'nombres': 'Nuevo',
+                'apellidos': 'Trabajador',
+            },
+            files={
+                'induccion_archivo': SimpleUploadedFile('induccion.pdf', b'%PDF-1.4 induccion'),
+                'aptitud_medica_archivo': SimpleUploadedFile('aptitud.pdf', b'%PDF-1.4 aptitud'),
+            },
+            empresa=self.empresa,
+        )
+
+        self.assertFalse(form.is_valid())
+        self.assertIn('induccion_fecha_emision', form.errors)
+        self.assertIn('aptitud_medica_fecha_vencimiento', form.errors)
+
     def test_trabajador_form_rechaza_dni_invalido(self):
         form = TrabajadorForm(data={
             'empresa': self.empresa.pk,
@@ -61,7 +101,7 @@ class FormValidationTests(TestCase):
         self.assertFalse(form.is_valid())
         self.assertIn('dni', form.errors)
 
-    def test_trabajador_form_no_actualiza_sctr(self):
+    def test_trabajador_form_no_incluye_sctr(self):
         form = TrabajadorForm(data={
             'empresa': self.empresa.pk,
             'tipo_documento': Trabajador.DNI,
@@ -72,8 +112,8 @@ class FormValidationTests(TestCase):
 
         self.assertTrue(form.is_valid(), form.errors)
         trabajador = form.save()
-        self.assertFalse(trabajador.sctr_pension)
-        self.assertFalse(trabajador.sctr_salud)
+        self.assertFalse(trabajador.sctr_pension_efectivo)
+        self.assertFalse(trabajador.sctr_salud_efectivo)
 
     def test_certificado_form_exige_curso(self):
         form = CertificadoForm(
@@ -86,6 +126,19 @@ class FormValidationTests(TestCase):
 
         self.assertFalse(form.is_valid())
         self.assertIn('curso', form.errors)
+
+    def test_certificado_form_exige_pdf_antes_de_aceptar_fechas(self):
+        form = CertificadoForm(
+            data={
+                'tipo': Certificado.INDUCCION,
+                **self.fechas,
+            },
+            instance=Certificado(trabajador=self.trabajador),
+        )
+
+        self.assertFalse(form.is_valid())
+        self.assertIn('archivo', form.errors)
+        self.assertIn('Primero debe subir un archivo PDF', form.errors['archivo'][0])
 
     def test_certificado_form_rechaza_requisito_duplicado_al_crear(self):
         Certificado.objects.create(

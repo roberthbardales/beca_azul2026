@@ -22,20 +22,22 @@
 
         <form method="post" enctype="multipart/form-data" class="sctr-form space-y-3">
             {% csrf_token %}
-            <section class="sctr-form-section rounded-xl border border-[var(--ink-200)] p-4 sm:p-5" aria-labelledby="sctr-documento-heading">
+            <section class="sctr-form-section space-y-5 rounded-xl border border-[var(--ink-200)] p-4 sm:p-5">
+                <div aria-labelledby="sctr-documento-heading">
                 <div class="mb-3"><h2 id="sctr-documento-heading" class="text-base font-bold text-[var(--ink-900)]">Archivo PDF</h2>{% if sctr.pk %}<p class="mt-1 text-sm text-[var(--ink-500)]">Reemplaza el archivo solo si necesitas actualizarlo.</p>{% endif %}</div>
                 <div>
                     <label for="{{ form.archivo.id_for_label }}" class="mb-1 block text-sm font-medium text-[var(--ink-900)]">{{ form.archivo.label }}</label>
                     <input type="file" name="{{ form.archivo.html_name }}" id="{{ form.archivo.id_for_label }}" class="form-control" accept="application/pdf">
                     {% for error in form.archivo.errors %}<p class="mt-1 text-xs text-red-600">{{ error }}</p>{% endfor %}
                 </div>
-            </section>
+                </div>
 
-            <section class="sctr-form-section rounded-xl border border-[var(--ink-200)] p-4 sm:p-5" aria-labelledby="sctr-vigencia-heading">
+                <div aria-labelledby="sctr-vigencia-heading">
                 <div class="mb-3"><h2 id="sctr-vigencia-heading" class="text-base font-bold text-[var(--ink-900)]">Vigencia</h2></div>
                 <div class="grid gap-4 sm:grid-cols-2">
                     <div><label for="{{ form.fecha_emision.id_for_label }}" class="mb-1 block text-sm font-medium text-[var(--ink-900)]">{{ form.fecha_emision.label }}</label>{{ form.fecha_emision }}{% for error in form.fecha_emision.errors %}<p class="mt-1 text-xs text-red-600">{{ error }}</p>{% endfor %}</div>
                     <div><label for="{{ form.fecha_vencimiento.id_for_label }}" class="mb-1 block text-sm font-medium text-[var(--ink-900)]">{{ form.fecha_vencimiento.label }}</label>{{ form.fecha_vencimiento }}{% for error in form.fecha_vencimiento.errors %}<p class="mt-1 text-xs text-red-600">{{ error }}</p>{% endfor %}</div>
+                </div>
                 </div>
             </section>
 
@@ -46,4 +48,25 @@
         </form>
     </div>
 </main>
+<script>
+    (() => {
+        const fileInput = document.getElementById('{{ form.archivo.id_for_label }}');
+        const dateInputs = [
+            document.getElementById('{{ form.fecha_emision.id_for_label }}'),
+            document.getElementById('{{ form.fecha_vencimiento.id_for_label }}'),
+        ];
+        if (!fileInput) return;
+
+        const updateDateFields = () => {
+            const pdfSelected = Array.from(fileInput.files || []).some(
+                file => file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')
+            );
+            dateInputs.forEach(input => {
+                if (input) input.disabled = !pdfSelected;
+            });
+        };
+
+        fileInput.addEventListener('change', updateDateFields);
+    })();
+</script>
 {% endblock %}

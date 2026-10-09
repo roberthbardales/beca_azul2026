@@ -109,6 +109,14 @@ class SCTRForm(forms.ModelForm):
     def __init__(self, *args, empresa=None, **kwargs):
         self.empresa = empresa
         super().__init__(*args, **kwargs)
+        self.archivo_disponible = bool(
+            self.instance.pk
+            and self.instance.archivo
+            and self.instance.archivo.storage.exists(self.instance.archivo.name)
+        )
+        if not self.archivo_disponible and not self.is_bound:
+            self.fields['fecha_emision'].widget.attrs['disabled'] = 'disabled'
+            self.fields['fecha_vencimiento'].widget.attrs['disabled'] = 'disabled'
         if self.instance.pk:
             self.initial.update(
                 fecha_emision=self.instance.fecha_emision.isoformat(),
@@ -117,8 +125,12 @@ class SCTRForm(forms.ModelForm):
 
     def clean(self):
         cleaned = super().clean()
-        if not self.instance.pk and not cleaned.get('archivo'):
+        archivo = cleaned.get('archivo')
+        if not archivo and not self.archivo_disponible:
             self.add_error('archivo', self.required_file_message)
+        if not (archivo or self.archivo_disponible):
+            self.add_error('fecha_emision', 'Suba primero el archivo PDF para indicar las fechas.')
+            self.add_error('fecha_vencimiento', 'Suba primero el archivo PDF para indicar las fechas.')
         add_date_range_error(
             self,
             cleaned,
@@ -206,9 +218,7 @@ class TrabajadorEmpresaForm(forms.ModelForm):
         if not self.instance.pk:
             for prefix in ('induccion', 'aptitud_medica'):
                 for suffix in ('archivo', 'fecha_emision', 'fecha_vencimiento'):
-                    self.fields[f'{prefix}_{suffix}'].required = not (
-                        prefix == 'induccion' and suffix == 'archivo'
-                    )
+                    self.fields[f'{prefix}_{suffix}'].required = True
         else:
             for certificado in self.instance.certificados.all():
                 if certificado.tipo in (Certificado.INDUCCION, Certificado.APTITUD_MEDICA):
@@ -242,14 +252,12 @@ class TrabajadorEmpresaForm(forms.ModelForm):
                 if self.instance.pk
                 else None
             )
-            if not certificado_existente and any((archivo, fecha_emision, fecha_vencimiento)):
+            if not certificado_existente:
                 for field_name, value in (
                     (f'{prefix}_archivo', archivo),
                     (f'{prefix}_fecha_emision', fecha_emision),
                     (f'{prefix}_fecha_vencimiento', fecha_vencimiento),
                 ):
-                    if prefix == 'induccion' and field_name == 'induccion_archivo':
-                        continue
                     if not value:
                         self.add_error(field_name, 'Complete archivo y fechas para registrar el certificado.')
             elif certificado_existente and (fecha_emision or fecha_vencimiento):
@@ -321,6 +329,11 @@ class CertificadoForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         self.trabajador = kwargs.pop('trabajador', None)
         super().__init__(*args, **kwargs)
+        self.archivo_disponible = bool(
+            self.instance.pk
+            and self.instance.archivo
+            and self.instance.archivo.storage.exists(self.instance.archivo.name)
+        )
         self.fields['tipo'].choices = tuple(
             choice for choice in self.fields['tipo'].choices
             if choice[0] not in (Certificado.SCTR_PENSION, Certificado.SCTR_SALUD)
@@ -328,6 +341,9 @@ class CertificadoForm(forms.ModelForm):
         self.fields['curso'].required = False
         self.fields['archivo'].required = False
         self.fields['archivo'].validators.append(validate_pdf)
+        if not self.archivo_disponible and not self.is_bound:
+            self.fields['fecha_emision'].widget.attrs['disabled'] = 'disabled'
+            self.fields['fecha_vencimiento'].widget.attrs['disabled'] = 'disabled'
 
     def clean(self):
         cleaned = super().clean()
@@ -341,8 +357,8 @@ class CertificadoForm(forms.ModelForm):
             and self.instance.archivo
             and self.instance.archivo.storage.exists(self.instance.archivo.name)
         )
-        if tipo in (Certificado.APTITUD_MEDICA, Certificado.CURSOS) and not (archivo or archivo_existente):
-            self.add_error('archivo', 'El archivo PDF es obligatorio para este certificado.')
+        if not (archivo or archivo_existente):
+            self.add_error('archivo', 'Primero debe subir un archivo PDF para registrar las fechas del certificado.')
         if tipo != Certificado.CURSOS and curso:
             self.add_error('curso', 'El curso solo aplica a los certificados de cursos.')
         trabajador = self.trabajador or self.instance.trabajador

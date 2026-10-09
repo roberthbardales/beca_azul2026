@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
+from django.core.exceptions import ValidationError
 from .managers import UserManager
 from model_utils.models import TimeStampedModel
 
@@ -49,6 +50,14 @@ class User(AbstractBaseUser, PermissionsMixin,TimeStampedModel):
         related_name='usuarios',
     )
 
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                check=~models.Q(role='3', empresa__isnull=True),
+                name='usuario_empresa_requiere_empresa',
+            ),
+        ]
+
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
@@ -62,3 +71,8 @@ class User(AbstractBaseUser, PermissionsMixin,TimeStampedModel):
 
     def get_short_name(self):
         return self.first_name
+
+    def clean(self):
+        super().clean()
+        if self.role == self.USUARIO_EMPRESA and not self.empresa_id:
+            raise ValidationError({'empresa': 'Los usuarios de empresa deben tener una empresa asignada.'})

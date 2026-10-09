@@ -1,5 +1,25 @@
 {% extends 'base.html' %}
 
+{% block extra_css %}
+{{ block.super }}
+<style>
+    .courses-section .worker-data-table a.btn.btn-sm {
+        min-height: 1.5rem;
+        padding: 0.125rem 0.5rem;
+        line-height: 1rem;
+    }
+    .worker-data-table .edit-pdf-button {
+        min-height: 1.5rem;
+        padding-top: 0.125rem;
+        padding-bottom: 0.125rem;
+        line-height: 1rem;
+    }
+    #worker-disabled-toast[hidden] {
+        display: none !important;
+    }
+</style>
+{% endblock %}
+
 {% block title %}{{ trabajador }} | Control{% endblock %}
 
 {% block content %}
@@ -11,7 +31,7 @@
                 {% if request.user.role == '1' %}
                     <form method="post" action="{% url 'app_control:trabajador_habilitado_toggle' trabajador.pk %}">{% csrf_token %}<button class="btn {% if trabajador.habilitado %}btn-quinary{% else %}btn-tertiary{% endif %} btn-sm" type="submit"{% if not trabajador.empresa.activo %} disabled{% endif %}>{% if trabajador.habilitado %}Deshabilitar{% else %}Habilitar{% endif %}</button></form>
                 {% endif %}
-                {% if es_empresa %}<a class="btn btn-primary btn-sm {% if not trabajador.empresa.activo %}pointer-events-none opacity-50{% endif %}" href="{% url 'app_control:trabajador_empresa_editar' trabajador.pk %}">Editar trabajador</a>
+                {% if es_empresa %}{% if not trabajador.activo %}<button class="btn btn-primary btn-sm" type="button" onclick="showWorkerDisabledToast('No se puede editar porque el trabajador está desactivado.')">Editar trabajador</button>{% else %}<a class="btn btn-primary btn-sm {% if not trabajador.empresa.activo %}pointer-events-none opacity-50{% endif %}" href="{% url 'app_control:trabajador_empresa_editar' trabajador.pk %}">Editar trabajador</a>{% endif %}
                 {% elif request.user.role == '1' or request.user.is_superuser %}<form method="post" action="{% url 'app_control:trabajador_toggle' trabajador.pk %}">{% csrf_token %}<button class="btn btn-secondary btn-sm" type="submit"{% if not trabajador.empresa.activo %} disabled{% endif %}>{% if trabajador.activo %}Desactivar trabajador{% else %}Activar trabajador{% endif %}</button></form>{% if trabajador.activo %}<a class="btn btn-quinary btn-sm {% if not trabajador.empresa.activo %}pointer-events-none opacity-50{% endif %}" href="{% url 'app_control:trabajador_eliminar' trabajador.pk %}">Eliminar trabajador</a>{% endif %}{% endif %}
             </div>
         </header>
@@ -20,7 +40,7 @@
             <div class="app-table-wrap responsive-table">
                 <table class="app-table worker-data-table w-full" aria-label="Datos del trabajador">
                     <thead><tr><th>Nombres</th><th>Apellidos</th><th>Empresa</th><th>Documento</th><th>Cargo</th><th>Estado</th><th>SCTR pensión</th><th>SCTR salud</th><th>Habilitación</th></tr></thead>
-                    <tbody><tr><td>{{ trabajador.nombres }}</td><td>{{ trabajador.apellidos }}</td><td>{{ trabajador.empresa }}</td><td>{{ trabajador.get_tipo_documento_display }} {{ trabajador.dni }}</td><td>{{ trabajador.cargo|default:'-' }}</td><td>{% if trabajador.activo %}<span class="rounded-full bg-green-100 px-2 py-1 text-xs text-green-700">Activo</span>{% else %}<span class="rounded-full bg-red-100 px-2 py-1 text-xs text-red-700">Desactivado</span>{% endif %}</td><td>{% if trabajador.sctr_pension and sctr_pension_vigente %}<span class="rounded-full bg-green-100 px-2 py-1 text-xs text-green-700">Aprobado y vigente</span>{% elif trabajador.sctr_pension %}<span class="rounded-full bg-amber-100 px-2 py-1 text-xs text-amber-700">Aprobado, vencido</span>{% else %}<span class="rounded-full bg-red-100 px-2 py-1 text-xs text-red-700">Desaprobado</span>{% endif %}</td><td>{% if trabajador.sctr_salud and sctr_salud_vigente %}<span class="rounded-full bg-green-100 px-2 py-1 text-xs text-green-700">Aprobado y vigente</span>{% elif trabajador.sctr_salud %}<span class="rounded-full bg-amber-100 px-2 py-1 text-xs text-amber-700">Aprobado, vencido</span>{% else %}<span class="rounded-full bg-red-100 px-2 py-1 text-xs text-red-700">Desaprobado</span>{% endif %}</td><td>{% if trabajador.habilitado %}<span class="rounded-full bg-green-100 px-2 py-1 text-xs text-green-700">Habilitado</span>{% else %}<span class="rounded-full bg-red-100 px-2 py-1 text-xs text-red-700">No habilitado</span>{% endif %}</td></tr></tbody>
+                    <tbody><tr><td>{{ trabajador.nombres }}</td><td>{{ trabajador.apellidos }}</td><td>{{ trabajador.empresa }}</td><td>{{ trabajador.get_tipo_documento_display }} {{ trabajador.dni }}</td><td>{{ trabajador.cargo|default:'-' }}</td><td>{% if trabajador.activo %}<span class="rounded-full bg-green-100 px-2 py-1 text-xs text-green-700">Activo</span>{% else %}<span class="rounded-full bg-red-100 px-2 py-1 text-xs text-red-700">Desactivado</span>{% endif %}</td><td>{% if trabajador.sctr_pension_estado_detalle == 'Aprobado y vigente' %}<span class="rounded-full bg-green-100 px-2 py-1 text-xs text-green-700">Aprobado y vigente</span>{% elif trabajador.sctr_pension_estado_detalle == 'Aprobado, vencido' %}<span class="rounded-full bg-amber-100 px-2 py-1 text-xs text-amber-700">Aprobado, vencido</span>{% else %}<span class="rounded-full bg-red-100 px-2 py-1 text-xs text-red-700">Desaprobado</span>{% endif %}</td><td>{% if trabajador.sctr_salud_estado_detalle == 'Aprobado y vigente' %}<span class="rounded-full bg-green-100 px-2 py-1 text-xs text-green-700">Aprobado y vigente</span>{% elif trabajador.sctr_salud_estado_detalle == 'Aprobado, vencido' %}<span class="rounded-full bg-amber-100 px-2 py-1 text-xs text-amber-700">Aprobado, vencido</span>{% else %}<span class="rounded-full bg-red-100 px-2 py-1 text-xs text-red-700">Desaprobado</span>{% endif %}</td><td>{% if trabajador.habilitado_efectivo %}<span class="rounded-full bg-green-100 px-2 py-1 text-xs text-green-700">Habilitado</span>{% else %}<span class="rounded-full bg-red-100 px-2 py-1 text-xs text-red-700">No habilitado</span>{% endif %}</td></tr></tbody>
                 </table>
             </div>
         </section>
@@ -28,7 +48,7 @@
         <section class="courses-section border-b border-gray-200 px-5 py-3{% if not trabajador.activo %} courses-section--disabled{% endif %}">
             <h2 class="text-lg font-semibold text-[#0f172a]">Certificados generales</h2>
             <div class="app-table-wrap responsive-table mt-2"><table class="app-table worker-data-table worker-data-table--aligned w-full"><thead><tr><th>Tipo</th><th>Emisión</th><th>Vencimiento</th><th>Estado</th><th>Archivo</th><th>Validación</th>{% if es_empresa %}<th>Acciones</th>{% endif %}</tr></thead><tbody>
-            {% for fila in certificados_requeridos %}<tr><td>{{ fila.label }}</td>{% if fila.objeto %}<td>{{ fila.objeto.fecha_emision|date:'d/m/Y' }}</td><td>{{ fila.objeto.fecha_vencimiento|date:'d/m/Y' }}</td><td>{{ fila.objeto.estado }}</td><td>{% if fila.objeto.archivo %}<a class="text-[#0F6FC6] hover:underline" href="{{ fila.objeto.archivo.url }}" target="_blank" rel="noopener">Ver PDF</a>{% else %}-{% endif %}</td><td>{% if es_empresa %}{{ fila.objeto.validacion_estado }}{% elif fila.heredado %}<span class="text-xs text-gray-500">Gestionado por Beca Azul</span>{% elif puede_configurar_cursos and fila.objeto.archivo and fila.objeto.puede_validarse %}<form method="post" action="{% url 'app_control:certificado_validar' fila.objeto.pk %}">{% csrf_token %}<input type="checkbox" name="validado" value="1" {% if fila.objeto.validacion_vigente %}checked{% endif %}{% if not trabajador.activo %} disabled{% endif %} onchange="this.form.submit()" aria-label="Aprobado {{ fila.label }}"></form>{% elif fila.objeto.validacion_bloqueada_por_vencimiento %}<span class="text-xs text-amber-700">Vencido</span>{% endif %}</td>{% if es_empresa %}<td>{% if fila.heredado %}<span class="text-xs text-gray-500">Gestionado por Beca Azul</span>{% else %}<a class="text-[#0F6FC6] hover:underline" href="{% url 'app_control:certificado_empresa_editar' fila.objeto.pk %}">Editar</a>{% endif %}</td>{% endif %}{% else %}<td>-</td><td>-</td><td>{% if fila.heredado %}Falta subir por la empresa{% else %}Pendiente{% endif %}</td><td>-</td><td>Pendiente</td>{% if es_empresa %}<td>{% if fila.heredado %}<a class="text-[#0F6FC6] hover:underline" href="{% url 'app_control:empresa_detalle' trabajador.empresa.pk %}">Gestionar en empresa</a>{% else %}<a class="text-[#0F6FC6] hover:underline" href="{% url 'app_control:certificado_empresa_crear' trabajador.pk %}?tipo={{ fila.tipo }}">Añadir</a>{% endif %}</td>{% endif %}{% endif %}</tr>{% endfor %}
+            {% for fila in certificados_requeridos %}<tr><td>{{ fila.label }}</td>{% if fila.objeto %}<td>{% if fila.objeto.archivo_existe %}{{ fila.objeto.fecha_emision|date:'d/m/Y' }}{% else %}-{% endif %}</td><td>{% if fila.objeto.archivo_existe %}{{ fila.objeto.fecha_vencimiento|date:'d/m/Y' }}{% else %}-{% endif %}</td><td>{{ fila.objeto.estado }}</td><td>{% if fila.objeto.archivo_existe %}<a class="btn btn-secondary btn-sm" href="{% if fila.heredado %}{% url 'app_control:empresa_certificado_ver' fila.objeto.pk %}{% else %}{{ fila.objeto.archivo.url }}{% endif %}" target="_blank" rel="noopener">Ver PDF</a>{% else %}-{% endif %}</td><td>{% if es_empresa %}<span class="inline-flex rounded-full px-2 py-1 text-xs font-semibold {% if fila.objeto.validacion_estado == 'Vigente' %}bg-green-100 text-green-700{% elif fila.objeto.validacion_estado == 'Pendiente' %}bg-amber-100 text-amber-800{% else %}bg-red-100 text-red-700{% endif %}">{{ fila.objeto.validacion_estado }}</span>{% elif fila.heredado %}<span class="inline-flex rounded-full bg-gray-100 px-2 py-1 text-xs font-semibold text-gray-600">Gestionado por Beca Azul</span>{% elif puede_configurar_cursos and fila.objeto.archivo_existe and fila.objeto.puede_validarse %}<form method="post" action="{% url 'app_control:certificado_validar' fila.objeto.pk %}">{% csrf_token %}<input type="checkbox" name="validado" value="1" {% if fila.objeto.validacion_vigente %}checked{% endif %}{% if not trabajador.activo %} disabled{% endif %} onchange="this.form.submit()" aria-label="Aprobado {{ fila.label }}"><span class="inline-flex rounded-full px-2 py-1 text-xs font-semibold {% if fila.objeto.validacion_vigente %}bg-green-100 text-green-700{% else %}bg-amber-100 text-amber-800{% endif %}">{% if fila.objeto.validacion_vigente %}Vigente{% else %}Pendiente{% endif %}</span></form>{% elif fila.objeto.validacion_bloqueada_por_vencimiento %}<span class="inline-flex rounded-full bg-red-100 px-2 py-1 text-xs font-semibold text-red-700">Vencido</span>{% else %}<span class="inline-flex rounded-full bg-amber-100 px-2 py-1 text-xs font-semibold text-amber-800">Pendiente</span>{% endif %}</td>{% if es_empresa %}<td>{% if fila.heredado %}<span class="text-xs text-gray-500">Gestionado por Beca Azul</span>{% elif not trabajador.activo %}<button class="btn btn-tertiary btn-sm edit-pdf-button" type="button" onclick="showWorkerDisabledToast('No se puede editar el PDF porque el trabajador está desactivado.')">{% if fila.objeto.archivo_existe %}Editar PDF{% else %}Añadir{% endif %}</button>{% else %}<a class="btn btn-tertiary btn-sm edit-pdf-button" href="{% if fila.objeto.archivo_existe %}{% url 'app_control:certificado_empresa_editar' fila.objeto.pk %}{% else %}{% url 'app_control:certificado_empresa_agregar_archivo' fila.objeto.pk %}{% endif %}">{% if fila.objeto.archivo_existe %}Editar PDF{% else %}Añadir{% endif %}</a>{% endif %}</td>{% endif %}{% else %}<td>-</td><td>-</td><td>{% if fila.heredado %}Falta subir por la empresa{% else %}Pendiente{% endif %}</td><td>-</td><td>Pendiente</td>{% if es_empresa %}<td>{% if fila.heredado %}<a class="text-[#0F6FC6] hover:underline" href="{% url 'app_control:empresa_detalle' trabajador.empresa.pk %}">Gestionar en empresa</a>{% elif not trabajador.activo %}<button class="btn btn-tertiary btn-sm" type="button" onclick="showWorkerDisabledToast('No se puede editar el PDF porque el trabajador está desactivado.')">Añadir</button>{% else %}<a class="btn btn-tertiary btn-sm" href="{% url 'app_control:certificado_empresa_crear' trabajador.pk %}?tipo={{ fila.tipo }}">Añadir</a>{% endif %}</td>{% endif %}{% endif %}</tr>{% endfor %}
             </tbody></table></div>
         </section>
 
@@ -38,19 +58,79 @@
             <div class="app-table-wrap responsive-table mt-2"><table class="app-table worker-data-table worker-data-table--aligned w-full"><thead><tr><th>Curso</th><th>Emision</th><th>Vencimiento</th><th>Estado</th><th>Archivo</th>{% if es_empresa or puede_configurar_cursos %}<th>{% if es_empresa %}Acciones{% else %}Obligatorio{% endif %}</th>{% endif %}<th>Validacion</th></tr></thead><tbody>
             {% for fila in cursos %}<tr><td>{{ fila.nombre }}</td>
                 {% if fila.certificado %}
-                    <td>{{ fila.certificado.fecha_emision|date:'d/m/Y' }}</td><td>{{ fila.certificado.fecha_vencimiento|date:'d/m/Y' }}</td><td>{{ fila.certificado.estado }}</td><td><a class="text-[#0F6FC6] hover:underline" href="{{ fila.certificado.archivo.url }}" target="_blank" rel="noopener">Ver PDF</a></td>
-                    {% if es_empresa or puede_configurar_cursos %}<td>{% if es_empresa and fila.obligatorio %}<a class="text-[#0F6FC6] hover:underline {% if not trabajador.empresa.activo %}pointer-events-none opacity-50{% endif %}" href="{% url 'app_control:certificado_empresa_editar' fila.certificado.pk %}">Editar</a>{% endif %}{% if puede_configurar_cursos %}<form class="ml-2 inline-block" method="post" action="{% url 'app_control:trabajador_curso_obligatorio_toggle' trabajador.pk fila.codigo %}">{% csrf_token %}<button class="relative inline-flex h-6 w-11 items-center rounded-full {% if fila.obligatorio %}bg-blue-600{% else %}bg-gray-300{% endif %}" type="submit" role="switch"{% if not trabajador.empresa.activo %} disabled{% endif %} aria-checked="{{ fila.obligatorio|yesno:'true,false' }}" aria-label="{{ fila.nombre }} obligatorio"><span class="inline-block h-4 w-4 transform rounded-full bg-white transition {% if fila.obligatorio %}translate-x-6{% else %}translate-x-1{% endif %}"></span></button></form>{% endif %}</td>{% endif %}
-                    <td>{% if fila.obligatorio %}{% if es_empresa %}{{ fila.certificado.validacion_estado }}{% elif puede_configurar_cursos and fila.certificado.archivo and fila.certificado.puede_validarse %}<form method="post" action="{% url 'app_control:certificado_validar' fila.certificado.pk %}">{% csrf_token %}<input type="checkbox" name="validado" value="1" {% if fila.certificado.validacion_vigente %}checked{% endif %}{% if not trabajador.activo %} disabled{% endif %} onchange="this.form.submit()" aria-label="Aprobado {{ fila.nombre }}"></form>{% elif fila.certificado.validacion_bloqueada_por_vencimiento %}<span class="text-xs text-amber-700">Vencido</span>{% else %}Pendiente{% endif %}{% else %}-{% endif %}</td>
+                    <td>{% if fila.certificado.archivo_existe %}{{ fila.certificado.fecha_emision|date:'d/m/Y' }}{% else %}-{% endif %}</td><td>{% if fila.certificado.archivo_existe %}{{ fila.certificado.fecha_vencimiento|date:'d/m/Y' }}{% else %}-{% endif %}</td><td>{{ fila.certificado.estado }}</td><td>{% if fila.certificado.archivo_existe %}<a class="btn btn-secondary btn-sm" href="{{ fila.certificado.archivo.url }}" target="_blank" rel="noopener">Ver PDF</a>{% else %}-{% endif %}</td>
+                    {% if es_empresa or puede_configurar_cursos %}<td>{% if es_empresa and fila.obligatorio %}{% if not trabajador.activo %}<button class="btn btn-tertiary btn-sm edit-pdf-button" type="button" onclick="showWorkerDisabledToast('No se puede editar el PDF porque el trabajador está desactivado.')">{% if fila.certificado.archivo_existe %}Editar PDF{% else %}Añadir{% endif %}</button>{% else %}<a class="btn btn-tertiary btn-sm edit-pdf-button {% if not trabajador.empresa.activo %}pointer-events-none opacity-50{% endif %}" href="{% if fila.certificado.archivo_existe %}{% url 'app_control:certificado_empresa_editar' fila.certificado.pk %}{% else %}{% url 'app_control:certificado_empresa_agregar_archivo' fila.certificado.pk %}{% endif %}">{% if fila.certificado.archivo_existe %}Editar PDF{% else %}Añadir{% endif %}</a>{% endif %}{% endif %}{% if puede_configurar_cursos %}<form class="ml-2 inline-block" method="post" action="{% url 'app_control:trabajador_curso_obligatorio_toggle' trabajador.pk fila.codigo %}">{% csrf_token %}<button class="relative inline-flex h-6 w-11 items-center rounded-full {% if fila.obligatorio %}bg-blue-600{% else %}bg-gray-300{% endif %}" type="submit" role="switch"{% if not trabajador.empresa.activo %} disabled{% endif %} aria-checked="{{ fila.obligatorio|yesno:'true,false' }}" aria-label="{{ fila.nombre }} obligatorio"><span class="inline-block h-4 w-4 transform rounded-full bg-white transition {% if fila.obligatorio %}translate-x-6{% else %}translate-x-1{% endif %}"></span></button></form>{% endif %}</td>{% endif %}
+                    <td>{% if fila.obligatorio %}{% if es_empresa %}<span class="inline-flex rounded-full px-2 py-1 text-xs font-semibold {% if fila.certificado.validacion_estado == 'Vigente' %}bg-green-100 text-green-700{% elif fila.certificado.validacion_estado == 'Pendiente' %}bg-amber-100 text-amber-800{% else %}bg-red-100 text-red-700{% endif %}">{{ fila.certificado.validacion_estado }}</span>{% elif puede_configurar_cursos and fila.certificado.archivo_existe and fila.certificado.puede_validarse %}<form method="post" action="{% url 'app_control:certificado_validar' fila.certificado.pk %}">{% csrf_token %}<input type="checkbox" name="validado" value="1" {% if fila.certificado.validacion_vigente %}checked{% endif %}{% if not trabajador.activo %} disabled{% endif %} onchange="this.form.submit()" aria-label="Aprobado {{ fila.nombre }}"><span class="inline-flex rounded-full px-2 py-1 text-xs font-semibold {% if fila.certificado.validacion_vigente %}bg-green-100 text-green-700{% else %}bg-amber-100 text-amber-800{% endif %}">{% if fila.certificado.validacion_vigente %}Vigente{% else %}Pendiente{% endif %}</span></form>{% elif fila.certificado.validacion_bloqueada_por_vencimiento %}<span class="inline-flex rounded-full bg-red-100 px-2 py-1 text-xs font-semibold text-red-700">Vencido</span>{% else %}<span class="inline-flex rounded-full bg-amber-100 px-2 py-1 text-xs font-semibold text-amber-800">Pendiente</span>{% endif %}{% else %}-{% endif %}</td>
                     
                 {% else %}
                     <td>-</td><td>-</td><td>{% if fila.obligatorio %}Falta subir{% else %}-{% endif %}</td><td>-</td>
-                    {% if es_empresa or puede_configurar_cursos %}<td>{% if es_empresa and fila.obligatorio %}<a class="text-[#0F6FC6] {% if not trabajador.empresa.activo %}pointer-events-none opacity-50{% endif %}" href="{% url 'app_control:certificado_empresa_crear' trabajador.pk %}?tipo=CURSOS&curso={{ fila.codigo }}">Anadir</a>{% endif %}{% if puede_configurar_cursos %}<form class="ml-2 inline-block" method="post" action="{% url 'app_control:trabajador_curso_obligatorio_toggle' trabajador.pk fila.codigo %}">{% csrf_token %}<button class="relative inline-flex h-6 w-11 items-center rounded-full {% if fila.obligatorio %}bg-blue-600{% else %}bg-gray-300{% endif %}" type="submit" role="switch"{% if not trabajador.empresa.activo %} disabled{% endif %} aria-checked="{{ fila.obligatorio|yesno:'true,false' }}" aria-label="{{ fila.nombre }} obligatorio"><span class="inline-block h-4 w-4 transform rounded-full bg-white transition {% if fila.obligatorio %}translate-x-6{% else %}translate-x-1{% endif %}"></span></button></form>{% endif %}</td>{% endif %}
+                    {% if es_empresa or puede_configurar_cursos %}<td>{% if es_empresa and fila.obligatorio %}{% if not trabajador.activo %}<button class="btn btn-tertiary btn-sm" type="button" onclick="showWorkerDisabledToast('No se puede editar el PDF porque el trabajador está desactivado.')">Añadir</button>{% else %}<a class="btn btn-tertiary btn-sm {% if not trabajador.empresa.activo %}pointer-events-none opacity-50{% endif %}" href="{% url 'app_control:certificado_empresa_crear' trabajador.pk %}?tipo=CURSOS&curso={{ fila.codigo }}">Añadir</a>{% endif %}{% endif %}{% if puede_configurar_cursos %}<form class="ml-2 inline-block" method="post" action="{% url 'app_control:trabajador_curso_obligatorio_toggle' trabajador.pk fila.codigo %}">{% csrf_token %}<button class="relative inline-flex h-6 w-11 items-center rounded-full {% if fila.obligatorio %}bg-blue-600{% else %}bg-gray-300{% endif %}" type="submit" role="switch"{% if not trabajador.empresa.activo %} disabled{% endif %} aria-checked="{{ fila.obligatorio|yesno:'true,false' }}" aria-label="{{ fila.nombre }} obligatorio"><span class="inline-block h-4 w-4 transform rounded-full bg-white transition {% if fila.obligatorio %}translate-x-6{% else %}translate-x-1{% endif %}"></span></button></form>{% endif %}</td>{% endif %}
                     <td>{% if fila.obligatorio %}Pendiente{% else %}-{% endif %}</td>
                     
                 {% endif %}
             </tr>{% endfor %}</tbody></table></div>
-        </section>        <section class="border-b border-gray-200 px-5 py-3"><div class="flex items-center justify-between gap-3"><h2 class="text-lg font-semibold text-[#0f172a]">Incidencias</h2>{% if request.user.role == '1' %}<a class="btn btn-primary btn-sm" href="{% url 'app_control:incidencia_crear' trabajador.pk %}">Agregar incidencia</a>{% endif %}</div>{% if incidencias %}<div class="mt-3 space-y-3">{% for incidencia in incidencias %}<article class="rounded-lg border border-gray-200 bg-gray-50 p-4"><p class="text-sm text-gray-700">{{ incidencia.descripcion }}</p><p class="mt-2 text-xs text-gray-500">Registrada el {{ incidencia.created|date:'d/m/Y H:i' }}{% if incidencia.registrado_por %} por {{ incidencia.registrado_por }}{% endif %}</p></article>{% endfor %}</div>{% else %}<p class="mt-3 text-sm text-gray-500">No hay incidencias registradas.</p>{% endif %}</section>
+        </section>
+
+        <section class="border-b border-gray-200 px-5 py-3">
+            <div class="flex items-center justify-between gap-3">
+                <h2 class="text-lg font-semibold text-[#0f172a]">Incidencias</h2>
+                {% if request.user.role == '1' %}<a class="btn btn-primary btn-sm" href="{% url 'app_control:incidencia_crear' trabajador.pk %}">Agregar incidencia</a>{% endif %}
+            </div>
+            {% if incidencias %}
+                <div class="app-table-wrap responsive-table mt-3">
+                    <table class="app-table worker-data-table w-full" aria-label="Incidencias del trabajador">
+                        <thead><tr><th>Fecha</th><th>Descripción</th><th>Registrada por</th></tr></thead>
+                        <tbody>
+                            {% for incidencia in incidencias %}
+                                <tr>
+                                    <td data-label="Fecha">{{ incidencia.created|date:'d/m/Y H:i' }}</td>
+                                    <td data-label="Descripción">{{ incidencia.descripcion|linebreaksbr }}</td>
+                                    <td data-label="Registrada por">{% if incidencia.registrado_por %}{{ incidencia.registrado_por.get_full_name|default:incidencia.registrado_por.get_username }}{% else %}-{% endif %}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="mt-3 text-sm text-gray-500">No hay incidencias registradas.</p>
+            {% endif %}
+        </section>
     </div>
+    {% if es_empresa and not trabajador.activo %}
+        <div id="worker-disabled-toast" class="toast-container toast-container--with-topbar" aria-live="polite" aria-atomic="true" hidden>
+            <div class="toast toast-warning" data-persistent-toast role="status">
+                <span class="toast-indicator" aria-hidden="true"></span>
+                <p id="worker-disabled-toast-message" class="toast-message">No se puede editar porque el trabajador está desactivado.</p>
+                <button class="toast-close" type="button" aria-label="Cerrar mensaje" onclick="hideWorkerDisabledToast()">&times;</button>
+            </div>
+        </div>
+    {% endif %}
+    {% if es_empresa and not trabajador.activo %}
+        <script>
+            function showWorkerDisabledToast(message) {
+                var toastContainer = document.getElementById('worker-disabled-toast');
+                var toast = toastContainer.querySelector('.toast');
+                document.getElementById('worker-disabled-toast-message').textContent = message;
+                window.clearTimeout(toastContainer.dismissTimer);
+                window.clearTimeout(toastContainer.hideTimer);
+                toast.classList.remove('is-closing');
+                toastContainer.removeAttribute('hidden');
+                toastContainer.dismissTimer = window.setTimeout(function () {
+                    toast.classList.add('is-closing');
+                    toastContainer.hideTimer = window.setTimeout(hideWorkerDisabledToast, 200);
+                }, 4000);
+            }
+
+            function hideWorkerDisabledToast() {
+                var toastContainer = document.getElementById('worker-disabled-toast');
+                if (!toastContainer) return;
+                window.clearTimeout(toastContainer.dismissTimer);
+                window.clearTimeout(toastContainer.hideTimer);
+                toastContainer.setAttribute('hidden', '');
+                toastContainer.querySelector('.toast').classList.remove('is-closing');
+            }
+        </script>
+    {% endif %}
     <div class="flex justify-center py-5"><a class="btn btn-secondary btn-sm" href="{% url 'app_control:trabajador_lista' %}">Volver</a></div>
 </main>
 {% endblock %}

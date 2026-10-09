@@ -3,6 +3,7 @@ from uuid import uuid4
 
 from django.conf import settings
 from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
+from django.core.validators import RegexValidator
 from django.db import models
 from django.db.models import Prefetch, Q
 from django.utils import timezone
@@ -54,7 +55,11 @@ def certificado_upload_path(instance, filename):
 class Empresa(TimeStampedModel):
 
     nombre = models.CharField(max_length=150)
-    ruc = models.CharField(max_length=11, unique=True)
+    ruc = models.CharField(
+        max_length=11,
+        unique=True,
+        validators=[RegexValidator(r'^\d{11}$', 'El RUC debe contener exactamente 11 dígitos.')],
+    )
     correo = models.EmailField(unique=True)
     representante_legal = models.CharField(max_length=150, blank=True)
 
@@ -155,6 +160,18 @@ class Empresa(TimeStampedModel):
 
     def clean(self):
         super().clean()
+        if self.sctr_pension_aprobado and not self.sctr_empresa_vigente(CertificadoTipo.SCTR_PENSION):
+            raise ValidationError({'sctr_pension_aprobado': 'El SCTR pensión aprobado debe tener un certificado vigente.'})
+        if self.sctr_salud_aprobado and not self.sctr_empresa_vigente(CertificadoTipo.SCTR_SALUD):
+            raise ValidationError({'sctr_salud_aprobado': 'El SCTR salud aprobado debe tener un certificado vigente.'})
+        if self.homologacion and (
+            not self.sctr_pension_aprobado or not self.sctr_salud_aprobado
+        ):
+            raise ValidationError({
+                'homologacion': 'La homologacion requiere aprobar ambos SCTR empresariales.',
+            })
+        if self.homologacion and not self.homologacion_vigente:
+            raise ValidationError({'homologacion': 'La homologacion aprobada debe tener un certificado vigente.'})
 
 class Trabajador(TimeStampedModel):
     DNI = TipoDocumento.DNI
@@ -169,8 +186,6 @@ class Trabajador(TimeStampedModel):
     apellidos = models.CharField(max_length=150)
     cargo = models.CharField(max_length=150, blank=True)
 
-    sctr_pension = models.BooleanField(default=False)
-    sctr_salud = models.BooleanField(default=False)
     habilitado = models.BooleanField(default=True, db_index=True)
     activo = models.BooleanField(default=True)
 
@@ -223,8 +238,8 @@ class Trabajador(TimeStampedModel):
 
     @property
     def sctr(self):
-        """Compatibility alias for code that still reads the old field."""
-        return self.sctr_pension
+        """Compatibility alias for the effective pension SCTR status."""
+        return self.sctr_pension_efectivo
 
     def _sctr_empresa_vigente(self, tipo):
         certificados = getattr(self.empresa, 'sctr_certificados_heredados', None)
@@ -517,6 +532,10 @@ class Certificado(TimeStampedModel):
     @property
     def estado(self):
         hoy = timezone.localdate()
+        if self.tipo in (self.INDUCCION, self.APTITUD_MEDICA, self.CURSOS) and not (
+            self.archivo and self.archivo.storage.exists(self.archivo.name)
+        ):
+            return 'Pendiente'
         if self.fecha_vencimiento < hoy:
             return 'Vencido'
         if self.fecha_vencimiento <= hoy + timedelta(days=30):
@@ -525,18 +544,21 @@ class Certificado(TimeStampedModel):
 
     @property
     def validacion_vigente(self):
-        archivo_requerido = self.tipo != self.INDUCCION
         archivo_disponible = bool(
             self.archivo and self.archivo.storage.exists(self.archivo.name)
         )
         return bool(
             self.validado
             and self.fecha_vencimiento >= timezone.localdate()
-            and (not archivo_requerido or archivo_disponible)
+            and archivo_disponible
         )
 
     @property
     def validacion_estado(self):
+        if self.tipo in (self.INDUCCION, self.APTITUD_MEDICA, self.CURSOS) and not (
+            self.archivo and self.archivo.storage.exists(self.archivo.name)
+        ):
+            return 'Pendiente'
         if self.fecha_vencimiento < timezone.localdate():
             return 'Desaprobado'
         if self.tipo != self.INDUCCION and not (

@@ -51,6 +51,130 @@ class DashboardViewTests(TestCase):
         self.assertEqual(response.context['dashboard_charts']['cumplimiento'], [1, 2, 1])
         self.assertEqual(response.context['certificados_sin_vencimiento'], 0)
 
+    def test_dashboard_cuenta_empresas_homologadas_y_no_homologadas(self):
+        Empresa.objects.create(
+            nombre='Empresa homologada',
+            ruc='20987654321',
+            correo='homologada@example.com',
+            homologacion=True,
+        )
+        empresa_homologada = Empresa.objects.get(ruc='20987654321')
+        empresa_homologada.sctr_pension_aprobado = True
+        empresa_homologada.sctr_salud_aprobado = True
+        empresa_homologada.save(update_fields=('sctr_pension_aprobado', 'sctr_salud_aprobado'))
+        for tipo in (
+            Certificado.SCTR_PENSION,
+            Certificado.SCTR_SALUD,
+            Certificado.HOMOLOGACION,
+        ):
+            Certificado.objects.create(
+                empresa=empresa_homologada,
+                tipo=tipo,
+                fecha_emision=date.today() - timedelta(days=30),
+                fecha_vencimiento=date.today() + timedelta(days=30),
+                archivo=SimpleUploadedFile(f'{tipo.lower()}.pdf', b'%PDF-1.4 test'),
+            )
+
+        response = self.client.get(reverse('app_control:dashboard'))
+
+        self.assertEqual(response.context['total_empresas'], 2)
+        self.assertEqual(response.context['empresas_habilitadas'], 1)
+        self.assertEqual(response.context['empresas_deshabilitadas'], 1)
+        self.assertContains(response, '1 homologadas')
+        self.assertContains(response, '1 no homologadas')
+
+    def test_dashboard_cuenta_inducciones_vigentes_y_vencidas(self):
+        hoy = date.today()
+        Certificado.objects.create(
+            trabajador=self.trabajador,
+            tipo=Certificado.INDUCCION,
+            fecha_emision=hoy - timedelta(days=10),
+            fecha_vencimiento=hoy + timedelta(days=30),
+            archivo=SimpleUploadedFile('induccion_vigente.pdf', b'%PDF-1.4 test'),
+            validado=True,
+        )
+        trabajador_vencido = Trabajador.objects.create(
+            empresa=self.empresa,
+            dni='87654321',
+            nombres='Luis',
+            apellidos='Prueba',
+        )
+        Certificado.objects.create(
+            trabajador=trabajador_vencido,
+            tipo=Certificado.INDUCCION,
+            fecha_emision=hoy - timedelta(days=30),
+            fecha_vencimiento=hoy - timedelta(days=1),
+            archivo=SimpleUploadedFile('induccion_vencida.pdf', b'%PDF-1.4 test'),
+        )
+
+        response = self.client.get(reverse('app_control:dashboard'))
+
+        self.assertEqual(response.context['inducciones_vigentes'], 1)
+        self.assertEqual(response.context['inducciones_vencidas'], 1)
+        self.assertContains(response, '1 vigentes')
+        self.assertContains(response, '1 vencidas')
+
+    def test_dashboard_cuenta_trabajadores_con_sctr_efectivo(self):
+        hoy = date.today()
+        empresa_sctr = Empresa.objects.create(
+            nombre='Empresa con SCTR',
+            ruc='20987654322',
+            correo='sctr@example.com',
+            sctr_salud_aprobado=True,
+            sctr_pension_aprobado=True,
+        )
+        trabajador_sctr = Trabajador.objects.create(
+            empresa=empresa_sctr,
+            dni='87654321',
+            nombres='Luis',
+            apellidos='SCTR',
+        )
+        for tipo in (Certificado.SCTR_SALUD, Certificado.SCTR_PENSION):
+            Certificado.objects.create(
+                empresa=empresa_sctr,
+                tipo=tipo,
+                fecha_emision=hoy - timedelta(days=10),
+                fecha_vencimiento=hoy + timedelta(days=30),
+                archivo=SimpleUploadedFile(f'{tipo.lower()}_vigente.pdf', b'%PDF-1.4 test'),
+            )
+
+        response = self.client.get(reverse('app_control:dashboard'))
+
+        self.assertEqual(response.context['trabajadores_sctr_salud'], 1)
+        self.assertEqual(response.context['trabajadores_sctr_pension'], 1)
+        self.assertContains(response, 'SCTR Salud')
+        self.assertContains(response, 'SCTR Pensión')
+
+    def test_dashboard_cuenta_trabajadores_con_cursos_vigentes_por_tipo(self):
+        hoy = date.today()
+        for curso in (CursoTipo.CALIENTE, CursoTipo.ALTURA):
+            Certificado.objects.create(
+                trabajador=self.trabajador,
+                tipo=Certificado.CURSOS,
+                curso=curso,
+                fecha_emision=hoy - timedelta(days=10),
+                fecha_vencimiento=hoy + timedelta(days=30),
+                archivo=SimpleUploadedFile(f'{curso.lower()}.pdf', b'%PDF-1.4 test'),
+                validado=True,
+            )
+        Certificado.objects.create(
+            trabajador=self.trabajador,
+            tipo=Certificado.CURSOS,
+            curso=CursoTipo.ELECTRICO,
+            fecha_emision=hoy - timedelta(days=30),
+            fecha_vencimiento=hoy - timedelta(days=1),
+            archivo=SimpleUploadedFile('electrico_vencido.pdf', b'%PDF-1.4 test'),
+            validado=True,
+        )
+
+        response = self.client.get(reverse('app_control:dashboard'))
+        cursos = {curso['codigo']: curso['total'] for curso in response.context['cursos_vigentes']}
+
+        self.assertEqual(cursos[CursoTipo.CALIENTE], 1)
+        self.assertEqual(cursos[CursoTipo.ALTURA], 1)
+        self.assertEqual(cursos[CursoTipo.ELECTRICO], 0)
+        self.assertContains(response, 'Cursos vigentes por tipo')
+
     def test_usuario_garita_no_puede_ver_reportes(self):
         self.user.role = User.GARITA
         self.user.save(update_fields=['role'])
@@ -130,6 +254,27 @@ class DashboardViewTests(TestCase):
         )
         self.assertNotContains(response, self.trabajador.dni)
 
+    def test_lista_y_detalle_muestran_habilitacion_efectiva(self):
+        self.assertTrue(self.trabajador.habilitado)
+        self.assertFalse(self.trabajador.habilitado_efectivo)
+
+        self.user.role = User.BECA_AZUL
+        self.user.save(update_fields=['role'])
+
+        response = self.client.get(
+            reverse('app_control:trabajador_lista'),
+            {'q': self.trabajador.nombres},
+        )
+
+        self.assertContains(response, 'No habilitado')
+
+        response = self.client.get(
+            reverse('app_control:trabajador_detalle', args=[self.trabajador.pk]),
+        )
+
+        self.assertContains(response, 'No habilitado')
+        self.assertContains(response, 'Deshabilitar')
+
     def test_grafica_agrupa_trabajadores_por_estado_e_incluye_inactivos(self):
         self.trabajador.activo = False
         self.trabajador.habilitado = False
@@ -201,6 +346,51 @@ class DashboardViewTests(TestCase):
 
 
 class TrabajadorEmpresaCreateViewTests(TestCase):
+    def test_usuario_empresa_no_puede_editar_trabajador_desactivado(self):
+        empresa = Empresa.objects.create(nombre='Empresa edición', ruc='20987654321', correo='edicion@example.com')
+        user = User.objects.create_user(
+            email='edicion@example.com',
+            password='test-password',
+            first_name='Usuario',
+            last_name='Empresa',
+            role=User.USUARIO_EMPRESA,
+            empresa=empresa,
+        )
+        trabajador = Trabajador.objects.create(
+            empresa=empresa,
+            dni='12345678',
+            nombres='Ana',
+            apellidos='Prueba',
+            activo=False,
+        )
+        self.client.force_login(user)
+
+        response = self.client.get(reverse('app_control:trabajador_empresa_editar', args=[trabajador.pk]))
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_usuario_empresa_puede_editar_su_trabajador_activo(self):
+        empresa = Empresa.objects.create(nombre='Empresa edición activa', ruc='20876543210', correo='edicion-activa@example.com')
+        user = User.objects.create_user(
+            email='edicion-activa@example.com',
+            password='test-password',
+            first_name='Usuario',
+            last_name='Empresa',
+            role=User.USUARIO_EMPRESA,
+            empresa=empresa,
+        )
+        trabajador = Trabajador.objects.create(
+            empresa=empresa,
+            dni='12345678',
+            nombres='Ana',
+            apellidos='Prueba',
+        )
+        self.client.force_login(user)
+
+        response = self.client.get(reverse('app_control:trabajador_empresa_editar', args=[trabajador.pk]))
+
+        self.assertEqual(response.status_code, 200)
+
     def test_usuario_empresa_puede_crear_trabajador(self):
         empresa = Empresa.objects.create(nombre='Empresa', ruc='20123456789', correo='empresa@example.com')
         user = User.objects.create_user(

@@ -28,11 +28,12 @@ urlpatterns = [
     path('trabajadores/', views.TrabajadorListView.as_view(), name='trabajador_lista'),
     path('trabajadores/buscar/', views.TrabajadorBuscarView.as_view(), name='trabajador_buscar'),
     path('trabajadores/empresa/crear/', views.TrabajadorEmpresaCreateView.as_view(), name='trabajador_empresa_crear'),
-    path('trabajadores/empresa/<int:pk>/', views.TrabajadorEmpresaDetailView.as_view(), name='trabajador_empresa_detalle'),
     path('trabajadores/empresa/<int:pk>/editar/', views.TrabajadorEmpresaUpdateView.as_view(), name='trabajador_empresa_editar'),
     path('trabajadores/empresa/<int:pk>/toggle/', views.TrabajadorEmpresaToggleView.as_view(), name='trabajador_empresa_toggle'),
     path('trabajadores/empresa/<int:pk>/eliminar/', views.TrabajadorEmpresaDeleteView.as_view(), name='trabajador_empresa_eliminar'),
     path('trabajadores/<int:pk>/', views.TrabajadorDetailView.as_view(), name='trabajador_detalle'),
+    # Reverse-name compatibility: this name now generates the canonical detail URL.
+    path('trabajadores/<int:pk>/', views.TrabajadorDetailView.as_view(), name='trabajador_empresa_detalle'),
     path('trabajadores/<int:pk>/editar/', views.TrabajadorUpdateView.as_view(), name='trabajador_editar'),
     path('trabajadores/<int:pk>/habilitado/toggle/', views.TrabajadorHabilitadoToggleView.as_view(), name='trabajador_habilitado_toggle'),
     path('trabajadores/<int:pk>/cursos/<str:curso>/obligatorio/', views.TrabajadorCursoObligatorioToggleView.as_view(), name='trabajador_curso_obligatorio_toggle'),
@@ -42,6 +43,7 @@ urlpatterns = [
     # Certificados
     path('certificados/empresa/crear/<int:trabajador_pk>/', views.CertificadoEmpresaCreateView.as_view(), name='certificado_empresa_crear'),
     path('certificados/empresa/<int:pk>/editar/', views.CertificadoEmpresaUpdateView.as_view(), name='certificado_empresa_editar'),
+    path('certificados/empresa/<int:pk>/agregar-archivo/', views.CertificadoEmpresaUpdateView.as_view(), name='certificado_empresa_agregar_archivo'),
     path('certificados/empresa/<int:pk>/eliminar/', views.CertificadoEmpresaDeleteView.as_view(), name='certificado_empresa_eliminar'),
     path('certificados/crear/<int:trabajador_pk>/', views.CertificadoCreateView.as_view(), name='certificado_crear'),
     path('certificados/<int:pk>/editar/', views.CertificadoUpdateView.as_view(), name='certificado_editar'),

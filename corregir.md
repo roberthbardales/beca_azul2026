@@ -1,38 +1,17 @@
-# Correcciones pendientes
+# Registro de correcciones
 
-Este archivo contiene únicamente temas técnicos que todavía no forman parte de
-las funcionalidades actuales. No sustituye las reglas de `contexto.md` ni
-`permisos.md`.
+## Certificados con propietario inconsistente - Corregido
 
-## Reemplazo seguro de certificados
+Las restricciones `CheckConstraint` del modelo impiden que un certificado tenga un propietario incompatible con su tipo, incluso si se inserta mediante `bulk_create()`.
 
-Revisar el flujo de reemplazo de archivos para conservar el archivo anterior si
-falla el guardado del nuevo. Las operaciones deben mantener consistencia entre
-base de datos y storage.
+Se agrego una prueba que confirma que una insercion masiva invalida es rechazada por la base de datos.
 
-## Conflictos de cursos
+## Validaciones de Empresa - Corregido
 
-Validar de forma explícita los conflictos cuando se cambia la categoría de un
-certificado y ya existe otro certificado para la misma combinación trabajador y
-curso.
+`Empresa` ahora valida el formato del RUC, exige certificados vigentes para aprobar SCTR y exige certificados vigentes de ambos SCTR y homologacion para aprobar la homologacion.
 
-## Consultas del dashboard
+Las vistas mantienen sus validaciones para evitar que las operaciones administrativas que usan `update_fields` puedan omitir `clean()`.
 
-Revisar la cantidad de consultas independientes cuando aumente el volumen de
-empresas, trabajadores y certificados.
+## Estado temporal de usuarios
 
-## Organización del código
-
-`applications/control/views.py` concentra dashboard, empresas, trabajadores,
-certificados e incidencias. Puede dividirse por funcionalidad si continúa
-creciendo.
-
-## Pruebas pendientes
-
-Ampliar las pruebas automatizadas para cubrir específicamente:
-
-- Activación y desactivación de cursos obligatorios.
-- Restricción de la operación a Beca Azul.
-- Rechazo de cursos no pertenecientes al catálogo fijo.
-- Mensaje `Falta subir` cuando falta una constancia obligatoria.
-- Conservación del certificado al desactivar la obligación.
+`User.is_active_before_empresa_deactivation` guarda intencionalmente el estado previo del usuario para restaurarlo cuando la empresa vuelva a activarse. No requiere correccion.

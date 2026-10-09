@@ -101,11 +101,15 @@ salud y homologación pertenecen a la empresa. Los certificados de
 Inducción y Aptitud médica pertenecen al trabajador y son independientes de los
 cursos. Los cursos permiten un certificado por categoría y trabajador.
 
-Inducción maneja fechas, pero no requiere archivo PDF. Aptitud médica y cursos
-requieren un PDF. Beca Azul valida explícitamente Inducción, Aptitud médica y
-cada curso obligatorio mediante un checkbutton. Si falta el archivo o aún no se
-valida, queda `Pendiente`; si vence, queda `Desaprobado`; solo un requisito
-validado, vigente y con su archivo requerido queda `Vigente`.
+Inducción, Aptitud médica y cursos requieren un PDF para quedar completos. Al
+crear un trabajador como Usuario Empresa se deben cargar los PDF y las fechas de
+emisión y vencimiento de Inducción y Aptitud médica. En los formularios de SCTR,
+homologación y certificados de trabajadores, las fechas se habilitan después de
+seleccionar un PDF nuevo o cuando ya existe un archivo físico disponible. Beca
+Azul valida explícitamente Inducción, Aptitud médica y cada curso obligatorio
+mediante un checkbutton. Si falta el archivo o aún no se valida, queda
+`Pendiente`; si vence, queda `Desaprobado`; solo un requisito validado, vigente y
+con su archivo requerido queda `Vigente`.
 
 Los seis cursos fijos son:
 
@@ -151,8 +155,10 @@ trabajadores inactivos.
 
 Usuario Empresa carga, administra y consulta en PDF el SCTR y la homologación de
 su empresa, así como los certificados de sus trabajadores dentro de los límites
-de sus vistas. Puede consultar sus certificados empresariales aunque estén
-vencidos, si el archivo físico existe.
+de sus vistas. En el alta de trabajador debe adjuntar Inducción y Aptitud médica
+con sus fechas. En los formularios de SCTR y homologación, primero selecciona el
+PDF para habilitar las fechas de emisión y vencimiento. Puede consultar sus
+certificados empresariales aunque estén vencidos, si el archivo físico existe.
 Beca Azul puede gestionar y validar certificados de trabajadores desde las
 vistas permitidas. Administrador y Planta pueden consultarlos desde los detalles
 permitidos, sin gestionar su contenido.
@@ -212,6 +218,11 @@ El proyecto utiliza un único fixture de datos iniciales:
 Este archivo contiene empresas, trabajadores, usuarios, certificados y cursos
 obligatorios. No se debe cargar un segundo fixture para completar esos datos.
 
+`seed_demo` es un comando independiente para desarrollo y pruebas. No es
+necesario ejecutarlo después de cargar el fixture y reemplaza los datos
+existentes que gestiona. Genera empresas, trabajadores, cursos y certificados
+ficticios con fechas relativas al día de ejecución.
+
 En una base de datos nueva, el orden es:
 
 ```text
@@ -227,13 +238,15 @@ Los certificados demo del fixture usan rutas bajo
 `media/certificados/demo/`; esos archivos deben desplegarse junto con el
 fixture. La ruta guardada en la base de datos no crea el PDF físicamente.
 
-Para regenerar datos demo desde cero se puede usar:
+Para reemplazar los datos por datos demo desde cero se puede usar:
 
 ```text
 python manage.py seed_demo --clear
 ```
 
 Este comando es destructivo y no debe ejecutarse sobre datos reales.
+Requiere `--clear` como confirmación explícita. En producción se debe cargar
+`fixtures/seed.json` con `loaddata`, no ejecutar `seed_demo`.
 
 Las autorizaciones se validan siempre en backend mediante mixins, querysets
 restringidos y comprobaciones explícitas; ocultar botones no es una medida de

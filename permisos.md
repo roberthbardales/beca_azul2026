@@ -42,9 +42,15 @@ la vista no añade una restricción específica.
   obligatorio mediante `POST` en `/certificados/<id>/validar/`.
 - No puede validar ni desaprobar certificados de un trabajador inactivo. Las
   casillas aparecen deshabilitadas y el backend rechaza igualmente el `POST`.
-- La Inducción requiere fechas, pero no PDF. Aptitud médica y cursos requieren
-  PDF. Si falta el PDF requerido o aún no fueron validados, quedan pendientes;
-  al vencer, quedan desaprobados.
+- Inducción, Aptitud médica y cursos requieren PDF para quedar completos. En el
+  formulario de alta de trabajador de Usuario Empresa son obligatorios los PDF y
+  las fechas de emisión y vencimiento de Inducción y Aptitud médica.
+- En los formularios de SCTR, homologación y certificados de trabajadores, las
+  fechas de emisión y vencimiento se habilitan al seleccionar un PDF, o si ya
+  existe un archivo físico disponible. El backend también exige PDF y fechas
+  válidas para guardar certificados nuevos.
+- Si falta el PDF requerido o aún no fueron validados, quedan pendientes; al
+  vencer, quedan desaprobados.
 - Cambia la habilitación manual del trabajador. La habilitación efectiva además
   exige trabajador y empresa activos, SCTR pensión y salud aprobados con archivo
   físico vigente, homologación aprobada con archivo físico vigente, Inducción y
@@ -80,9 +86,14 @@ falta el PDF, Usuario Empresa verá `Falta subir` y deberá cargarlo.
 - Debe tener una empresa asignada y activa.
 - Solo accede a su propia empresa y a sus trabajadores.
 - Consulta su empresa y administra los certificados SCTR y homologación de ella.
+- Para registrar o actualizar SCTR y homologación, selecciona primero el PDF; el
+  formulario habilita después las fechas de emisión y vencimiento. Un certificado
+  nuevo no se guarda sin archivo y fechas válidas.
 - Puede ver en PDF los certificados de su propia empresa, aunque estén vencidos,
   siempre que el archivo físico exista.
 - Crea y edita trabajadores de su empresa.
+- Al crear un trabajador, debe adjuntar los PDF y completar las fechas de emisión
+  y vencimiento de Inducción y Aptitud médica.
 - No puede activar ni desactivar trabajadores; esa operación está reservada a
   Beca Azul.
 - Puede cargar, editar y eliminar certificados de sus trabajadores dentro de los
@@ -163,6 +174,18 @@ falta el PDF, Usuario Empresa verá `Falta subir` y deberá cargarlo.
 python manage.py migrate
 python manage.py loaddata seed
 ```
+
+- `seed_demo` no forma parte de la carga inicial. Es un comando para desarrollo
+  y pruebas que elimina empresas, trabajadores, certificados y usuarios
+  asociados antes de crear datos ficticios.
+- Solo debe ejecutarse con confirmación explícita:
+
+```text
+python manage.py seed_demo --clear
+```
+
+- No se debe ejecutar `seed_demo --clear` después de cargar el fixture ni sobre
+  datos reales.
 
 - Los PDFs demo referenciados por el fixture deben estar disponibles en
   `media/certificados/demo/`. Si el archivo físico falta, el sistema conserva
