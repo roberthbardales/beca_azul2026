@@ -173,22 +173,16 @@ falta el PDF, Usuario Empresa verá `Falta subir` y deberá cargarlo.
 ```text
 python manage.py migrate
 python manage.py loaddata seed
+python manage.py preparar_demo_certificados
+python manage.py check
 ```
 
-- `seed_demo` no forma parte de la carga inicial. Es un comando para desarrollo
-  y pruebas que elimina empresas, trabajadores, certificados y usuarios
-  asociados antes de crear datos ficticios.
-- Solo debe ejecutarse con confirmación explícita:
-
-```text
-python manage.py seed_demo --clear
-```
-
-- No se debe ejecutar `seed_demo --clear` después de cargar el fixture ni sobre
-  datos reales.
-
-- Los PDFs demo referenciados por el fixture deben estar disponibles en
-  `media/certificados/demo/`. Si el archivo físico falta, el sistema conserva
-  el registro pero no lo considera disponible para consulta o descarga.
+- `preparar_demo_certificados` copia los PDFs fuente de `pdf/` a las rutas demo
+  declaradas en el fixture, actualiza las fechas relativas al día de ejecución
+  y establece estados variados de vigencia y aprobación. Es repetible y solo
+  modifica certificados bajo `certificados/demo/` y empresas asociadas a esos
+  certificados; no borra trabajadores, empresas ni usuarios.
+- El comando no reemplaza `loaddata`: primero carga el fixture y luego prepara
+  los archivos y estados demo.
 - Las credenciales contenidas en el fixture son datos de desarrollo y deben
   cambiarse antes de usar el entorno en producción.

@@ -168,9 +168,11 @@
                        "nombre":  "Apple",
                        "ruc":  "20100000001",
                        "correo":  "apple@gmail.com",
-                       "representante_legal":  "",
-                       "homologacion":  false,
-                       "activo":  true
+                        "representante_legal":  "",
+                        "homologacion":  false,
+                        "sctr_pension_aprobado":  false,
+                        "sctr_salud_aprobado":  false,
+                        "activo":  true
                    }
     },
     {
@@ -182,9 +184,11 @@
                        "nombre":  "Google",
                        "ruc":  "20100000002",
                        "correo":  "google@gmail.com",
-                       "representante_legal":  "",
-                       "homologacion":  false,
-                       "activo":  true
+                        "representante_legal":  "",
+                        "homologacion":  false,
+                        "sctr_pension_aprobado":  false,
+                        "sctr_salud_aprobado":  false,
+                        "activo":  true
                    }
     },
     {
@@ -196,9 +200,11 @@
                        "nombre":  "Microsoft",
                        "ruc":  "20100000003",
                        "correo":  "microsoft@gmail.com",
-                       "representante_legal":  "",
-                       "homologacion":  false,
-                       "activo":  true
+                        "representante_legal":  "",
+                        "homologacion":  false,
+                        "sctr_pension_aprobado":  false,
+                        "sctr_salud_aprobado":  false,
+                        "activo":  true
                    }
     },
     {
@@ -210,9 +216,11 @@
                        "nombre":  "Amazon",
                        "ruc":  "20100000004",
                        "correo":  "amazon@gmail.com",
-                       "representante_legal":  "",
-                       "homologacion":  false,
-                       "activo":  true
+                        "representante_legal":  "",
+                        "homologacion":  false,
+                        "sctr_pension_aprobado":  false,
+                        "sctr_salud_aprobado":  false,
+                        "activo":  true
                    }
     },
     {
@@ -224,9 +232,11 @@
                        "nombre":  "Tesla",
                        "ruc":  "20100000005",
                        "correo":  "tesla@gmail.com",
-                       "representante_legal":  "",
-                       "homologacion":  false,
-                       "activo":  true
+                        "representante_legal":  "",
+                        "homologacion":  false,
+                        "sctr_pension_aprobado":  false,
+                        "sctr_salud_aprobado":  false,
+                        "activo":  true
                    }
     },
     {
@@ -238,9 +248,11 @@
                        "nombre":  "Samsung",
                        "ruc":  "20100000006",
                        "correo":  "samsung@gmail.com",
-                       "representante_legal":  "",
-                       "homologacion":  false,
-                       "activo":  true
+                        "representante_legal":  "",
+                        "homologacion":  false,
+                        "sctr_pension_aprobado":  false,
+                        "sctr_salud_aprobado":  false,
+                        "activo":  true
                    }
     },
     {
@@ -252,9 +264,11 @@
                        "nombre":  "Toyota",
                        "ruc":  "20100000007",
                        "correo":  "toyota@gmail.com",
-                       "representante_legal":  "",
-                       "homologacion":  false,
-                       "activo":  true
+                        "representante_legal":  "",
+                        "homologacion":  false,
+                        "sctr_pension_aprobado":  false,
+                        "sctr_salud_aprobado":  false,
+                        "activo":  true
                    }
     },
     {
@@ -266,9 +280,11 @@
                        "nombre":  "Adobe",
                        "ruc":  "20100000008",
                        "correo":  "adobe@gmail.com",
-                       "representante_legal":  "",
-                       "homologacion":  false,
-                       "activo":  true
+                        "representante_legal":  "",
+                        "homologacion":  false,
+                        "sctr_pension_aprobado":  false,
+                        "sctr_salud_aprobado":  false,
+                        "activo":  true
                    }
     },
     {
@@ -280,9 +296,11 @@
                        "nombre":  "Oracle",
                        "ruc":  "20100000009",
                        "correo":  "oracle@gmail.com",
-                       "representante_legal":  "",
-                       "homologacion":  false,
-                       "activo":  true
+                        "representante_legal":  "",
+                        "homologacion":  false,
+                        "sctr_pension_aprobado":  false,
+                        "sctr_salud_aprobado":  false,
+                        "activo":  true
                    }
     },
     {
@@ -294,9 +312,11 @@
                        "nombre":  "Netflix",
                        "ruc":  "20100000010",
                        "correo":  "netflix@gmail.com",
-                       "representante_legal":  "",
-                       "homologacion":  false,
-                       "activo":  true
+                        "representante_legal":  "",
+                        "homologacion":  false,
+                        "sctr_pension_aprobado":  false,
+                        "sctr_salud_aprobado":  false,
+                        "activo":  true
                    }
     },
     {

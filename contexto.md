@@ -218,35 +218,30 @@ El proyecto utiliza un único fixture de datos iniciales:
 Este archivo contiene empresas, trabajadores, usuarios, certificados y cursos
 obligatorios. No se debe cargar un segundo fixture para completar esos datos.
 
-`seed_demo` es un comando independiente para desarrollo y pruebas. No es
-necesario ejecutarlo después de cargar el fixture y reemplaza los datos
-existentes que gestiona. Genera empresas, trabajadores, cursos y certificados
-ficticios con fechas relativas al día de ejecución.
+`preparar_demo_certificados` instala los PDFs de ejemplo y calcula fechas y
+aprobaciones relativas al día de ejecución. Se ejecuta después del fixture y
+no crea ni reemplaza empresas, trabajadores o usuarios.
 
 En una base de datos nueva, el orden es:
 
 ```text
 python manage.py migrate
 python manage.py loaddata seed
+python manage.py preparar_demo_certificados
 python manage.py check
 ```
 
 El fixture no reemplaza las migraciones. Los archivos de migración de todas las
 aplicaciones deben estar desplegados antes de ejecutar `migrate`.
 
-Los certificados demo del fixture usan rutas bajo
-`media/certificados/demo/`; esos archivos deben desplegarse junto con el
-fixture. La ruta guardada en la base de datos no crea el PDF físicamente.
+`preparar_demo_certificados` copia los PDFs fuente disponibles en `pdf/` a las
+rutas `certificados/demo/` registradas en el fixture y deja estados variados
+de vigencia, validación y homologación. Puede volver a ejecutarse sin borrar
+registros; solo cambia los certificados demo y los estados de las empresas
+asociadas. No sustituye las migraciones ni la carga del fixture.
 
-Para reemplazar los datos por datos demo desde cero se puede usar:
-
-```text
-python manage.py seed_demo --clear
-```
-
-Este comando es destructivo y no debe ejecutarse sobre datos reales.
-Requiere `--clear` como confirmación explícita. En producción se debe cargar
-`fixtures/seed.json` con `loaddata`, no ejecutar `seed_demo`.
+Para reiniciar la demo se recrea la base de datos y se repite la secuencia de
+comandos anterior; no ejecutar esa secuencia sobre datos reales.
 
 Las autorizaciones se validan siempre en backend mediante mixins, querysets
 restringidos y comprobaciones explícitas; ocultar botones no es una medida de
