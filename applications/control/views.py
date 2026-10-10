@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
-from django.core.mail import EmailMultiAlternatives
+from django.core.mail import EmailMultiAlternatives, send_mail
 from django.db import transaction
 from django.db.models import Count, Exists, Func, OuterRef, Prefetch, Q, Value
 from django.db.models.functions import Concat, Lower
@@ -1434,6 +1434,26 @@ class TrabajadorEmpresaCreateView(TrabajadorEmpresaBaseMixin, CreateView):
     def form_valid(self, form):
         form.instance.empresa = self.request.user.empresa
         self.object = form.save()
+        try:
+            enviados = send_mail(
+                subject='Nuevo trabajador registrado',
+                message=(
+                    'Se ha creado un nuevo trabajador.\n\n'
+                    f'Nombre: {self.object.nombres}\n'
+                    f'Apellido: {self.object.apellidos}\n'
+                    f'DNI: {self.object.dni}'
+                ),
+                from_email=settings.EMAIL_HOST_USER,
+                recipient_list=[settings.EMAIL_HOST_USER],
+                fail_silently=False,
+            )
+            if not enviados:
+                raise RuntimeError('El correo no fue aceptado para envío.')
+        except Exception:
+            messages.warning(
+                self.request,
+                'El trabajador fue registrado, pero no se pudo enviar la notificación por correo.',
+            )
         messages.success(
             self.request,
             f'El trabajador "{self.object}" fue registrado correctamente.',

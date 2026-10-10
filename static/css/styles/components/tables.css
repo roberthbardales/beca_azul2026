@@ -31,7 +31,7 @@ main .workers-list-filter--compact select { border-color: #f8fafc !important; }
 
 .app-table th {
     height: 3.25rem;
-    padding: .65rem .375rem !important;
+    padding: .3rem .3rem !important;
     border-bottom: 1px solid #b8c0cc !important;
     color: #111827 !important;
     font-size: .9rem !important;
@@ -103,4 +103,4 @@ main .workers-list-filter--compact select { border-color: #f8fafc !important; }
     }
 }
 
-@media (max-width: 640px) { .responsive-table table, table.responsive-table { min-width: 0; } .responsive-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; } .responsive-table tbody, .responsive-table tr, .responsive-table td { display: block; width: 100%; } .responsive-table tbody { display: grid; gap: .75rem; padding: .75rem; } .responsive-table tbody tr:not(.list-empty-row) { overflow: hidden; border: 1px solid var(--ink-200); border-radius: .75rem; background: #fff; box-shadow: var(--shadow-card); } .responsive-table td[data-label] { display: grid; grid-template-columns: minmax(6.25rem, .75fr) minmax(0, 1.25fr); gap: .75rem; padding: .7rem .875rem !important; text-align: left !important; } .responsive-table td[data-label]::before { color: var(--ink-500); content: attr(data-label); font-size: .6875rem; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; } .responsive-table .list-empty-row { display: table-row; } .responsive-table .list-empty-row td { display: table-cell; } }
+@media (max-width: 640px) { .responsive-table table, table.responsive-table { min-width: 0; } .responsive-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; } .responsive-table tbody, .responsive-table tr, .responsive-table td { display: block; width: 100%; } .responsive-table tbody { display: grid; gap: .75rem; padding: .75rem; } .responsive-table tbody tr:not(.list-empty-row) { overflow: hidden; border: 1px solid var(--ink-200); border-radius: .75rem; background: #fff; box-shadow: var(--shadow-card); } .responsive-table td[data-label] { display: grid; grid-template-columns: minmax(6.25rem, .75fr) minmax(0, 1.25fr); gap: .75rem; padding: .7rem .875rem !important; text-align: left !important; } .responsive-table td[data-label]::before { color: var(--ink-500); content: attr(data-label); font-size: .6875rem; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; } .workers-list-table td[data-label]::before, .reports-list-table td[data-label]::before { content: none; } .responsive-table .list-empty-row { display: table-row; } .responsive-table .list-empty-row td { display: table-cell; } }

@@ -110,6 +110,14 @@ class UsuarioGestionForm(forms.ModelForm):
 
 
 class PerfilForm(forms.ModelForm):
+    LABELS = {
+        'first_name': 'Nombres',
+        'last_name': 'Apellidos',
+        'gender': 'Género',
+        'phone': 'Teléfono',
+        'date_birth': 'Fecha de nacimiento',
+    }
+
     class Meta:
         model = User
         fields = ('first_name', 'last_name', 'gender', 'phone', 'date_birth')
@@ -120,6 +128,11 @@ class PerfilForm(forms.ModelForm):
             'phone': forms.TextInput(attrs={'class': 'profile-input', 'autocomplete': 'tel'}),
             'date_birth': forms.DateInput(attrs={'class': 'profile-input', 'type': 'date'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name, label in self.LABELS.items():
+            self.fields[field_name].label = label
 
     def clean_date_birth(self):
         date_birth = self.cleaned_data.get('date_birth')

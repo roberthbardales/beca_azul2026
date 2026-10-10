@@ -1,5 +1,8 @@
 from datetime import date, timedelta
+from unittest.mock import patch
 
+from django.conf import settings
+from django.core import mail
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
@@ -637,3 +640,63 @@ class TrabajadorEmpresaCreateViewTests(TestCase):
         trabajador = Trabajador.objects.get(dni='12345678')
         self.assertEqual(trabajador.empresa, empresa)
         self.assertEqual(trabajador.certificados.count(), 2)
+        self.assertEqual(len(mail.outbox), 1)
+        correo = mail.outbox[0]
+        self.assertEqual(correo.to, [settings.EMAIL_HOST_USER])
+        self.assertEqual(correo.from_email, settings.EMAIL_HOST_USER)
+        self.assertIn(trabajador.nombres, correo.body)
+        self.assertIn(trabajador.apellidos, correo.body)
+        self.assertIn(trabajador.dni, correo.body)
+
+    @patch('applications.control.views.send_mail', side_effect=OSError('SMTP no disponible'))
+    def test_fallo_de_correo_muestra_advertencia_sin_cancelar_registro(self, enviar_correo):
+        empresa = Empresa.objects.create(nombre='Empresa aviso', ruc='20123456789', correo='empresa-aviso@example.com')
+        user = User.objects.create_user(
+            email='empresa-aviso@example.com',
+            password='test-password',
+            first_name='Usuario',
+            last_name='Empresa',
+            role=User.USUARIO_EMPRESA,
+            empresa=empresa,
+        )
+        self.client.force_login(user)
+        data = {
+            'tipo_documento': Trabajador.DNI,
+            'dni': '12345678',
+            'nombres': 'Ana',
+            'apellidos': 'Prueba',
+            'cargo': 'Operadora',
+            'induccion_fecha_emision': date.today().isoformat(),
+            'induccion_fecha_vencimiento': (date.today() + timedelta(days=30)).isoformat(),
+            'aptitud_medica_fecha_emision': date.today().isoformat(),
+            'aptitud_medica_fecha_vencimiento': (date.today() + timedelta(days=30)).isoformat(),
+            'certificados-TOTAL_FORMS': '6',
+            'certificados-INITIAL_FORMS': '0',
+            'certificados-MIN_NUM_FORMS': '0',
+            'certificados-MAX_NUM_FORMS': '1000',
+        }
+        for index, curso in enumerate((
+            CursoTipo.CALIENTE,
+            CursoTipo.ALTURA,
+            CursoTipo.ESPACIO_CONFINADO,
+            CursoTipo.ELECTRICO,
+            CursoTipo.EXCAVACION,
+            CursoTipo.IZAJE,
+        )):
+            data[f'certificados-{index}-tipo'] = Certificado.CURSOS
+            data[f'certificados-{index}-curso'] = curso
+        files = {
+            'induccion_archivo': SimpleUploadedFile('induccion.pdf', b'%PDF-1.4 test'),
+            'aptitud_medica_archivo': SimpleUploadedFile('aptitud.pdf', b'%PDF-1.4 test'),
+        }
+
+        response = self.client.post(
+            reverse('app_control:trabajador_empresa_crear'),
+            {**data, **files},
+            follow=True,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(Trabajador.objects.filter(dni='12345678').exists())
+        self.assertContains(response, 'no se pudo enviar la notificación por correo')
+        enviar_correo.assert_called_once()

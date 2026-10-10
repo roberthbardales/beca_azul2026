@@ -341,7 +341,7 @@ main table.app-table {
 }
 
 main table.app-table th {
-    padding: .65rem .375rem !important;
+    padding: .3rem .3rem !important;
     border-color: #b8c0cc !important;
     background: #f1f4f6 !important;
     color: #1e40af !important;

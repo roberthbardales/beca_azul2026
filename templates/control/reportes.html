@@ -14,6 +14,12 @@
     @page { size: A4 landscape; margin: 1cm; }
     .reports-list-table { width: auto; table-layout: auto; }
     .reports-list-table .status-nowrap { white-space: nowrap; }
+    .reports-list-table th:last-child,
+    .reports-list-table td:last-child { min-width: 8.5rem; white-space: nowrap; }
+    .reports-list-table thead th,
+    .reports-list-table thead th.px-3.py-1 { height: auto !important; padding: .3rem .3rem !important; }
+    .reports-list-table tbody td,
+    .reports-list-table tbody td.px-5.py-3 { height: auto !important; padding: .3rem .3rem !important; line-height: 1.2 !important; }
     {% if es_pdf %}
     .app-topbar, .app-sidebar, .reports-controls, .list-page-header { display: none !important; }
     .app-content { margin-left: 0 !important; }
@@ -76,7 +82,7 @@
                  {% endfor %}
                  {% elif reporte_actual == 'trabajadores' %}
                  {% for fila in filas %}
-                     <tr><td data-label="Documento" class="px-5 py-3 text-sm">{{ fila.get_tipo_documento_display }} {{ fila.dni }}</td><td data-label="Nombre completo" class="px-5 py-3 text-sm font-medium">{{ fila.apellidos }}, {{ fila.nombres }}</td><td data-label="Empresa" class="px-5 py-3 text-sm">{{ fila.empresa }}</td><td data-label="SCTR pensión" class="px-5 py-3 text-sm">{{ fila.sctr_pension_estado_detalle }}</td><td data-label="SCTR salud" class="px-5 py-3 text-sm">{{ fila.sctr_salud_estado_detalle }}</td><td data-label="Inducción" class="px-5 py-3 text-sm">{{ fila.estado_induccion }}</td><td data-label="Aptitud médica" class="px-5 py-3 text-sm">{{ fila.estado_aptitud_medica }}</td><td data-label="Estado" class="px-5 py-3 text-sm">{% if fila.activo %}<span class="inline-block rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">Activo</span>{% else %}<span class="inline-block rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">Desactivado</span>{% endif %}</td><td data-label="Habilitación" class="px-5 py-3 text-sm">{% if fila.habilitado_efectivo %}<span class="inline-block rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">Habilitado</span>{% else %}<span class="inline-block rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">No habilitado</span>{% endif %}</td></tr>
+                      <tr><td data-label="Documento" class="px-5 py-3 text-sm">{{ fila.get_tipo_documento_display }} {{ fila.dni }}</td><td data-label="Nombre completo" class="px-5 py-3 text-sm font-medium">{{ fila.apellidos }}, {{ fila.nombres }}</td><td data-label="Empresa" class="px-5 py-3 text-sm">{{ fila.empresa }}</td><td data-label="SCTR pensión" class="px-5 py-3 text-sm">{{ fila.sctr_pension_estado_detalle }}</td><td data-label="SCTR salud" class="px-5 py-3 text-sm">{{ fila.sctr_salud_estado_detalle }}</td><td data-label="Inducción" class="px-5 py-3 text-sm">{{ fila.estado_induccion }}</td><td data-label="Aptitud médica" class="px-5 py-3 text-sm">{{ fila.estado_aptitud_medica }}</td><td data-label="Estado" class="px-5 py-3 text-sm">{% if fila.activo %}<span class="inline-block rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">Activo</span>{% else %}<span class="inline-block rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">Desactivado</span>{% endif %}</td><td data-label="Habilitación" class="px-5 py-3 text-sm"><span class="inline-block whitespace-nowrap rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">No habilitado</span></td></tr>
                  {% endfor %}
                   {% else %}
                   {% for fila in filas %}
