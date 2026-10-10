@@ -2,13 +2,19 @@
 .dashboard-metrics { grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)) !important; justify-content: start; }
 .dashboard-course-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .dashboard-course-metrics .dashboard-metric { min-width: 0; }
-.dashboard-metric { display: flex; width: 100%; height: 5.5rem; min-height: 5.5rem; flex-direction: column; padding: .1rem .55rem !important; border-color: #e3e6eb !important; border-radius: .85rem !important; box-shadow: 0 2px 5px rgba(15, 23, 42, .06) !important; transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease; }
+.dashboard-metric { display: flex; width: 100%; height: 5.5rem; min-height: 5.5rem; flex-direction: column; padding: .7rem .55rem !important; border-color: #e3e6eb !important; border-radius: .85rem !important; box-shadow: 0 2px 5px rgba(15, 23, 42, .06) !important; transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease; }
 .dashboard-metric > div:first-child { min-height: 3.45rem; }
 .dashboard-metric h2, .dashboard-metric h3 { min-height: 1rem; line-height: 1.25rem; color: #111827 !important; font-size: .9rem !important; letter-spacing: -.015em; }
 .dashboard-metric p[class*="text-3xl"] { margin-top: .2rem !important; font-size: 1.6rem !important; line-height: 1.8rem !important; letter-spacing: -.055em; text-align: center; }
 .dashboard-metric > div + div { margin-top: auto !important; min-height: 1.5rem; align-items: flex-start; row-gap: .15rem; }
 .dashboard-metric > div:first-child > span { align-self: center; width: 2.7rem; height: 2.7rem; border-radius: 0 !important; background: transparent !important; }
 .dashboard-metric > div:first-child > span svg { width: 2.1rem; height: 2.1rem; stroke-width: 1.45; }
+.dashboard-summary-metric { align-self: start; height: auto; min-height: 6.5rem; }
+.dashboard-summary-statuses { display: grid; min-width: 0; gap: .12rem; font-size: .76rem; font-weight: 700; line-height: .95rem; }
+.dashboard-summary-positive { color: #15803d; }
+.dashboard-summary-negative { color: #dc2626; }
+.dashboard-summary-neutral { color: #64748b; }
+.dashboard-summary-warning { color: #b45309; }
 .dashboard-metric .bg-green-100 { background: var(--success-50) !important; color: var(--success-700) !important; }
 .dashboard-metric .bg-red-50 { background: var(--danger-50) !important; color: var(--danger-700) !important; }
 .dashboard-metric .bg-blue-100 { color: var(--primary-600) !important; }
@@ -19,37 +25,39 @@
 .dashboard-card-statuses { min-width: 0; flex-direction: column; align-items: flex-start; gap: .2rem; }
 .dashboard-card-statuses span.inline-flex { width: 100%; max-width: 100%; justify-content: flex-start; padding-inline: .4rem; }
 .dashboard-card-description { line-height: 1rem; }
-.dashboard-company-metric .company-content { display: grid; grid-template-columns: minmax(2.5rem, .7fr) minmax(0, 1.3fr); align-items: center; gap: .45rem; margin-top: .1rem; }
-.dashboard-company-metric .company-content > p { text-align: left; }
-.dashboard-company-metric .company-statuses { min-width: 0; flex-direction: column; align-items: flex-start; justify-self: stretch; gap: .2rem; margin-top: 0; }
-.dashboard-company-metric .company-statuses span.inline-flex { width: 100%; max-width: 100%; justify-content: flex-start; padding-inline: .4rem; }
-.dashboard-course-metrics .dashboard-metric { height: 5.5rem; min-height: 5.5rem; padding: .1rem .55rem !important; }
-.dashboard-course-metrics .dashboard-metric p[class*="text-3xl"] { margin-top: .5rem !important; }
 .dashboard-page > section:first-of-type .dashboard-metrics { gap: 1rem !important; }
 .dashboard-chart, .dashboard-feed { border-color: var(--ink-200) !important; box-shadow: var(--shadow-card) !important; }
 .dashboard-chart { display: flex; min-width: 0; flex-direction: column; }
 .dashboard-chart-grid { column-gap: 2rem; }
+.dashboard-compliance-width { min-width: 0; }
 .dashboard-chart-error { display: grid; height: 100%; place-items: center; color: #64748b; font-size: .875rem; font-weight: 600; text-align: center; }
-.dashboard-workers-chart-scroll { max-height: 24rem; overflow-y: auto; overscroll-behavior: contain; }
+.dashboard-workers-chart-scroll { max-width: 100%; overflow-x: auto; overscroll-behavior: contain; }
 .dashboard-workers-chart-canvas { min-height: 16rem; position: relative; }
 .dashboard-feed li { transition: background-color .16s ease; }
 .dashboard-feed li:hover { background: var(--ink-50); }
 .dashboard-feed a:focus-visible { outline-offset: -2px; }
 
-.dashboard-doughnut-layout { display: grid; align-items: center; gap: 1.25rem; }
-.dashboard-chart-legend { display: grid; gap: .7rem; }
-.dashboard-chart-legend-item { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: .55rem; padding: .3rem 0; }
+.dashboard-doughnut-layout { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+.dashboard-doughnut-canvas { width: 11rem; height: 11rem; }
+.dashboard-chart-legend { display: grid; width: 100%; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .5rem; }
+.dashboard-chart-legend-item { display: grid; min-width: 0; grid-template-columns: auto minmax(0, 1fr); grid-template-rows: auto auto; align-items: center; justify-content: center; gap: .3rem .35rem; padding: .55rem .25rem; border: 1px solid var(--ink-200); border-radius: .5rem; text-align: center; }
 .dashboard-chart-legend-dot { width: .65rem; height: .65rem; border-radius: 9999px; }
-.dashboard-chart-legend-label { overflow: hidden; color: #475569; font-size: .78rem; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
-.dashboard-chart-legend-value { color: #0f172a; font-size: .78rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.dashboard-chart-legend-label { min-width: 0; color: #475569; font-size: .72rem; font-weight: 600; line-height: 1rem; overflow-wrap: anywhere; }
+.dashboard-chart-legend-value { grid-column: 1 / -1; color: #0f172a; font-size: .78rem; font-weight: 700; font-variant-numeric: tabular-nums; }
 
 @media (min-width: 640px) {
-    .dashboard-doughnut-layout { grid-template-columns: minmax(0, 1.1fr) minmax(12rem, .9fr); }
+    .dashboard-doughnut-canvas { width: 12rem; height: 12rem; }
 }
 
 @media (min-width: 1024px) {
+    .dashboard-compliance-width { width: 80%; }
     .dashboard-page > section:first-of-type .dashboard-metrics { grid-template-columns: repeat(5, minmax(0, 1fr)) !important; }
     .dashboard-course-metrics { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+}
+
+@media (min-width: 1280px) {
+    .dashboard-chart-grid-layout { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); }
+    .dashboard-compliance-width { width: 100%; }
 }
 
 @media (max-width: 639px) {

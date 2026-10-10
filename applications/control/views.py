@@ -98,7 +98,9 @@ class DashboardView(LoginRequiredMixin, View):
 
         total_empresas = Empresa.objects.count()
         empresas_activas = Empresa.objects.filter(activo=True).count()
-        empresas_habilitadas = Empresa.objects.filter(homologacion=True).count()
+        empresas_habilitadas = Empresa.objects.filter(activo=True, homologacion=True).count()
+        empresas_no_homologadas = Empresa.objects.filter(activo=True, homologacion=False).count()
+        empresas_desactivadas = Empresa.objects.filter(activo=False).count()
 
 
         total_trabajadores = Trabajador.objects.count()
@@ -118,9 +120,25 @@ class DashboardView(LoginRequiredMixin, View):
             )
         )
         trabajadores_habilitados = sum(trabajador.habilitado_efectivo for trabajador in trabajadores)
-        trabajadores_deshabilitados = len(trabajadores) - trabajadores_habilitados
+        trabajadores_desactivados = sum(not trabajador.activo for trabajador in trabajadores)
+        trabajadores_no_habilitados = sum(
+            trabajador.activo and not trabajador.habilitado_efectivo
+            for trabajador in trabajadores
+        )
         trabajadores_sctr_salud = sum(trabajador.sctr_salud_efectivo for trabajador in trabajadores)
         trabajadores_sctr_pension = sum(trabajador.sctr_pension_efectivo for trabajador in trabajadores)
+        sctr_salud_proximos_vencer = Certificado.objects.filter(
+            empresa__isnull=False,
+            tipo=Certificado.SCTR_SALUD,
+            fecha_vencimiento__gte=hoy,
+            fecha_vencimiento__lte=limite_30,
+        ).count()
+        sctr_pension_proximos_vencer = Certificado.objects.filter(
+            empresa__isnull=False,
+            tipo=Certificado.SCTR_PENSION,
+            fecha_vencimiento__gte=hoy,
+            fecha_vencimiento__lte=limite_30,
+        ).count()
         cursos_vigentes = []
         for codigo, etiqueta in Certificado.CURSO_CHOICES:
             certificados_curso = Certificado.objects.filter(
@@ -148,7 +166,8 @@ class DashboardView(LoginRequiredMixin, View):
 
         trabajadores_por_estado = {
             'Habilitado': trabajadores_habilitados,
-            'No habilitado': trabajadores_deshabilitados,
+            'No habilitado': trabajadores_no_habilitados,
+            'Desactivado': trabajadores_desactivados,
         }
 
         trabajadores_por_empresa = []
@@ -189,33 +208,25 @@ class DashboardView(LoginRequiredMixin, View):
             ),
         ).order_by('nombre')
 
-        meses = []
-        mes_actual = hoy.replace(day=1)
-        for _ in range(6):
-            siguiente = mes_actual.replace(day=28) + timedelta(days=4)
-            fin_mes = siguiente.replace(day=1) - timedelta(days=1)
-            meses.append({
-                'label': mes_actual.strftime('%b %Y').capitalize(),
-                'total': Certificado.objects.filter(
-                    fecha_vencimiento__gte=mes_actual,
-                    fecha_vencimiento__lte=fin_mes,
-                ).count(),
-            })
-            mes_actual = siguiente.replace(day=1)
-
         context = {
             'total_empresas': total_empresas,
             'empresas_activas': empresas_activas,
             'empresas_inactivas': total_empresas - empresas_activas,
             'empresas_habilitadas': empresas_habilitadas,
-            'empresas_deshabilitadas': total_empresas - empresas_habilitadas,
+            'empresas_no_homologadas': empresas_no_homologadas,
+            'empresas_desactivadas': empresas_desactivadas,
             'total_trabajadores': total_trabajadores,
             'inducciones_vigentes': inducciones_vigentes,
             'inducciones_vencidas': inducciones_vencidas,
             'trabajadores_habilitados': trabajadores_habilitados,
-            'trabajadores_deshabilitados': trabajadores_deshabilitados,
+            'trabajadores_no_habilitados': trabajadores_no_habilitados,
+            'trabajadores_desactivados': trabajadores_desactivados,
             'trabajadores_sctr_salud': trabajadores_sctr_salud,
             'trabajadores_sctr_pension': trabajadores_sctr_pension,
+            'trabajadores_sin_sctr_salud': total_trabajadores - trabajadores_sctr_salud,
+            'trabajadores_sin_sctr_pension': total_trabajadores - trabajadores_sctr_pension,
+            'sctr_salud_proximos_vencer': sctr_salud_proximos_vencer,
+            'sctr_pension_proximos_vencer': sctr_pension_proximos_vencer,
             'cursos_vigentes': cursos_vigentes,
             'total_certificados': total_certificados,
             'certificados_vencidos': certificados_vencidos,
@@ -244,7 +255,6 @@ class DashboardView(LoginRequiredMixin, View):
                     'proximos': [empresa.proximos for empresa in vencimientos_por_empresa],
                     'vencidos': [empresa.vencidos for empresa in vencimientos_por_empresa],
                 },
-                'vencimientos_mensuales': meses,
             },
         }
         return render(request, self.template_name, context)
@@ -295,7 +305,15 @@ class ReportesView(LoginRequiredMixin, View):
         limite_30 = hoy + timedelta(days=30)
         certificados = Certificado.objects.select_related('empresa', 'trabajador__empresa')
         trabajadores = Trabajador.objects.select_related('empresa')
-        empresas = Empresa.objects.annotate(total_trabajadores=Count('trabajadores', distinct=True))
+        empresas = Empresa.objects.annotate(total_trabajadores=Count('trabajadores', distinct=True)).prefetch_related(
+            Prefetch(
+                'certificados',
+                queryset=Certificado.objects.filter(
+                    tipo__in=(Certificado.SCTR_PENSION, Certificado.SCTR_SALUD, Certificado.HOMOLOGACION)
+                ),
+                to_attr='certificados_habilitacion',
+            )
+        )
 
         if request.user.role == User.USUARIO_EMPRESA:
             certificados = certificados.filter(
@@ -338,15 +356,11 @@ class ReportesView(LoginRequiredMixin, View):
         }
 
         if reporte in ('vencimientos', 'vencimientos_empresa'):
-            context['vencimientos_vencidos'] = certificados.filter(
-                fecha_vencimiento__lt=hoy
-            ).order_by('fecha_vencimiento')
-            context['vencimientos_proximos'] = certificados.filter(
-                fecha_vencimiento__gte=hoy, fecha_vencimiento__lte=limite_30
-            ).order_by('fecha_vencimiento')
-            context['filas'] = list(context['vencimientos_vencidos']) + list(
-                context['vencimientos_proximos']
-            )
+            filas = list(certificados.order_by('fecha_vencimiento'))
+            context['filas'] = [
+                certificado for certificado in filas
+                if certificado.estado in ('Vencido', 'Próximo a vencer')
+            ]
         elif reporte == 'trabajadores':
             context['filas'] = trabajadores.order_by('empresa__nombre', 'apellidos', 'nombres')
         elif reporte == 'empresas':

@@ -53,6 +53,13 @@ class DashboardViewTests(TestCase):
 
     def test_dashboard_cuenta_empresas_homologadas_y_no_homologadas(self):
         Empresa.objects.create(
+            nombre='Empresa desactivada',
+            ruc='20987654320',
+            correo='desactivada@example.com',
+            activo=False,
+            homologacion=True,
+        )
+        Empresa.objects.create(
             nombre='Empresa homologada',
             ruc='20987654321',
             correo='homologada@example.com',
@@ -77,11 +84,13 @@ class DashboardViewTests(TestCase):
 
         response = self.client.get(reverse('app_control:dashboard'))
 
-        self.assertEqual(response.context['total_empresas'], 2)
+        self.assertEqual(response.context['total_empresas'], 3)
         self.assertEqual(response.context['empresas_habilitadas'], 1)
-        self.assertEqual(response.context['empresas_deshabilitadas'], 1)
+        self.assertEqual(response.context['empresas_no_homologadas'], 1)
+        self.assertEqual(response.context['empresas_desactivadas'], 1)
         self.assertContains(response, '1 homologadas')
         self.assertContains(response, '1 no homologadas')
+        self.assertContains(response, '1 desactivadas')
 
     def test_dashboard_cuenta_inducciones_vigentes_y_vencidas(self):
         hoy = date.today()
@@ -142,6 +151,10 @@ class DashboardViewTests(TestCase):
 
         self.assertEqual(response.context['trabajadores_sctr_salud'], 1)
         self.assertEqual(response.context['trabajadores_sctr_pension'], 1)
+        self.assertEqual(response.context['trabajadores_sin_sctr_salud'], 1)
+        self.assertEqual(response.context['trabajadores_sin_sctr_pension'], 1)
+        self.assertEqual(response.context['sctr_salud_proximos_vencer'], 1)
+        self.assertEqual(response.context['sctr_pension_proximos_vencer'], 1)
         self.assertContains(response, 'SCTR Salud')
         self.assertContains(response, 'SCTR Pensión')
 
@@ -475,10 +488,20 @@ class DashboardViewTests(TestCase):
     def test_dashboard_cuenta_trabajadores_no_habilitados(self):
         self.trabajador.habilitado = False
         self.trabajador.save(update_fields=['habilitado'])
+        Trabajador.objects.create(
+            empresa=self.empresa,
+            dni='98765432',
+            nombres='Trabajador',
+            apellidos='Desactivado',
+            activo=False,
+        )
 
         response = self.client.get(reverse('app_control:dashboard'))
 
-        self.assertEqual(response.context['trabajadores_deshabilitados'], 1)
+        self.assertEqual(response.context['total_trabajadores'], 2)
+        self.assertEqual(response.context['trabajadores_habilitados'], 0)
+        self.assertEqual(response.context['trabajadores_no_habilitados'], 1)
+        self.assertEqual(response.context['trabajadores_desactivados'], 1)
 
     def test_beca_azul_puede_alternar_estado_habilitado(self):
         user = User.objects.create_user(

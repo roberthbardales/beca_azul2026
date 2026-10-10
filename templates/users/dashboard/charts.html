@@ -1,5 +1,6 @@
-<div class="dashboard-chart-grid mt-5 grid items-stretch gap-5 xl:grid-cols-2">
-    {% include 'users/dashboard/charts/compliance.html' %}
+<div class="dashboard-chart-grid dashboard-chart-grid-layout mt-5 grid items-stretch gap-5">
+    <div class="dashboard-compliance-width">
+        {% include 'users/dashboard/charts/compliance.html' %}
+    </div>
     {% include 'users/dashboard/charts/workers_by_company.html' %}
-    {% include 'users/dashboard/charts/expiry_trend.html' %}
 </div>

@@ -2,7 +2,7 @@
     var dataElement = document.getElementById('dashboard-charts-data');
     if (!dataElement) return;
 
-    var chartIds = ['estado-cumplimiento', 'trabajadores-por-empresa', 'vencimientos-mensuales'];
+    var chartIds = ['estado-cumplimiento', 'trabajadores-por-empresa'];
 
     function showChartError(message) {
         chartIds.forEach(function (id) {
@@ -32,8 +32,7 @@
     if (!data || !Array.isArray(data.cumplimiento) || !data.trabajadores_empresa ||
             !Array.isArray(data.trabajadores_empresa.labels) ||
             !Array.isArray(data.trabajadores_empresa.habilitados) ||
-            !Array.isArray(data.trabajadores_empresa.inhabilitados) ||
-            !Array.isArray(data.vencimientos_mensuales)) {
+            !Array.isArray(data.trabajadores_empresa.inhabilitados)) {
         showChartError('No hay datos válidos para generar las gráficas.');
         return;
     }
@@ -112,7 +111,9 @@
     }
 
     var workersChartCanvas = workersStatusCanvas.parentElement;
-    workersChartCanvas.style.height = Math.max(256, data.trabajadores_empresa.labels.length * 44) + 'px';
+    var workersChartAvailableWidth = workersChartCanvas.parentElement.clientWidth;
+    workersChartCanvas.style.width = Math.max(600, workersChartAvailableWidth, data.trabajadores_empresa.labels.length * 72) + 'px';
+    workersChartCanvas.style.height = '256px';
 
     complianceLegend.innerHTML = doughnutLabels.map(function (label, index) {
         var value = data.cumplimiento[index];
@@ -155,21 +156,10 @@
     new Chart(workersStatusCanvas, {
         type: 'bar', plugins: [emptyStatePlugin],
         data: { labels: data.trabajadores_empresa.labels, datasets: [
-            { label: 'Habilitados', data: data.trabajadores_empresa.habilitados, backgroundColor: '#10b981', borderRadius: 4, borderSkipped: false, barThickness: 14, maxBarThickness: 18 },
-            { label: 'Inhabilitados', data: data.trabajadores_empresa.inhabilitados, backgroundColor: '#ef4444', borderRadius: 4, borderSkipped: false, barThickness: 14, maxBarThickness: 18 }
+            { label: 'Habilitados', data: data.trabajadores_empresa.habilitados, backgroundColor: '#10b981', borderRadius: 4, borderSkipped: false, maxBarThickness: 32 },
+            { label: 'Inhabilitados', data: data.trabajadores_empresa.inhabilitados, backgroundColor: '#ef4444', borderRadius: 4, borderSkipped: false, maxBarThickness: 32 }
         ] },
-        options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' }, tooltip: tooltipOptions(' trabajadores') }, scales: { x: { beginAtZero: true, ticks: { precision: 0, padding: 8 }, border: { display: false }, grid: { color: gridColor } }, y: { border: { display: false }, grid: { display: false }, ticks: { padding: 8 } } } }
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' }, tooltip: tooltipOptions(' trabajadores') }, scales: { x: { ticks: { autoSkip: false, maxRotation: 55, minRotation: 30, padding: 6 }, border: { display: false }, grid: { display: false } }, y: { beginAtZero: true, ticks: { precision: 0, padding: 8 }, border: { display: false }, grid: { color: gridColor } } } }
     });
 
-    var expiryTrendCanvas = document.getElementById('vencimientos-mensuales');
-    if (!expiryTrendCanvas) return;
-
-    new Chart(expiryTrendCanvas, {
-        type: 'line', plugins: [emptyStatePlugin],
-        data: {
-            labels: data.vencimientos_mensuales.map(function (item) { return item.label; }),
-            datasets: [{ label: 'Vencimientos', data: data.vencimientos_mensuales.map(function (item) { return item.total; }), borderColor: '#ff7a29', backgroundColor: 'rgba(255, 122, 41, .12)', fill: true, tension: .3, pointRadius: 4, pointBackgroundColor: '#ff7a29' }]
-        },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: tooltipOptions(' certificados') }, scales: { y: { beginAtZero: true, ticks: { precision: 0 }, border: { display: false }, grid: { color: gridColor } }, x: { border: { display: false }, grid: { display: false } } } }
-    });
 })();
