@@ -646,7 +646,14 @@ class TrabajadorEmpresaCreateViewTests(TestCase):
         self.assertEqual(correo.from_email, settings.EMAIL_HOST_USER)
         self.assertIn(trabajador.nombres, correo.body)
         self.assertIn(trabajador.apellidos, correo.body)
-        self.assertIn(trabajador.dni, correo.body)
+        self.assertIn(empresa.nombre, correo.body)
+        self.assertNotIn(trabajador.dni, correo.body)
+        self.assertEqual(len(correo.alternatives), 1)
+        contenido_html, tipo_contenido = correo.alternatives[0]
+        self.assertEqual(tipo_contenido, 'text/html')
+        self.assertIn('<table', contenido_html)
+        self.assertIn(empresa.nombre, contenido_html)
+        self.assertNotIn(trabajador.dni, contenido_html)
 
     @patch('applications.control.views.send_mail', side_effect=OSError('SMTP no disponible'))
     def test_fallo_de_correo_muestra_advertencia_sin_cancelar_registro(self, enviar_correo):

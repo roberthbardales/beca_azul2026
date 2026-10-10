@@ -13,6 +13,7 @@ from django.http import FileResponse, Http404, HttpResponse, HttpResponseRedirec
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse, reverse_lazy
+from django.utils.html import escape
 from django.utils import timezone
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView, View
 
@@ -1441,11 +1442,20 @@ class TrabajadorEmpresaCreateView(TrabajadorEmpresaBaseMixin, CreateView):
                     'Se ha creado un nuevo trabajador.\n\n'
                     f'Nombre: {self.object.nombres}\n'
                     f'Apellido: {self.object.apellidos}\n'
-                    f'DNI: {self.object.dni}'
+                    f'Empresa: {self.object.empresa.nombre}'
                 ),
                 from_email=settings.EMAIL_HOST_USER,
                 recipient_list=[settings.EMAIL_HOST_USER],
                 fail_silently=False,
+                html_message=(
+                    '<p>Se ha creado un nuevo trabajador:</p>'
+                    '<table style="border-collapse: collapse; width: 100%; max-width: 600px;">'
+                    '<tbody>'
+                    f'<tr><th style="border: 1px solid #d1d5db; padding: 8px; text-align: left;">Nombre</th><td style="border: 1px solid #d1d5db; padding: 8px;">{escape(self.object.nombres)}</td></tr>'
+                    f'<tr><th style="border: 1px solid #d1d5db; padding: 8px; text-align: left;">Apellido</th><td style="border: 1px solid #d1d5db; padding: 8px;">{escape(self.object.apellidos)}</td></tr>'
+                    f'<tr><th style="border: 1px solid #d1d5db; padding: 8px; text-align: left;">Empresa</th><td style="border: 1px solid #d1d5db; padding: 8px;">{escape(self.object.empresa.nombre)}</td></tr>'
+                    '</tbody></table>'
+                ),
             )
             if not enviados:
                 raise RuntimeError('El correo no fue aceptado para envío.')
