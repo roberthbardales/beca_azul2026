@@ -1,6 +1,7 @@
 from datetime import date, timedelta
 
-from django.test import TestCase
+from django.core import mail
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
 
@@ -28,6 +29,10 @@ class HomologacionToggleViewTests(TestCase):
             empresa=self.empresa if role == User.USUARIO_EMPRESA else None,
         )
 
+    @override_settings(
+        EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend',
+        NOTIFICACIONES_EMAIL_ADICIONAL='roberthbardales@gmail.com',
+    )
     def test_beca_azul_aprueba_y_desaprueba_homologacion(self):
         for tipo, nombre in (
             (Certificado.SCTR_PENSION, 'sctr-pension.pdf'),
@@ -50,10 +55,16 @@ class HomologacionToggleViewTests(TestCase):
         self.assertRedirects(response, reverse('app_control:empresa_detalle', args=[self.empresa.pk]))
         self.empresa.refresh_from_db()
         self.assertTrue(self.empresa.homologacion)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(
+            mail.outbox[0].to,
+            ['empresa@example.com', 'noreply.beca.azul@gmail.com', 'roberthbardales@gmail.com'],
+        )
 
         self.client.post(self.url)
         self.empresa.refresh_from_db()
         self.assertFalse(self.empresa.homologacion)
+        self.assertEqual(len(mail.outbox), 1)
 
     def test_desaprobar_sctr_empresarial_desmarca_validaciones_individuales_del_tipo(self):
         for tipo in (Certificado.SCTR_PENSION, Certificado.SCTR_SALUD):

@@ -44,6 +44,54 @@ from .forms import (
 from .models import Certificado, CursoObligatorio, Empresa, Incidencia, Trabajador
 
 
+def enviar_notificacion_habilitacion(asunto, mensaje, destinatario_empresa):
+    destinatarios = list(dict.fromkeys(filter(None, (
+        destinatario_empresa,
+        'noreply.beca.azul@gmail.com',
+        settings.NOTIFICACIONES_EMAIL_ADICIONAL,
+    ))))
+    return send_mail(
+        subject=asunto,
+        message=mensaje,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=destinatarios,
+        fail_silently=False,
+    )
+
+
+def capturar_estados_habilitacion(empresa):
+    return {
+        trabajador.pk: trabajador.habilitado_efectivo
+        for trabajador in Trabajador.objects.filter(empresa=empresa).select_related('empresa')
+    }
+
+
+def notificar_transiciones_habilitacion(request, trabajador_ids, estados_anteriores):
+    for trabajador_id in trabajador_ids:
+        if estados_anteriores.get(trabajador_id, False):
+            continue
+        trabajador = Trabajador.objects.select_related('empresa').get(pk=trabajador_id)
+        if not trabajador.habilitado_efectivo:
+            continue
+        try:
+            enviados = enviar_notificacion_habilitacion(
+                'Trabajador habilitado automáticamente',
+                (
+                    f'El trabajador {trabajador.nombres} {trabajador.apellidos} '
+                    f'quedó habilitado automáticamente para {trabajador.empresa.nombre} '
+                    'al completar los requisitos requeridos.'
+                ),
+                trabajador.empresa.correo,
+            )
+            if not enviados:
+                raise RuntimeError('El correo no fue aceptado para envío.')
+        except Exception:
+            messages.warning(
+                request,
+                f'El trabajador "{trabajador}" quedó habilitado, pero no se pudo enviar la notificación por correo.',
+            )
+
+
 class TrabajadorActivoRequiredMixin:
     def dispatch(self, request, *args, **kwargs):
         trabajador = None
@@ -108,6 +156,9 @@ class DashboardView(LoginRequiredMixin, View):
         inducciones = Certificado.objects.filter(tipo=Certificado.INDUCCION)
         inducciones_vigentes = sum(certificado.validacion_vigente for certificado in inducciones)
         inducciones_vencidas = inducciones.filter(fecha_vencimiento__lt=hoy).count()
+        aptitudes_medicas = Certificado.objects.filter(tipo=Certificado.APTITUD_MEDICA)
+        aptitudes_medicas_vigentes = sum(certificado.validacion_vigente for certificado in aptitudes_medicas)
+        aptitudes_medicas_vencidas = aptitudes_medicas.filter(fecha_vencimiento__lt=hoy).count()
         certificados_empresa = Certificado.objects.filter(
             tipo__in=(Certificado.SCTR_PENSION, Certificado.SCTR_SALUD, Certificado.HOMOLOGACION)
         )
@@ -219,6 +270,8 @@ class DashboardView(LoginRequiredMixin, View):
             'total_trabajadores': total_trabajadores,
             'inducciones_vigentes': inducciones_vigentes,
             'inducciones_vencidas': inducciones_vencidas,
+            'aptitudes_medicas_vigentes': aptitudes_medicas_vigentes,
+            'aptitudes_medicas_vencidas': aptitudes_medicas_vencidas,
             'trabajadores_habilitados': trabajadores_habilitados,
             'trabajadores_no_habilitados': trabajadores_no_habilitados,
             'trabajadores_desactivados': trabajadores_desactivados,
@@ -473,6 +526,7 @@ class EmpresaSCTRToggleView(EmpresaActivaRequiredMixin, BecaAzulRequiredMixin, V
             messages.error(request, f'No se puede aprobar el SCTR {tipo} sin un certificado empresarial vigente.')
             return redirect('app_control:empresa_detalle', pk=empresa.pk)
 
+        estados_habilitacion = capturar_estados_habilitacion(empresa)
         with transaction.atomic():
             setattr(empresa, field_name, aprobado)
             empresa.save(update_fields=[field_name])
@@ -482,12 +536,19 @@ class EmpresaSCTRToggleView(EmpresaActivaRequiredMixin, BecaAzulRequiredMixin, V
                 )
         estado = 'aprobado' if aprobado else 'desaprobado'
         messages.success(request, f'El SCTR {tipo} de "{empresa.nombre}" fue {estado} para sus trabajadores.')
+        if aprobado:
+            notificar_transiciones_habilitacion(
+                request,
+                estados_habilitacion.keys(),
+                estados_habilitacion,
+            )
         return redirect('app_control:empresa_detalle', pk=empresa.pk)
 
 
 class EmpresaHomologacionToggleView(EmpresaActivaRequiredMixin, BecaAzulRequiredMixin, View):
     def post(self, request, pk):
         empresa = get_object_or_404(Empresa, pk=pk)
+        estados_habilitacion = capturar_estados_habilitacion(empresa)
         empresa.invalidar_homologacion_si_corresponde()
         if not empresa.homologacion:
             certificados = {
@@ -524,6 +585,25 @@ class EmpresaHomologacionToggleView(EmpresaActivaRequiredMixin, BecaAzulRequired
         empresa.save(update_fields=['homologacion'])
         estado = 'aprobada' if empresa.homologacion else 'desaprobada'
         messages.success(request, f'La homologación de "{empresa.nombre}" fue {estado}.')
+        if empresa.homologacion:
+            notificar_transiciones_habilitacion(
+                request,
+                estados_habilitacion.keys(),
+                estados_habilitacion,
+            )
+            try:
+                enviados = enviar_notificacion_habilitacion(
+                    'Homologación de empresa aprobada',
+                    f'La homologación de {empresa.nombre} fue aprobada.\nRUC: {empresa.ruc}',
+                    empresa.correo,
+                )
+                if not enviados:
+                    raise RuntimeError('El correo no fue aceptado para envío.')
+            except Exception:
+                messages.warning(
+                    request,
+                    'La homologación fue aprobada, pero no se pudo enviar la notificación por correo.',
+                )
         return redirect('app_control:empresa_detalle', pk=empresa.pk)
 
 
@@ -1098,8 +1178,14 @@ class TrabajadorSCTRValidacionToggleView(BecaAzulRequiredMixin, View):
             messages.error(request, 'No se puede validar el SCTR porque el certificado no está vigente o falta el archivo.')
             return redirect('app_control:trabajador_detalle', pk=trabajador.pk)
 
+        estado_anterior = trabajador.habilitado_efectivo
         setattr(trabajador, campo, validado)
         trabajador.save(update_fields=[campo])
+        notificar_transiciones_habilitacion(
+            request,
+            [trabajador.pk],
+            {trabajador.pk: estado_anterior},
+        )
         nombre = 'SCTR pensión' if tipo == 'pension' else 'SCTR salud'
         estado = 'aprobado' if validado else 'desaprobado'
         messages.success(request, f'{nombre} del trabajador: {estado}.')
@@ -1134,8 +1220,15 @@ class CertificadoValidacionToggleView(BecaAzulRequiredMixin, View):
             certificado.save(update_fields=['validado'])
             messages.error(request, 'No se puede validar un certificado que todavía no está vigente o ya venció.')
         else:
+            trabajador = certificado.trabajador
+            estado_anterior = trabajador.habilitado_efectivo
             certificado.validado = not certificado.validado
             certificado.save(update_fields=['validado'])
+            notificar_transiciones_habilitacion(
+                request,
+                [trabajador.pk],
+                {trabajador.pk: estado_anterior},
+            )
             estado = 'aprobado' if certificado.validado else 'desaprobado'
             requisito = (
                 certificado.get_curso_display()
@@ -1199,6 +1292,23 @@ class TrabajadorHabilitadoToggleView(BecaAzulRequiredMixin, View):
         trabajador.save(update_fields=['habilitado'])
         estado = 'habilitado' if trabajador.habilitado else 'no habilitado'
         messages.success(request, f'El trabajador "{trabajador}" ahora está {estado}.')
+        if trabajador.habilitado:
+            try:
+                enviados = enviar_notificacion_habilitacion(
+                    'Trabajador habilitado',
+                    (
+                        f'El trabajador {trabajador.nombres} {trabajador.apellidos} '
+                        f'fue habilitado para {trabajador.empresa.nombre}.'
+                    ),
+                    trabajador.empresa.correo,
+                )
+                if not enviados:
+                    raise RuntimeError('El correo no fue aceptado para envío.')
+            except Exception:
+                messages.warning(
+                    request,
+                    'El trabajador fue habilitado, pero no se pudo enviar la notificación por correo.',
+                )
         return redirect('app_control:trabajador_detalle', pk=trabajador.pk)
 
 
@@ -1212,9 +1322,15 @@ class TrabajadorCursoObligatorioToggleView(BecaAzulRequiredMixin, View):
             return redirect('app_control:trabajador_detalle', pk=trabajador.pk)
         if curso not in dict(Certificado.CURSO_CHOICES):
             raise PermissionDenied
+        estado_anterior = trabajador.habilitado_efectivo
         requisito, creado = CursoObligatorio.objects.get_or_create(trabajador=trabajador, curso=curso)
         if not creado:
             requisito.delete()
+        notificar_transiciones_habilitacion(
+            request,
+            [trabajador.pk],
+            {trabajador.pk: estado_anterior},
+        )
         return redirect('app_control:trabajador_detalle', pk=trabajador.pk)
 
 

@@ -2,7 +2,7 @@
     <h2 id="dashboard-summary-title" class="mb-3 text-sm font-semibold uppercase tracking-wide text-[#64748b]">
         Resumen general
     </h2>
-    <div class="dashboard-metrics grid items-stretch gap-4 sm:grid-cols-2 2xl:grid-cols-3">
+    <div class="dashboard-metrics grid items-stretch gap-4 sm:grid-cols-2 2xl:grid-cols-6">
     <article class="dashboard-metric dashboard-summary-metric rounded-lg border border-gray-100 bg-white p-4 shadow-sm"
              aria-labelledby="metric-empresas">
         <h2 id="metric-empresas" class="text-xs font-semibold uppercase tracking-wide text-[#A5A5A5]">
@@ -39,6 +39,18 @@
             <div class="dashboard-summary-statuses">
                 <span class="dashboard-summary-positive">{{ inducciones_vigentes }} vigentes</span>
                 <span class="dashboard-summary-negative">{{ inducciones_vencidas }} vencidas</span>
+            </div>
+        </div>
+    </article>
+
+    <article class="dashboard-metric dashboard-summary-metric rounded-lg border border-gray-100 bg-white p-4 shadow-sm"
+             aria-labelledby="metric-aptitudes-medicas">
+        <h2 id="metric-aptitudes-medicas" class="text-xs font-semibold uppercase tracking-wide text-[#A5A5A5]">Aptitudes médicas</h2>
+        <div class="dashboard-card-content">
+            <p class="text-3xl font-bold tabular-nums text-[#0f172a]">{{ aptitudes_medicas_vigentes }}</p>
+            <div class="dashboard-summary-statuses">
+                <span class="dashboard-summary-positive">{{ aptitudes_medicas_vigentes }} vigentes</span>
+                <span class="dashboard-summary-negative">{{ aptitudes_medicas_vencidas }} vencidas</span>
             </div>
         </div>
     </article>

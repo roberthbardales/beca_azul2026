@@ -51,7 +51,7 @@
 
 @media (min-width: 1024px) {
     .dashboard-compliance-width { width: 80%; }
-    .dashboard-page > section:first-of-type .dashboard-metrics { grid-template-columns: repeat(5, minmax(0, 1fr)) !important; }
+    .dashboard-page > section:first-of-type .dashboard-metrics { grid-template-columns: repeat(6, minmax(0, 1fr)) !important; }
     .dashboard-course-metrics { grid-template-columns: repeat(6, minmax(0, 1fr)); }
 }
 

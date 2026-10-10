@@ -4,7 +4,7 @@ from unittest.mock import patch
 from django.conf import settings
 from django.core import mail
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from applications.users.models import User
@@ -368,6 +368,15 @@ class DashboardViewTests(TestCase):
         self.assertFalse(Trabajador.objects.get(pk=self.trabajador.pk).habilitado_efectivo)
         self.client.post(salud_url, {'validado': '1'})
         self.assertTrue(Trabajador.objects.get(pk=self.trabajador.pk).habilitado_efectivo)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertCountEqual(
+            mail.outbox[0].to,
+            list(dict.fromkeys(filter(None, (
+                'principal@example.com',
+                'noreply.beca.azul@gmail.com',
+                settings.NOTIFICACIONES_EMAIL_ADICIONAL,
+            )))),
+        )
 
         Certificado.objects.filter(empresa=self.empresa, tipo=Certificado.SCTR_PENSION).update(fecha_vencimiento=hoy - timedelta(days=1))
         self.client.post(pension_url, {'validado': '0'})
@@ -454,8 +463,90 @@ class DashboardViewTests(TestCase):
         self.assertContains(response, 'validación individual del SCTR salud')
         trabajador = Trabajador.objects.get(pk=self.trabajador.pk)
         self.assertFalse(trabajador.habilitado)
-        self.assertFalse(trabajador.sctr_pension_validado)
-        self.assertFalse(trabajador.sctr_salud_validado)
+
+    @override_settings(NOTIFICACIONES_EMAIL_ADICIONAL='roberthbardales@gmail.com')
+    def test_habilitar_trabajador_envia_correo_a_empresa_noreply_y_adicional(self):
+        hoy = date.today()
+        self.empresa.sctr_pension_aprobado = True
+        self.empresa.sctr_salud_aprobado = True
+        self.empresa.homologacion = True
+        self.empresa.save(update_fields=['sctr_pension_aprobado', 'sctr_salud_aprobado', 'homologacion'])
+        for tipo in (Certificado.SCTR_PENSION, Certificado.SCTR_SALUD, Certificado.HOMOLOGACION):
+            Certificado.objects.create(
+                empresa=self.empresa,
+                tipo=tipo,
+                fecha_emision=hoy - timedelta(days=1),
+                fecha_vencimiento=hoy + timedelta(days=30),
+                archivo=SimpleUploadedFile(f'{tipo.lower()}_correo.pdf', b'%PDF-1.4 test'),
+            )
+        for tipo in (Certificado.INDUCCION, Certificado.APTITUD_MEDICA):
+            Certificado.objects.create(
+                trabajador=self.trabajador,
+                tipo=tipo,
+                fecha_emision=hoy - timedelta(days=1),
+                fecha_vencimiento=hoy + timedelta(days=30),
+                archivo=SimpleUploadedFile(f'{tipo.lower()}_correo.pdf', b'%PDF-1.4 test'),
+                validado=True,
+            )
+        self.trabajador.habilitado = False
+        self.trabajador.sctr_pension_validado = True
+        self.trabajador.sctr_salud_validado = True
+        self.trabajador.save(update_fields=['habilitado', 'sctr_pension_validado', 'sctr_salud_validado'])
+        self.user.role = User.BECA_AZUL
+        self.user.save(update_fields=['role'])
+
+        response = self.client.post(
+            reverse('app_control:trabajador_habilitado_toggle', args=[self.trabajador.pk]),
+        )
+
+        self.assertRedirects(response, reverse('app_control:trabajador_detalle', args=[self.trabajador.pk]))
+        self.assertTrue(Trabajador.objects.get(pk=self.trabajador.pk).habilitado)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(
+            mail.outbox[0].to,
+            ['principal@example.com', 'noreply.beca.azul@gmail.com', 'roberthbardales@gmail.com'],
+        )
+        self.assertIn('Ana Prueba', mail.outbox[0].body)
+
+    @patch('applications.control.views.send_mail', side_effect=OSError('SMTP no disponible'))
+    def test_fallo_de_correo_no_revierte_habilitacion_del_trabajador(self, enviar_correo):
+        hoy = date.today()
+        self.empresa.sctr_pension_aprobado = True
+        self.empresa.sctr_salud_aprobado = True
+        self.empresa.homologacion = True
+        self.empresa.save(update_fields=['sctr_pension_aprobado', 'sctr_salud_aprobado', 'homologacion'])
+        for tipo in (Certificado.SCTR_PENSION, Certificado.SCTR_SALUD, Certificado.HOMOLOGACION):
+            Certificado.objects.create(
+                empresa=self.empresa,
+                tipo=tipo,
+                fecha_emision=hoy - timedelta(days=1),
+                fecha_vencimiento=hoy + timedelta(days=30),
+                archivo=SimpleUploadedFile(f'{tipo.lower()}_smtp.pdf', b'%PDF-1.4 test'),
+            )
+        for tipo in (Certificado.INDUCCION, Certificado.APTITUD_MEDICA):
+            Certificado.objects.create(
+                trabajador=self.trabajador,
+                tipo=tipo,
+                fecha_emision=hoy - timedelta(days=1),
+                fecha_vencimiento=hoy + timedelta(days=30),
+                archivo=SimpleUploadedFile(f'{tipo.lower()}_smtp.pdf', b'%PDF-1.4 test'),
+                validado=True,
+            )
+        self.trabajador.habilitado = False
+        self.trabajador.sctr_pension_validado = True
+        self.trabajador.sctr_salud_validado = True
+        self.trabajador.save(update_fields=['habilitado', 'sctr_pension_validado', 'sctr_salud_validado'])
+        self.user.role = User.BECA_AZUL
+        self.user.save(update_fields=['role'])
+
+        response = self.client.post(
+            reverse('app_control:trabajador_habilitado_toggle', args=[self.trabajador.pk]),
+            follow=True,
+        )
+
+        self.assertTrue(Trabajador.objects.get(pk=self.trabajador.pk).habilitado)
+        self.assertContains(response, 'El trabajador fue habilitado, pero no se pudo enviar la notificación')
+        enviar_correo.assert_called_once()
 
     def test_grafica_agrupa_trabajadores_por_estado_e_incluye_inactivos(self):
         self.trabajador.activo = False
