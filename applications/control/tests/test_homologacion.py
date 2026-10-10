@@ -6,7 +6,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 
 from applications.users.models import User
 
-from ..models import Certificado, Empresa
+from ..models import Certificado, Empresa, Trabajador
 
 
 class HomologacionToggleViewTests(TestCase):
@@ -54,6 +54,39 @@ class HomologacionToggleViewTests(TestCase):
         self.client.post(self.url)
         self.empresa.refresh_from_db()
         self.assertFalse(self.empresa.homologacion)
+
+    def test_desaprobar_sctr_empresarial_desmarca_validaciones_individuales_del_tipo(self):
+        for tipo in (Certificado.SCTR_PENSION, Certificado.SCTR_SALUD):
+            Certificado.objects.create(
+                empresa=self.empresa,
+                tipo=tipo,
+                fecha_emision=date.today() - timedelta(days=1),
+                fecha_vencimiento=date.today() + timedelta(days=30),
+                archivo=SimpleUploadedFile(f'{tipo.lower()}.pdf', b'%PDF-1.4 test'),
+            )
+        trabajador = Trabajador.objects.create(
+            empresa=self.empresa,
+            dni='12345678',
+            nombres='Ana',
+            apellidos='Prueba',
+            sctr_pension_validado=True,
+            sctr_salud_validado=True,
+        )
+        self.empresa.sctr_pension_aprobado = True
+        self.empresa.sctr_salud_aprobado = True
+        self.empresa.save(update_fields=['sctr_pension_aprobado', 'sctr_salud_aprobado'])
+        self.client.force_login(self.crear_usuario(User.BECA_AZUL))
+
+        response = self.client.post(
+            reverse('app_control:empresa_sctr_toggle', args=[self.empresa.pk, 'pension'])
+        )
+
+        self.assertRedirects(response, reverse('app_control:empresa_detalle', args=[self.empresa.pk]))
+        trabajador.refresh_from_db()
+        self.empresa.refresh_from_db()
+        self.assertFalse(self.empresa.sctr_pension_aprobado)
+        self.assertFalse(trabajador.sctr_pension_validado)
+        self.assertTrue(trabajador.sctr_salud_validado)
 
     def test_otros_roles_no_pueden_cambiar_homologacion(self):
         for role in (User.ADMINISTRADOR, User.PLANTA, User.USUARIO_EMPRESA):

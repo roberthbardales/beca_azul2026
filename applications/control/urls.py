@@ -36,6 +36,7 @@ urlpatterns = [
     path('trabajadores/<int:pk>/', views.TrabajadorDetailView.as_view(), name='trabajador_empresa_detalle'),
     path('trabajadores/<int:pk>/editar/', views.TrabajadorUpdateView.as_view(), name='trabajador_editar'),
     path('trabajadores/<int:pk>/habilitado/toggle/', views.TrabajadorHabilitadoToggleView.as_view(), name='trabajador_habilitado_toggle'),
+    path('trabajadores/<int:pk>/sctr/<str:tipo>/validar/', views.TrabajadorSCTRValidacionToggleView.as_view(), name='trabajador_sctr_validar'),
     path('trabajadores/<int:pk>/cursos/<str:curso>/obligatorio/', views.TrabajadorCursoObligatorioToggleView.as_view(), name='trabajador_curso_obligatorio_toggle'),
     path('trabajadores/<int:pk>/toggle/', views.TrabajadorToggleView.as_view(), name='trabajador_toggle'),
     path('trabajadores/<int:pk>/eliminar/', views.TrabajadorDeleteView.as_view(), name='trabajador_eliminar'),

@@ -192,6 +192,39 @@ class DashboardViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, 'Reportes')
 
+    def test_usuario_garita_puede_ver_trabajadores_desde_la_empresa(self):
+        self.user.role = User.GARITA
+        self.user.save(update_fields=['role'])
+
+        empresas_response = self.client.get(reverse('app_control:empresa_lista'))
+        self.assertContains(
+            empresas_response,
+            reverse('app_control:empresa_trabajadores_garita', args=[self.empresa.pk]),
+        )
+
+        response = self.client.get(
+            reverse('app_control:empresa_trabajadores_garita', args=[self.empresa.pk]),
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Ana')
+        self.assertContains(response, 'Prueba')
+
+    def test_usuario_garita_sigue_sin_poder_abrir_lista_general_de_trabajadores(self):
+        self.user.role = User.GARITA
+        self.user.save(update_fields=['role'])
+
+        response = self.client.get(reverse('app_control:trabajador_lista'))
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_usuario_no_garita_no_puede_abrir_lista_especial_de_empresa(self):
+        response = self.client.get(
+            reverse('app_control:empresa_trabajadores_garita', args=[self.empresa.pk]),
+        )
+
+        self.assertEqual(response.status_code, 403)
+
     def test_superusuario_puede_ver_detalle_desde_el_buscador(self):
         self.user.is_superuser = True
         self.user.save(update_fields=['is_superuser'])
@@ -274,6 +307,139 @@ class DashboardViewTests(TestCase):
 
         self.assertContains(response, 'No habilitado')
         self.assertContains(response, 'Deshabilitar')
+
+    def test_validacion_individual_sctr_es_requisito_y_solo_beca_azul_puede_cambiarla(self):
+        hoy = date.today()
+        self.empresa.sctr_pension_aprobado = True
+        self.empresa.sctr_salud_aprobado = True
+        self.empresa.homologacion = True
+        self.empresa.save(update_fields=['sctr_pension_aprobado', 'sctr_salud_aprobado', 'homologacion'])
+        for tipo in (Certificado.SCTR_PENSION, Certificado.SCTR_SALUD, Certificado.HOMOLOGACION):
+            Certificado.objects.create(
+                empresa=self.empresa,
+                tipo=tipo,
+                fecha_emision=hoy - timedelta(days=1),
+                fecha_vencimiento=hoy + timedelta(days=30),
+                archivo=SimpleUploadedFile(f'{tipo.lower()}.pdf', b'%PDF-1.4 test'),
+            )
+        for tipo in (Certificado.INDUCCION, Certificado.APTITUD_MEDICA):
+            Certificado.objects.create(
+                trabajador=self.trabajador,
+                tipo=tipo,
+                fecha_emision=hoy - timedelta(days=1),
+                fecha_vencimiento=hoy + timedelta(days=30),
+                archivo=SimpleUploadedFile(f'{tipo.lower()}.pdf', b'%PDF-1.4 test'),
+                validado=True,
+            )
+        self.assertFalse(self.trabajador.habilitado_efectivo)
+
+        self.user.role = User.USUARIO_EMPRESA
+        self.user.empresa = self.empresa
+        self.user.save(update_fields=['role', 'empresa'])
+        response = self.client.get(reverse('app_control:trabajador_detalle', args=[self.trabajador.pk]))
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, 'trabajador_sctr_validar')
+        self.assertNotContains(response, 'Gestionado por Beca Azul')
+        forbidden = self.client.post(reverse('app_control:trabajador_sctr_validar', args=[self.trabajador.pk, 'pension']))
+        self.assertEqual(forbidden.status_code, 403)
+
+        self.user.role = User.BECA_AZUL
+        self.user.save(update_fields=['role'])
+        pension_url = reverse('app_control:trabajador_sctr_validar', args=[self.trabajador.pk, 'pension'])
+        salud_url = reverse('app_control:trabajador_sctr_validar', args=[self.trabajador.pk, 'salud'])
+        self.assertRedirects(self.client.post(pension_url, {'validado': '1'}), reverse('app_control:trabajador_detalle', args=[self.trabajador.pk]))
+        self.assertTrue(Trabajador.objects.get(pk=self.trabajador.pk).sctr_pension_validado)
+        self.assertFalse(Trabajador.objects.get(pk=self.trabajador.pk).habilitado_efectivo)
+        self.client.post(salud_url, {'validado': '1'})
+        self.assertTrue(Trabajador.objects.get(pk=self.trabajador.pk).habilitado_efectivo)
+
+        Certificado.objects.filter(empresa=self.empresa, tipo=Certificado.SCTR_PENSION).update(fecha_vencimiento=hoy - timedelta(days=1))
+        self.client.post(pension_url, {'validado': '0'})
+        trabajador = Trabajador.objects.get(pk=self.trabajador.pk)
+        self.assertFalse(trabajador.sctr_pension_validado)
+        self.assertFalse(trabajador.habilitado_efectivo)
+
+    def test_sctr_individual_pendiente_si_empresa_no_esta_aprobada(self):
+        hoy = date.today()
+        Certificado.objects.create(
+            empresa=self.empresa,
+            tipo=Certificado.SCTR_PENSION,
+            fecha_emision=hoy - timedelta(days=1),
+            fecha_vencimiento=hoy + timedelta(days=30),
+            archivo=SimpleUploadedFile('sctr_pension.pdf', b'%PDF-1.4 test'),
+        )
+        Certificado.objects.create(
+            empresa=self.empresa,
+            tipo=Certificado.SCTR_SALUD,
+            fecha_emision=hoy - timedelta(days=1),
+            fecha_vencimiento=hoy + timedelta(days=30),
+            archivo=SimpleUploadedFile('sctr_salud.pdf', b'%PDF-1.4 test'),
+        )
+        self.trabajador.sctr_pension_validado = True
+        self.trabajador.sctr_salud_validado = True
+        self.trabajador.save(update_fields=['sctr_pension_validado', 'sctr_salud_validado'])
+        self.user.role = User.BECA_AZUL
+        self.user.save(update_fields=['role'])
+
+        response = self.client.get(reverse('app_control:trabajador_detalle', args=[self.trabajador.pk]))
+
+        self.assertEqual(response.status_code, 200)
+        filas_sctr = response.context['certificados_requeridos'][:2]
+        self.assertEqual([fila['validado'] for fila in filas_sctr], [False, False])
+        self.assertEqual([fila['puede_validarse'] for fila in filas_sctr], [True, True])
+        self.assertContains(response, 'Pendiente')
+        trabajador = Trabajador.objects.get(pk=self.trabajador.pk)
+        self.assertFalse(trabajador.sctr_pension_validado)
+        self.assertFalse(trabajador.sctr_salud_validado)
+
+        url = reverse('app_control:trabajador_sctr_validar', args=[self.trabajador.pk, 'pension'])
+        response = self.client.post(url, {'validado': '1'}, follow=True)
+        self.assertContains(
+            response,
+            'Primero se requiere que el SCTR pensión en el panel de la empresa esté aprobado.',
+        )
+        self.assertFalse(Trabajador.objects.get(pk=self.trabajador.pk).sctr_pension_validado)
+
+    def test_no_se_puede_habilitar_sin_las_dos_validaciones_individuales_sctr(self):
+        hoy = date.today()
+        self.empresa.sctr_pension_aprobado = True
+        self.empresa.sctr_salud_aprobado = True
+        self.empresa.homologacion = True
+        self.empresa.save(update_fields=['sctr_pension_aprobado', 'sctr_salud_aprobado', 'homologacion'])
+        for tipo in (Certificado.SCTR_PENSION, Certificado.SCTR_SALUD, Certificado.HOMOLOGACION):
+            Certificado.objects.create(
+                empresa=self.empresa,
+                tipo=tipo,
+                fecha_emision=hoy - timedelta(days=1),
+                fecha_vencimiento=hoy + timedelta(days=30),
+                archivo=SimpleUploadedFile(f'{tipo.lower()}_habilitacion.pdf', b'%PDF-1.4 test'),
+            )
+        for tipo in (Certificado.INDUCCION, Certificado.APTITUD_MEDICA):
+            Certificado.objects.create(
+                trabajador=self.trabajador,
+                tipo=tipo,
+                fecha_emision=hoy - timedelta(days=1),
+                fecha_vencimiento=hoy + timedelta(days=30),
+                archivo=SimpleUploadedFile(f'{tipo.lower()}_habilitacion.pdf', b'%PDF-1.4 test'),
+                validado=True,
+            )
+        self.trabajador.habilitado = False
+        self.trabajador.save(update_fields=['habilitado'])
+        self.user.role = User.BECA_AZUL
+        self.user.save(update_fields=['role'])
+
+        response = self.client.post(
+            reverse('app_control:trabajador_habilitado_toggle', args=[self.trabajador.pk]),
+            follow=True,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'validación individual del SCTR pensión')
+        self.assertContains(response, 'validación individual del SCTR salud')
+        trabajador = Trabajador.objects.get(pk=self.trabajador.pk)
+        self.assertFalse(trabajador.habilitado)
+        self.assertFalse(trabajador.sctr_pension_validado)
+        self.assertFalse(trabajador.sctr_salud_validado)
 
     def test_grafica_agrupa_trabajadores_por_estado_e_incluye_inactivos(self):
         self.trabajador.activo = False
@@ -390,6 +556,8 @@ class TrabajadorEmpresaCreateViewTests(TestCase):
         response = self.client.get(reverse('app_control:trabajador_empresa_editar', args=[trabajador.pk]))
 
         self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, 'Aptitud médica')
+        self.assertNotContains(response, 'induccion_archivo')
 
     def test_usuario_empresa_puede_crear_trabajador(self):
         empresa = Empresa.objects.create(nombre='Empresa', ruc='20123456789', correo='empresa@example.com')

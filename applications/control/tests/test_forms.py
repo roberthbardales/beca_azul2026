@@ -218,7 +218,7 @@ class FormValidationTests(TestCase):
         self.assertEqual(certificado.archivo.name, archivo_original)
         self.assertEqual(certificado.fecha_vencimiento, date.today() + timedelta(days=30))
 
-    def test_editar_trabajador_sin_cambios_de_certificados_los_conserva(self):
+    def test_editar_trabajador_no_edita_certificados_ni_exige_los_que_faltan(self):
         certificado = Certificado.objects.create(
             trabajador=self.trabajador,
             tipo=Certificado.INDUCCION,
@@ -234,28 +234,30 @@ class FormValidationTests(TestCase):
             'apellidos': self.trabajador.apellidos,
             'cargo': '',
         }
-        fecha_emision_actualizada = date.today() - timedelta(days=5)
-        fecha_vencimiento_actualizada = date.today() + timedelta(days=20)
-        fechas_certificado = {
-            'induccion_fecha_emision': fecha_emision_actualizada.isoformat(),
-            'induccion_fecha_vencimiento': fecha_vencimiento_actualizada.isoformat(),
-        }
-
         form = TrabajadorEmpresaForm(
-            data={**datos, **fechas_certificado},
+            data={
+                **datos,
+                'induccion_fecha_emision': date.today().isoformat(),
+                'induccion_fecha_vencimiento': (date.today() + timedelta(days=20)).isoformat(),
+                'aptitud_medica_fecha_emision': date.today().isoformat(),
+                'aptitud_medica_fecha_vencimiento': (date.today() + timedelta(days=20)).isoformat(),
+            },
             instance=self.trabajador,
             empresa=self.empresa,
         )
 
         self.assertTrue(form.is_valid(), form.errors)
+        self.assertNotIn('induccion_archivo', form.fields)
+        self.assertNotIn('aptitud_medica_archivo', form.fields)
         form.save()
         certificado.refresh_from_db()
         self.assertEqual(certificado.archivo.name, archivo_original)
-        self.assertEqual(certificado.fecha_emision, fecha_emision_actualizada)
-        self.assertEqual(certificado.fecha_vencimiento, fecha_vencimiento_actualizada)
+        self.assertEqual(certificado.fecha_emision, date.today() - timedelta(days=10))
+        self.assertEqual(certificado.fecha_vencimiento, date.today() + timedelta(days=10))
+        self.assertFalse(Certificado.objects.filter(trabajador=self.trabajador, tipo=Certificado.APTITUD_MEDICA).exists())
         self.assertEqual(self.trabajador.__class__.objects.get(pk=self.trabajador.pk).nombres, 'Ana Actualizada')
 
-    def test_editar_trabajador_rechaza_fechas_parciales_de_certificado(self):
+    def test_editar_trabajador_ignora_campos_de_certificado_enviados(self):
         certificado = Certificado.objects.create(
             trabajador=self.trabajador,
             tipo=Certificado.INDUCCION,
@@ -275,8 +277,11 @@ class FormValidationTests(TestCase):
             empresa=self.empresa,
         )
 
-        self.assertFalse(form.is_valid())
-        self.assertIn('induccion_fecha_vencimiento', form.errors)
+        self.assertTrue(form.is_valid(), form.errors)
+        form.save()
+        certificado.refresh_from_db()
+        self.assertEqual(certificado.fecha_emision, date.today() - timedelta(days=10))
+        self.assertEqual(certificado.fecha_vencimiento, date.today() + timedelta(days=10))
 
     def test_incidencia_form_rechaza_descripcion_vacia(self):
         form = IncidenciaForm(data={'descripcion': '   '})

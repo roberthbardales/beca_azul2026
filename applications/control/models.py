@@ -95,7 +95,10 @@ class Empresa(TimeStampedModel):
         certificado = self._certificado(tipo, attr_name)
         if not certificado or not certificado.archivo or not certificado.archivo.storage.exists(certificado.archivo.name):
             return 'Pendiente'
-        if not certificado.esta_vigente:
+        hoy = timezone.localdate()
+        if certificado.fecha_emision > hoy:
+            return 'Pendiente'
+        if certificado.fecha_vencimiento < hoy:
             return 'Vencido'
         if not aprobado:
             return 'Desaprobado'
@@ -188,9 +191,12 @@ class Trabajador(TimeStampedModel):
 
     habilitado = models.BooleanField(default=True, db_index=True)
     activo = models.BooleanField(default=True)
+    sctr_pension_validado = models.BooleanField(default=False)
+    sctr_salud_validado = models.BooleanField(default=False)
 
     @cached_property
     def habilitado_efectivo(self):
+        self.limpiar_validaciones_sctr_invalidas()
         empresa = self.empresa
         certificados = {
             certificado.tipo: certificado
@@ -216,6 +222,8 @@ class Trabajador(TimeStampedModel):
             and empresa.homologacion
             and empresa.sctr_pension_vigente
             and empresa.sctr_salud_vigente
+            and self.sctr_pension_validado
+            and self.sctr_salud_validado
             and empresa.homologacion_vigente
             and all(certificado and certificado.validacion_vigente for certificado in requisitos_trabajador)
             and all(cursos.get(curso) and cursos[curso].validacion_vigente for curso in cursos_obligatorios)
@@ -235,6 +243,24 @@ class Trabajador(TimeStampedModel):
 
     def __str__(self):
         return f'{self.nombres} {self.apellidos}'
+
+    def limpiar_validaciones_sctr_invalidas(self):
+        if not self.pk:
+            return []
+        empresa = self.empresa
+        campos = []
+        for tipo, campo, aprobado in (
+            (CertificadoTipo.SCTR_PENSION, 'sctr_pension_validado', empresa.sctr_pension_aprobado),
+            (CertificadoTipo.SCTR_SALUD, 'sctr_salud_validado', empresa.sctr_salud_aprobado),
+        ):
+            if getattr(self, campo) and (
+                not aprobado or not self._sctr_empresa_vigente(tipo)
+            ):
+                setattr(self, campo, False)
+                campos.append(campo)
+        if campos:
+            type(self).objects.filter(pk=self.pk).update(**{campo: False for campo in campos})
+        return campos
 
     @property
     def sctr(self):
@@ -466,10 +492,11 @@ class Certificado(TimeStampedModel):
 
     @property
     def esta_vigente(self):
+        hoy = timezone.localdate()
         return bool(
             self.archivo
             and self.archivo.storage.exists(self.archivo.name)
-            and self.fecha_vencimiento >= timezone.localdate()
+            and self.fecha_emision <= hoy <= self.fecha_vencimiento
         )
 
     def clean(self):
@@ -532,9 +559,9 @@ class Certificado(TimeStampedModel):
     @property
     def estado(self):
         hoy = timezone.localdate()
-        if self.tipo in (self.INDUCCION, self.APTITUD_MEDICA, self.CURSOS) and not (
-            self.archivo and self.archivo.storage.exists(self.archivo.name)
-        ):
+        if not self.archivo or not self.archivo.storage.exists(self.archivo.name):
+            return 'Pendiente'
+        if self.fecha_emision > hoy:
             return 'Pendiente'
         if self.fecha_vencimiento < hoy:
             return 'Vencido'
@@ -549,7 +576,7 @@ class Certificado(TimeStampedModel):
         )
         return bool(
             self.validado
-            and self.fecha_vencimiento >= timezone.localdate()
+            and self.fecha_emision <= timezone.localdate() <= self.fecha_vencimiento
             and archivo_disponible
         )
 
@@ -561,6 +588,8 @@ class Certificado(TimeStampedModel):
             return 'Pendiente'
         if self.fecha_vencimiento < timezone.localdate():
             return 'Desaprobado'
+        if self.fecha_emision > timezone.localdate():
+            return 'Pendiente'
         if self.tipo != self.INDUCCION and not (
             self.archivo and self.archivo.storage.exists(self.archivo.name)
         ):

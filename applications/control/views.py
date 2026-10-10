@@ -445,11 +445,11 @@ class EmpresaSCTRToggleView(EmpresaActivaRequiredMixin, BecaAzulRequiredMixin, V
     def post(self, request, pk, tipo):
         empresa = get_object_or_404(Empresa, pk=pk)
         estados = {
-            'pension': ('sctr_pension_aprobado', Certificado.SCTR_PENSION),
-            'salud': ('sctr_salud_aprobado', Certificado.SCTR_SALUD),
+            'pension': ('sctr_pension_aprobado', Certificado.SCTR_PENSION, 'sctr_pension_validado'),
+            'salud': ('sctr_salud_aprobado', Certificado.SCTR_SALUD, 'sctr_salud_validado'),
         }
         try:
-            field_name, certificate_type = estados[tipo]
+            field_name, certificate_type, worker_validation_field = estados[tipo]
         except KeyError:
             raise Http404
 
@@ -458,8 +458,13 @@ class EmpresaSCTRToggleView(EmpresaActivaRequiredMixin, BecaAzulRequiredMixin, V
             messages.error(request, f'No se puede aprobar el SCTR {tipo} sin un certificado empresarial vigente.')
             return redirect('app_control:empresa_detalle', pk=empresa.pk)
 
-        setattr(empresa, field_name, aprobado)
-        empresa.save(update_fields=[field_name])
+        with transaction.atomic():
+            setattr(empresa, field_name, aprobado)
+            empresa.save(update_fields=[field_name])
+            if not aprobado:
+                empresa.trabajadores.filter(**{worker_validation_field: True}).update(
+                    **{worker_validation_field: False}
+                )
         estado = 'aprobado' if aprobado else 'desaprobado'
         messages.success(request, f'El SCTR {tipo} de "{empresa.nombre}" fue {estado} para sus trabajadores.')
         return redirect('app_control:empresa_detalle', pk=empresa.pk)
@@ -479,29 +484,15 @@ class EmpresaHomologacionToggleView(EmpresaActivaRequiredMixin, BecaAzulRequired
             sctr_pension = certificados.get(Certificado.SCTR_PENSION)
             sctr_salud = certificados.get(Certificado.SCTR_SALUD)
             homologacion = certificados.get(Certificado.HOMOLOGACION)
-            hoy = timezone.localdate()
-            tiene_sctr_pension = bool(
-                sctr_pension and sctr_pension.archivo
-                and sctr_pension.archivo.storage.exists(sctr_pension.archivo.name)
-                and sctr_pension.fecha_vencimiento >= hoy
-            )
-            tiene_sctr_salud = bool(
-                sctr_salud and sctr_salud.archivo
-                and sctr_salud.archivo.storage.exists(sctr_salud.archivo.name)
-                and sctr_salud.fecha_vencimiento >= hoy
-            )
-            tiene_homologacion = (
-                homologacion
-                and homologacion.archivo
-                and homologacion.archivo.storage.exists(homologacion.archivo.name)
-                and homologacion.fecha_vencimiento >= timezone.localdate()
-            )
+            tiene_sctr_pension = bool(sctr_pension and sctr_pension.esta_vigente)
+            tiene_sctr_salud = bool(sctr_salud and sctr_salud.esta_vigente)
+            tiene_homologacion = bool(homologacion and homologacion.esta_vigente)
             if not tiene_sctr_pension:
-                messages.error(request, 'Falta subir el SCTR pensión o está vencido.')
+                messages.error(request, 'Falta subir el SCTR pensión o no está vigente.')
             elif not empresa.sctr_pension_aprobado:
                 messages.error(request, 'El SCTR pensión debe estar aprobado.')
             if not tiene_sctr_salud:
-                messages.error(request, 'Falta subir el SCTR salud o está vencido.')
+                messages.error(request, 'Falta subir el SCTR salud o no está vigente.')
             elif not empresa.sctr_salud_aprobado:
                 messages.error(request, 'El SCTR salud debe estar aprobado.')
             if not tiene_homologacion:
@@ -598,14 +589,8 @@ class EmpresaDetailView(LoginRequiredMixin, DetailView):
         sctr_pension = self.object.certificados.filter(tipo=Certificado.SCTR_PENSION).first()
         sctr_salud = self.object.certificados.filter(tipo=Certificado.SCTR_SALUD).first()
         homologacion = self.object.certificados.filter(tipo=Certificado.HOMOLOGACION).first()
-        hoy = timezone.localdate()
         def certificado_valido(certificado):
-            return bool(
-                certificado
-                and certificado.archivo
-                and certificado.archivo.storage.exists(certificado.archivo.name)
-                and certificado.fecha_vencimiento >= hoy
-            )
+            return bool(certificado and certificado.esta_vigente)
 
         sctr_pension_valido = certificado_valido(sctr_pension)
         sctr_salud_valido = certificado_valido(sctr_salud)
@@ -619,12 +604,7 @@ class EmpresaDetailView(LoginRequiredMixin, DetailView):
             and sctr_salud.archivo
             and sctr_salud.archivo.storage.exists(sctr_salud.archivo.name)
         )
-        homologacion_vigente = bool(
-            homologacion
-            and homologacion.archivo
-            and homologacion.archivo.storage.exists(homologacion.archivo.name)
-            and homologacion.fecha_vencimiento >= hoy
-        )
+        homologacion_vigente = bool(homologacion and homologacion.esta_vigente)
         homologacion_archivo_existe = bool(
             homologacion
             and homologacion.archivo
@@ -763,7 +743,7 @@ class EmpresaDeleteView(EmpresaActivaRequiredMixin, BecaAzulRequiredMixin, Delet
         return HttpResponseRedirect(self.get_success_url())
 
 
-class TrabajadorListView(VerTrabajadoresMixin, ListView):
+class TrabajadorListBaseView(ListView):
     model = Trabajador
     template_name = 'control/trabajadores/lista_empresa.html'
     context_object_name = 'trabajadores'
@@ -875,10 +855,17 @@ class TrabajadorListView(VerTrabajadoresMixin, ListView):
         if kwargs['es_empresa']:
             kwargs['sortable_columns'].pop('empresa', None)
         kwargs.setdefault('empresa', getattr(self.request.user, 'empresa', None))
-        return super().get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
+        for trabajador in context['trabajadores']:
+            trabajador.limpiar_validaciones_sctr_invalidas()
+        return context
 
 
-class EmpresaTrabajadoresGaritaView(UsuarioGaritaRequiredMixin, TrabajadorListView):
+class TrabajadorListView(VerTrabajadoresMixin, TrabajadorListBaseView):
+    pass
+
+
+class EmpresaTrabajadoresGaritaView(UsuarioGaritaRequiredMixin, TrabajadorListBaseView):
     def get_queryset(self):
         return super().get_queryset().filter(empresa_id=self.kwargs['pk'])
 
@@ -982,6 +969,7 @@ class TrabajadorDetailView(VerTrabajadorDetalleMixin, DetailView):
             validado=True,
             fecha_vencimiento__lt=timezone.localdate(),
         ).update(validado=False)
+        self.object.limpiar_validaciones_sctr_invalidas()
         certificados_lista = list(self.object.certificados.all().order_by('-fecha_emision'))
         certificados = {certificado.tipo: certificado for certificado in certificados_lista}
         certificados_empresa = {
@@ -1010,18 +998,21 @@ class TrabajadorDetailView(VerTrabajadorDetalleMixin, DetailView):
         kwargs.setdefault('certificados_validables', certificados_validables)
         for certificado in certificados_validables:
             certificado.puede_validarse = bool(
-                certificado.fecha_vencimiento >= timezone.localdate()
-                and certificado.archivo_existe
+                certificado.esta_vigente and certificado.archivo_existe
             )
             certificado.validacion_bloqueada_por_vencimiento = (
                 certificado.fecha_vencimiento < timezone.localdate()
             )
         kwargs.setdefault('certificados_requeridos', [
-            {'tipo': Certificado.SCTR_PENSION, 'label': 'SCTR pensión', 'objeto': certificados_empresa.get(Certificado.SCTR_PENSION), 'heredado': True},
-            {'tipo': Certificado.SCTR_SALUD, 'label': 'SCTR salud', 'objeto': certificados_empresa.get(Certificado.SCTR_SALUD), 'heredado': True},
+            {'tipo': Certificado.SCTR_PENSION, 'label': 'SCTR pensión', 'objeto': certificados_empresa.get(Certificado.SCTR_PENSION), 'heredado': True, 'campo_validacion': 'pension', 'validado': self.object.sctr_pension_validado},
+            {'tipo': Certificado.SCTR_SALUD, 'label': 'SCTR salud', 'objeto': certificados_empresa.get(Certificado.SCTR_SALUD), 'heredado': True, 'campo_validacion': 'salud', 'validado': self.object.sctr_salud_validado},
             {'tipo': Certificado.INDUCCION, 'label': 'Inducción', 'objeto': certificados.get(Certificado.INDUCCION)},
             {'tipo': Certificado.APTITUD_MEDICA, 'label': 'Aptitud médica', 'objeto': certificados.get(Certificado.APTITUD_MEDICA)},
         ])
+        for fila in kwargs['certificados_requeridos'][:2]:
+            fila['puede_validarse'] = bool(
+                fila['objeto'] and fila['objeto'].esta_vigente
+            )
         kwargs.setdefault('sctr_pension_vigente', self.object.sctr_pension_efectivo)
         kwargs.setdefault('sctr_salud_vigente', self.object.sctr_salud_efectivo)
         kwargs.setdefault('sctr_pension_certificado', certificados_empresa.get(Certificado.SCTR_PENSION))
@@ -1051,9 +1042,53 @@ class TrabajadorDetailView(VerTrabajadorDetalleMixin, DetailView):
             for codigo, label in Certificado.CURSO_CHOICES
         ])
         kwargs.setdefault('puede_configurar_cursos', self.request.user.is_superuser or self.request.user.role == User.BECA_AZUL)
+        kwargs.setdefault('puede_validar_sctr_trabajador', self.request.user.is_superuser or self.request.user.role == User.BECA_AZUL)
+        kwargs.setdefault('fecha_hoy', timezone.localdate())
         kwargs.setdefault('incidencias', self.object.incidencias.select_related('registrado_por'))
         kwargs.setdefault('es_empresa', self.request.user.role == User.USUARIO_EMPRESA)
         return super().get_context_data(**kwargs)
+
+
+class TrabajadorSCTRValidacionToggleView(BecaAzulRequiredMixin, View):
+    CAMPOS = {
+        'pension': ('sctr_pension_validado', Certificado.SCTR_PENSION, 'sctr_pension_aprobado'),
+        'salud': ('sctr_salud_validado', Certificado.SCTR_SALUD, 'sctr_salud_aprobado'),
+    }
+
+    def post(self, request, pk, tipo):
+        trabajador = get_object_or_404(Trabajador.objects.select_related('empresa'), pk=pk)
+        if tipo not in self.CAMPOS:
+            raise Http404
+        campo, tipo_certificado, campo_aprobacion_empresa = self.CAMPOS[tipo]
+        certificado = trabajador.empresa.certificados.filter(tipo=tipo_certificado).first()
+
+        if not trabajador.activo or not trabajador.empresa.activo:
+            raise PermissionDenied
+
+        validado_actual = getattr(trabajador, campo)
+        validado = request.POST.get('validado') == '1'
+        if validado == validado_actual:
+            return redirect('app_control:trabajador_detalle', pk=trabajador.pk)
+
+        certificado_vigente = bool(certificado and certificado.esta_vigente)
+        aprobado_empresa = getattr(trabajador.empresa, campo_aprobacion_empresa)
+        if validado and not aprobado_empresa:
+            nombre = 'SCTR pensión' if tipo == 'pension' else 'SCTR salud'
+            messages.error(
+                request,
+                f'Primero se requiere que el {nombre} en el panel de la empresa esté aprobado.',
+            )
+            return redirect('app_control:trabajador_detalle', pk=trabajador.pk)
+        if validado and not certificado_vigente:
+            messages.error(request, 'No se puede validar el SCTR porque el certificado no está vigente o falta el archivo.')
+            return redirect('app_control:trabajador_detalle', pk=trabajador.pk)
+
+        setattr(trabajador, campo, validado)
+        trabajador.save(update_fields=[campo])
+        nombre = 'SCTR pensión' if tipo == 'pension' else 'SCTR salud'
+        estado = 'aprobado' if validado else 'desaprobado'
+        messages.success(request, f'{nombre} del trabajador: {estado}.')
+        return redirect('app_control:trabajador_detalle', pk=trabajador.pk)
 
 
 class CertificadoValidacionToggleView(BecaAzulRequiredMixin, View):
@@ -1079,10 +1114,10 @@ class CertificadoValidacionToggleView(BecaAzulRequiredMixin, View):
             certificado.save(update_fields=['validado'])
             messages.error(request, 'No se puede validar el certificado porque falta el archivo PDF.')
             return redirect('app_control:trabajador_detalle', pk=certificado.trabajador_id)
-        if certificado.fecha_vencimiento < timezone.localdate():
+        if not certificado.esta_vigente:
             certificado.validado = False
             certificado.save(update_fields=['validado'])
-            messages.error(request, 'No se puede validar un certificado vencido.')
+            messages.error(request, 'No se puede validar un certificado que todavía no está vigente o ya venció.')
         else:
             certificado.validado = not certificado.validado
             certificado.save(update_fields=['validado'])
@@ -1108,6 +1143,7 @@ class TrabajadorHabilitadoToggleView(BecaAzulRequiredMixin, View):
             )
             return redirect('app_control:trabajador_detalle', pk=trabajador.pk)
         if not trabajador.habilitado:
+            trabajador.limpiar_validaciones_sctr_invalidas()
             mensajes = []
             empresa = trabajador.empresa
             if not empresa.activo:
@@ -1116,6 +1152,10 @@ class TrabajadorHabilitadoToggleView(BecaAzulRequiredMixin, View):
                 mensajes.append('SCTR pensión aprobado y vigente')
             if not empresa.sctr_salud_aprobado or not empresa.sctr_salud_vigente:
                 mensajes.append('SCTR salud aprobado y vigente')
+            if not trabajador.sctr_pension_validado:
+                mensajes.append('validación individual del SCTR pensión')
+            if not trabajador.sctr_salud_validado:
+                mensajes.append('validación individual del SCTR salud')
             if not empresa.homologacion or not empresa.homologacion_vigente:
                 mensajes.append('homologación aprobada y vigente')
             certificados_trabajador = {
@@ -1537,6 +1577,16 @@ class CertificadoEmpresaUpdateView(TrabajadorActivoRequiredMixin, TrabajadorEmpr
         return super().get_context_data(**kwargs)
 
     def form_valid(self, form):
+        certificado_original = Certificado.objects.only(
+            'fecha_emision', 'fecha_vencimiento'
+        ).get(pk=self.object.pk)
+        certificado_modificado = bool(
+            form.files.get('archivo')
+            or form.cleaned_data.get('fecha_emision') != certificado_original.fecha_emision
+            or form.cleaned_data.get('fecha_vencimiento') != certificado_original.fecha_vencimiento
+        )
+        if certificado_modificado:
+            form.instance.validado = False
         self.object = form.save()
         messages.success(self.request, 'Certificado actualizado correctamente.')
         return HttpResponseRedirect(self.get_success_url())

@@ -6,11 +6,31 @@ from django.core.management import call_command
 from django.test import TestCase, override_settings
 from django.utils import timezone
 
-from ..models import Certificado, Empresa
+from ..models import Certificado, Empresa, Trabajador
 
 
 class DemoFixturePreparationTests(TestCase):
     fixtures = ['seed.json']
+
+    def test_fixture_includes_varied_worker_sctr_checks_without_numeric_name_suffixes(self):
+        expected = {
+            53: (True, True),
+            54: (True, False),
+            55: (False, True),
+            56: (False, False),
+            63: (False, True),
+        }
+        for pk, estados in expected.items():
+            trabajador = Trabajador.objects.get(pk=pk)
+            self.assertEqual(
+                (trabajador.sctr_pension_validado, trabajador.sctr_salud_validado),
+                estados,
+            )
+
+        self.assertFalse(any(
+            trabajador.apellidos.rsplit(' ', 1)[-1].isdigit()
+            for trabajador in Trabajador.objects.all()
+        ))
 
     def test_command_prepares_files_and_varied_current_states_repeatably(self):
         with TemporaryDirectory() as media_root:

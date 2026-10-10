@@ -48,7 +48,7 @@
         <section class="company-sctr-card rounded-xl border px-4 py-3 shadow-sm {% if homologacion_valida %}company-sctr-card--registered{% else %}company-sctr-card--pending{% endif %}">
             <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                 <div class="min-w-0">
-                     <div class="flex flex-wrap items-center gap-2"><h2 class="text-base font-bold text-[var(--ink-900)]">Homologación</h2><span class="inline-flex rounded-full px-2 py-0.5 text-xs font-semibold {% if homologacion_valida %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">{% if homologacion_valida %}Vigente{% elif homologacion_archivo_existe %}Vencido{% else %}Pendiente{% endif %}</span><span class="text-xs font-semibold {% if empresa.homologacion %}text-green-700{% else %}text-red-700{% endif %}">Aprobación: {% if empresa.homologacion %}Aprobada{% else %}No aprobada{% endif %}</span></div>
+                     <div class="flex flex-wrap items-center gap-2"><h2 class="text-base font-bold text-[var(--ink-900)]">Cert. Homologación</h2><span class="inline-flex rounded-full px-2 py-0.5 text-xs font-semibold {% if homologacion_valida %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">{% if homologacion_valida %}Vigente{% elif homologacion_archivo_existe %}Vencido{% else %}Pendiente{% endif %}</span><span class="text-xs font-semibold {% if empresa.homologacion %}text-green-700{% else %}text-red-700{% endif %}">Aprobación: {% if empresa.homologacion %}Aprobada{% else %}No aprobada{% endif %}</span></div>
                     {% if homologacion_valida %}<p class="mt-1 text-xs text-[var(--ink-500)]">Emisión <strong class="text-[var(--ink-900)]">{{ homologacion.fecha_emision|date:'d/m/Y' }}</strong><span class="mx-2">·</span>Vencimiento <strong class="text-[var(--ink-900)]">{{ homologacion.fecha_vencimiento|date:'d/m/Y' }}</strong></p>{% else %}<p class="mt-1 text-xs text-[var(--ink-500)]">El archivo de homologación debe cargarse nuevamente.</p>{% endif %}
                 </div>
                         <div class="flex flex-wrap gap-2">{% if request.user.role == '1' or request.user.role == '3' %}{% if homologacion_archivo_existe %}<a class="btn btn-secondary btn-sm" href="{% url 'app_control:empresa_certificado_ver' homologacion.pk %}" target="_blank" rel="noopener">Ver certificado</a>{% endif %}{% endif %}{% if request.user.role == '1' %}<form method="post" action="{% url 'app_control:empresa_homologacion_toggle' empresa.pk %}" class="inline">{% csrf_token %}<button type="submit" class="btn btn-sm {% if empresa.homologacion %}btn-quinary{% else %}btn-primary{% endif %}"{% if not empresa.activo or not empresa.homologacion and not sctr_valido or not empresa.homologacion and not homologacion_valida %} disabled{% endif %}>{% if empresa.homologacion %}Desaprobar homologación{% else %}Aprobar homologación{% endif %}</button></form>{% endif %}{% if request.user.role == '3' %}<a class="btn btn-primary btn-sm {% if not empresa.activo %}pointer-events-none opacity-50{% endif %}" href="{% url 'app_control:empresa_homologacion_editar' empresa.pk %}"{% if not empresa.activo %} aria-disabled="true"{% endif %}>{% if homologacion and homologacion.archivo %}Editar homologación{% else %}Registrar homologación{% endif %}</a>{% endif %}</div>
@@ -69,9 +69,11 @@
         {{ empresa_trabajadores_chart|json_script:"empresa-trabajadores-chart-data" }}
         {% endif %}
     </div>
+    {% if request.user.role == '2' or request.user.role == '3' %}
     <div class="mt-4 flex justify-center">
         <a class="btn btn-secondary" href="{% url 'app_control:empresa_lista' %}">Volver</a>
     </div>
+    {% endif %}
 </div>
 {% endblock %}
 

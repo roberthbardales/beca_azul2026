@@ -85,7 +85,7 @@
                     </div>
                 </div></fieldset>
 
-                 {% if request.user.role == '3' %}
+                 {% if request.user.role == '3' and not object %}
                   <fieldset class="control-form-section border-t border-gray-100 pt-3"><legend class="mb-2 text-sm font-semibold text-[#0f172a]">Certificados</legend>
                       {{ certificado_formset.management_form }}
                         <div class="app-table-wrap responsive-table"><table class="app-table worker-data-table w-full min-w-[520px]"><thead><tr><th>Tipo</th><th>Archivo PDF</th><th>Emisión</th><th>Vencimiento</th></tr></thead><tbody id="certificados-fijos">
@@ -103,7 +103,7 @@
                     <a class="btn btn-secondary" href="{% url 'app_control:trabajador_lista' %}">Cancelar</a>
                 </footer>
             </form>
-            {% if request.user.role == '3' %}<script>
+            {% if request.user.role == '3' and not object %}<script>
                 {% if not object %}
                 const today = new Date();
                 const todayValue = [today.getFullYear(), String(today.getMonth() + 1).padStart(2, '0'), String(today.getDate()).padStart(2, '0')].join('-');

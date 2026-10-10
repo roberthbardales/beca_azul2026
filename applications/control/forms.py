@@ -215,17 +215,14 @@ class TrabajadorEmpresaForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         self.empresa = kwargs.pop('empresa', None)
         super().__init__(*args, **kwargs)
-        if not self.instance.pk:
+        if self.instance.pk:
+            for prefix in ('induccion', 'aptitud_medica'):
+                for suffix in ('archivo', 'fecha_emision', 'fecha_vencimiento'):
+                    self.fields.pop(f'{prefix}_{suffix}')
+        else:
             for prefix in ('induccion', 'aptitud_medica'):
                 for suffix in ('archivo', 'fecha_emision', 'fecha_vencimiento'):
                     self.fields[f'{prefix}_{suffix}'].required = True
-        else:
-            for certificado in self.instance.certificados.all():
-                if certificado.tipo in (Certificado.INDUCCION, Certificado.APTITUD_MEDICA):
-                    prefix = certificado.tipo.lower()
-                    self.initial[f'{prefix}_archivo'] = certificado.archivo
-                    self.initial[f'{prefix}_fecha_emision'] = certificado.fecha_emision.isoformat()
-                    self.initial[f'{prefix}_fecha_vencimiento'] = certificado.fecha_vencimiento.isoformat()
 
     def clean_dni(self):
         dni = self.cleaned_data.get('dni', '').strip()
@@ -243,6 +240,8 @@ class TrabajadorEmpresaForm(forms.ModelForm):
 
     def clean(self):
         cleaned = super().clean()
+        if self.instance.pk:
+            return cleaned
         for prefix in ('induccion', 'aptitud_medica'):
             archivo = cleaned.get(f'{prefix}_archivo')
             fecha_emision = cleaned.get(f'{prefix}_fecha_emision')

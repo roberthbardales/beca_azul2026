@@ -330,9 +330,11 @@
                        "dni":  "7000101",
                        "nombres":  "Ana SofÃ­a",
                        "apellidos":  "Paredes Salazar",
-                       "cargo":  "Operario",
-                       "habilitado":  true,
-                       "activo":  true
+                        "cargo":  "Operario",
+                        "habilitado":  true,
+                        "sctr_pension_validado":  true,
+                        "sctr_salud_validado":  true,
+                        "activo":  true
                    }
     },
     {
@@ -346,9 +348,11 @@
                        "dni":  "7000102",
                        "nombres":  "Luis Alberto",
                        "apellidos":  "GarcÃ­a Mendoza",
-                       "cargo":  "Tecnico",
-                       "habilitado":  true,
-                       "activo":  true
+                        "cargo":  "Tecnico",
+                        "habilitado":  true,
+                        "sctr_pension_validado":  true,
+                        "sctr_salud_validado":  false,
+                        "activo":  true
                    }
     },
     {
@@ -362,9 +366,11 @@
                        "dni":  "7000103",
                        "nombres":  "Marta Elena",
                        "apellidos":  "LÃ³pez HuamÃ¡n",
-                       "cargo":  "Supervisora",
-                       "habilitado":  true,
-                       "activo":  true
+                        "cargo":  "Supervisora",
+                        "habilitado":  true,
+                        "sctr_pension_validado":  false,
+                        "sctr_salud_validado":  true,
+                        "activo":  true
                    }
     },
     {
@@ -378,9 +384,11 @@
                        "dni":  "7000104",
                        "nombres":  "JosÃ© Luis",
                        "apellidos":  "Ramos Villanueva",
-                       "cargo":  "Analista",
-                       "habilitado":  false,
-                       "activo":  true
+                        "cargo":  "Analista",
+                        "habilitado":  false,
+                        "sctr_pension_validado":  false,
+                        "sctr_salud_validado":  false,
+                        "activo":  true
                    }
     },
     {
@@ -394,9 +402,11 @@
                        "dni":  "7000105",
                        "nombres":  "Rosa MarÃ­a",
                        "apellidos":  "Torres CÃ¡rdenas",
-                       "cargo":  "Supervisor",
-                       "habilitado":  true,
-                       "activo":  false
+                        "cargo":  "Supervisor",
+                        "habilitado":  true,
+                        "sctr_pension_validado":  true,
+                        "sctr_salud_validado":  true,
+                        "activo":  false
                    }
     },
     {
@@ -410,9 +420,11 @@
                        "dni":  "7000201",
                        "nombres":  "Camila",
                        "apellidos":  "PÃ©rez Valdivia",
-                       "cargo":  "Operario",
-                       "habilitado":  true,
-                       "activo":  true
+                        "cargo":  "Operario",
+                        "habilitado":  true,
+                        "sctr_pension_validado":  true,
+                        "sctr_salud_validado":  true,
+                        "activo":  true
                    }
     },
     {
@@ -426,9 +438,11 @@
                        "dni":  "7000202",
                        "nombres":  "Diego",
                        "apellidos":  "GarcÃ­a Flores",
-                       "cargo":  "Tecnico",
-                       "habilitado":  true,
-                       "activo":  true
+                        "cargo":  "Tecnico",
+                        "habilitado":  true,
+                        "sctr_pension_validado":  true,
+                        "sctr_salud_validado":  false,
+                        "activo":  true
                    }
     },
     {
@@ -442,9 +456,11 @@
                        "dni":  "7000203",
                        "nombres":  "LucÃ­a",
                        "apellidos":  "LÃ³pez Castillo",
-                       "cargo":  "Supervisora",
-                       "habilitado":  true,
-                       "activo":  true
+                        "cargo":  "Supervisora",
+                        "habilitado":  true,
+                        "sctr_pension_validado":  false,
+                        "sctr_salud_validado":  true,
+                        "activo":  true
                    }
     },
     {
@@ -458,9 +474,11 @@
                        "dni":  "7000204",
                        "nombres":  "Miguel",
                        "apellidos":  "Ramos Mendoza",
-                       "cargo":  "Analista",
-                       "habilitado":  false,
-                       "activo":  true
+                        "cargo":  "Analista",
+                        "habilitado":  false,
+                        "sctr_pension_validado":  false,
+                        "sctr_salud_validado":  false,
+                        "activo":  true
                    }
     },
     {
@@ -474,9 +492,11 @@
                        "dni":  "7000205",
                        "nombres":  "Elena",
                        "apellidos":  "Torres Salinas",
-                       "cargo":  "Supervisor",
-                       "habilitado":  true,
-                       "activo":  false
+                        "cargo":  "Supervisor",
+                        "habilitado":  true,
+                        "sctr_pension_validado":  true,
+                        "sctr_salud_validado":  true,
+                        "activo":  false
                    }
     },
     {
@@ -490,9 +510,11 @@
                        "dni":  "7000301",
                        "nombres":  "Daniela",
                        "apellidos":  "Paredes Quispe",
-                       "cargo":  "Operario",
-                       "habilitado":  true,
-                       "activo":  true
+                        "cargo":  "Operario",
+                        "habilitado":  true,
+                        "sctr_pension_validado":  false,
+                        "sctr_salud_validado":  true,
+                        "activo":  true
                    }
     },
     {

@@ -101,6 +101,21 @@ class CertificadoModelTests(TestCase):
         self.assertEqual(certificado.validacion_estado, 'Pendiente')
         self.assertFalse(certificado.validacion_vigente)
 
+    def test_certificado_con_emision_futura_no_se_considera_vigente(self):
+        certificado = Certificado.objects.create(
+            empresa=self.empresa,
+            tipo=Certificado.SCTR_PENSION,
+            fecha_emision=date.today() + timedelta(days=1),
+            fecha_vencimiento=date.today() + timedelta(days=30),
+            archivo=SimpleUploadedFile('sctr_futuro.pdf', b'%PDF-1.4 test'),
+            validado=True,
+        )
+
+        self.assertFalse(certificado.esta_vigente)
+        self.assertEqual(certificado.estado, 'Pendiente')
+        self.assertEqual(certificado.validacion_estado, 'Pendiente')
+        self.assertFalse(certificado.validacion_vigente)
+
 
 class HomologacionManualTests(TestCase):
     def test_empresa_rechaza_sctr_aprobado_sin_certificado_vigente(self):
@@ -201,6 +216,21 @@ class SctrEfectivoTests(TestCase):
         self.crear_certificado(Certificado.SCTR_PENSION, date.today() - timedelta(days=1))
         self.crear_certificado(Certificado.SCTR_SALUD, date.today() + timedelta(days=1))
 
+        self.assertFalse(self.trabajador.sctr_pension_efectivo)
+        self.assertTrue(self.trabajador.sctr_salud_efectivo)
+
+    def test_sctr_efectivo_es_falso_antes_de_la_fecha_de_emision(self):
+        pension = Certificado.objects.create(
+            empresa=self.empresa,
+            tipo=Certificado.SCTR_PENSION,
+            fecha_emision=date.today() + timedelta(days=1),
+            fecha_vencimiento=date.today() + timedelta(days=30),
+            archivo=SimpleUploadedFile('pension_futuro.pdf', b'%PDF-1.4 test'),
+        )
+        self.crear_certificado(Certificado.SCTR_SALUD, date.today() + timedelta(days=30))
+
+        self.assertFalse(pension.esta_vigente)
+        self.assertEqual(pension.estado, 'Pendiente')
         self.assertFalse(self.trabajador.sctr_pension_efectivo)
         self.assertTrue(self.trabajador.sctr_salud_efectivo)
 
