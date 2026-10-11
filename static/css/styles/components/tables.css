@@ -61,6 +61,26 @@ main .workers-list-filter--compact select { border-color: #f8fafc !important; }
     background: #fafcfe;
 }
 
+.search-result--garita .app-table {
+    table-layout: fixed;
+}
+
+.search-result--garita .app-table th,
+.search-result--garita .app-table td {
+    padding-right: .75rem !important;
+    padding-left: .75rem !important;
+    overflow-wrap: anywhere;
+}
+
+.search-result--garita .app-table th:first-child,
+.search-result--garita .app-table td:first-child { width: 34%; }
+.search-result--garita .app-table th:nth-child(2),
+.search-result--garita .app-table td:nth-child(2) { width: 23%; }
+.search-result--garita .app-table th:nth-child(3),
+.search-result--garita .app-table td:nth-child(3) { width: 27%; }
+.search-result--garita .app-table th:last-child,
+.search-result--garita .app-table td:last-child { width: 16%; }
+
 /* Shared table baseline for worker certificate and course data. */
 .worker-data-table {
     width: 100%;

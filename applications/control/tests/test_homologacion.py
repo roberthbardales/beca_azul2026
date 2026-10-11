@@ -108,7 +108,7 @@ class HomologacionToggleViewTests(TestCase):
                 self.empresa.refresh_from_db()
                 self.assertFalse(self.empresa.homologacion)
 
-    def test_no_puede_aprobar_sin_sctr_y_homologacion(self):
+    def test_no_puede_aprobar_sin_documentos_vigentes(self):
         self.client.force_login(self.crear_usuario(User.BECA_AZUL))
 
         response = self.client.post(self.url)
@@ -117,6 +117,29 @@ class HomologacionToggleViewTests(TestCase):
         self.empresa.refresh_from_db()
         self.assertFalse(self.empresa.homologacion)
         self.assertEqual(len(list(response.wsgi_request._messages)), 3)
+
+    def test_puede_aprobar_homologacion_sin_aprobar_sctr(self):
+        for tipo, nombre in (
+            (Certificado.SCTR_PENSION, 'sctr-pension.pdf'),
+            (Certificado.SCTR_SALUD, 'sctr-salud.pdf'),
+            (Certificado.HOMOLOGACION, 'homologacion.pdf'),
+        ):
+            Certificado.objects.create(
+                empresa=self.empresa,
+                tipo=tipo,
+                fecha_emision=date.today(),
+                fecha_vencimiento=date.today() + timedelta(days=30),
+                archivo=SimpleUploadedFile(nombre, b'%PDF-1.4 test'),
+            )
+        self.client.force_login(self.crear_usuario(User.BECA_AZUL))
+
+        response = self.client.post(self.url)
+
+        self.assertRedirects(response, reverse('app_control:empresa_detalle', args=[self.empresa.pk]))
+        self.empresa.refresh_from_db()
+        self.assertTrue(self.empresa.homologacion)
+        self.assertFalse(self.empresa.sctr_pension_aprobado)
+        self.assertFalse(self.empresa.sctr_salud_aprobado)
 
     def test_no_puede_aprobar_si_falta_un_certificado(self):
         Certificado.objects.create(
@@ -132,7 +155,7 @@ class HomologacionToggleViewTests(TestCase):
 
         self.empresa.refresh_from_db()
         self.assertFalse(self.empresa.homologacion)
-        self.assertEqual(len(list(response.wsgi_request._messages)), 3)
+        self.assertEqual(len(list(response.wsgi_request._messages)), 2)
 
     def test_no_puede_aprobar_con_certificados_vencidos(self):
         for tipo, nombre in (
@@ -238,7 +261,14 @@ class HomologacionToggleViewTests(TestCase):
         self.assertFalse(self.empresa.homologacion)
         self.assertFalse(response.context['empresa'].homologacion)
 
-    def test_detalle_invalida_homologacion_si_sctr_salud_no_esta_aprobado(self):
+    def test_detalle_mantiene_homologacion_si_sctr_salud_no_esta_aprobado(self):
+        Certificado.objects.create(
+            empresa=self.empresa,
+            tipo=Certificado.HOMOLOGACION,
+            fecha_emision=date.today(),
+            fecha_vencimiento=date.today() + timedelta(days=30),
+            archivo=SimpleUploadedFile('homologacion.pdf', b'%PDF-1.4 test'),
+        )
         self.client.force_login(self.crear_usuario(User.BECA_AZUL))
         self.empresa.homologacion = True
         self.empresa.sctr_pension_aprobado = True
@@ -247,4 +277,6 @@ class HomologacionToggleViewTests(TestCase):
 
         response = self.client.get(reverse('app_control:empresa_detalle', args=[self.empresa.pk]))
 
-        self.assertFalse(response.context['empresa'].homologacion)
+        self.empresa.refresh_from_db()
+        self.assertTrue(response.context['empresa'].homologacion)
+        self.assertTrue(self.empresa.homologacion)

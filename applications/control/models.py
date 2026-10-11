@@ -131,10 +131,6 @@ class Empresa(TimeStampedModel):
     def invalidar_homologacion_si_corresponde(self):
         homologacion_valida = (
             self.homologacion_vigente
-            and self.sctr_pension_aprobado
-            and self.sctr_salud_aprobado
-            and self.sctr_empresa_vigente(CertificadoTipo.SCTR_PENSION)
-            and self.sctr_empresa_vigente(CertificadoTipo.SCTR_SALUD)
         )
         if self.homologacion and not homologacion_valida:
             type(self).objects.filter(pk=self.pk, homologacion=True).update(homologacion=False)
@@ -167,12 +163,6 @@ class Empresa(TimeStampedModel):
             raise ValidationError({'sctr_pension_aprobado': 'El SCTR pensión aprobado debe tener un certificado vigente.'})
         if self.sctr_salud_aprobado and not self.sctr_empresa_vigente(CertificadoTipo.SCTR_SALUD):
             raise ValidationError({'sctr_salud_aprobado': 'El SCTR salud aprobado debe tener un certificado vigente.'})
-        if self.homologacion and (
-            not self.sctr_pension_aprobado or not self.sctr_salud_aprobado
-        ):
-            raise ValidationError({
-                'homologacion': 'La homologacion requiere aprobar ambos SCTR empresariales.',
-            })
         if self.homologacion and not self.homologacion_vigente:
             raise ValidationError({'homologacion': 'La homologacion aprobada debe tener un certificado vigente.'})
 
@@ -217,9 +207,9 @@ class Trabajador(TimeStampedModel):
             self.habilitado
             and self.activo
             and empresa.activo
+            and empresa.homologacion
             and empresa.sctr_pension_aprobado
             and empresa.sctr_salud_aprobado
-            and empresa.homologacion
             and empresa.sctr_pension_vigente
             and empresa.sctr_salud_vigente
             and self.sctr_pension_validado
@@ -247,8 +237,8 @@ class Trabajador(TimeStampedModel):
     def limpiar_validaciones_sctr_invalidas(self):
         if not self.pk:
             return []
-        empresa = self.empresa
         campos = []
+        empresa = self.empresa
         for tipo, campo, aprobado in (
             (CertificadoTipo.SCTR_PENSION, 'sctr_pension_validado', empresa.sctr_pension_aprobado),
             (CertificadoTipo.SCTR_SALUD, 'sctr_salud_validado', empresa.sctr_salud_aprobado),
@@ -463,6 +453,12 @@ class Certificado(TimeStampedModel):
                         tipo__in=(CertificadoTipo.SCTR_PENSION, CertificadoTipo.SCTR_SALUD, CertificadoTipo.HOMOLOGACION),
                         empresa__isnull=False,
                         trabajador__isnull=True,
+                        curso__isnull=True,
+                    )
+                    | Q(
+                        tipo__in=(CertificadoTipo.SCTR_PENSION, CertificadoTipo.SCTR_SALUD),
+                        empresa__isnull=True,
+                        trabajador__isnull=False,
                         curso__isnull=True,
                     )
                     | Q(

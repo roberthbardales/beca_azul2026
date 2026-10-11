@@ -416,7 +416,10 @@ class ReportesView(LoginRequiredMixin, View):
                 if certificado.estado in ('Vencido', 'Próximo a vencer')
             ]
         elif reporte == 'trabajadores':
-            context['filas'] = trabajadores.order_by('empresa__nombre', 'apellidos', 'nombres')
+            context['filas'] = trabajadores.prefetch_related(
+                'certificados',
+                'cursos_obligatorios',
+            ).order_by('empresa__nombre', 'apellidos', 'nombres')
         elif reporte == 'empresas':
             context['filas'] = empresas.order_by('nombre')
         return context
@@ -565,19 +568,13 @@ class EmpresaHomologacionToggleView(EmpresaActivaRequiredMixin, BecaAzulRequired
             tiene_homologacion = bool(homologacion and homologacion.esta_vigente)
             if not tiene_sctr_pension:
                 messages.error(request, 'Falta subir el SCTR pensión o no está vigente.')
-            elif not empresa.sctr_pension_aprobado:
-                messages.error(request, 'El SCTR pensión debe estar aprobado.')
             if not tiene_sctr_salud:
                 messages.error(request, 'Falta subir el SCTR salud o no está vigente.')
-            elif not empresa.sctr_salud_aprobado:
-                messages.error(request, 'El SCTR salud debe estar aprobado.')
             if not tiene_homologacion:
                 messages.error(request, 'Falta subir el certificado de homologación.')
             if (
                 not tiene_sctr_pension
-                or not empresa.sctr_pension_aprobado
                 or not tiene_sctr_salud
-                or not empresa.sctr_salud_aprobado
                 or not tiene_homologacion
             ):
                 return redirect('app_control:empresa_detalle', pk=empresa.pk)
@@ -1012,7 +1009,7 @@ class TrabajadorBuscarView(ConsultarTrabajadoresMixin, View):
             queryset = queryset.order_by('apellidos', 'nombres', 'dni')
             trabajadores = list(queryset)
             resultados = queryset.count()
-            if resultados == 1:
+            if resultados == 1 and request.user.role != User.GARITA:
                 trabajador = trabajadores[0]
         context = {
             'q': q,
@@ -1020,6 +1017,7 @@ class TrabajadorBuscarView(ConsultarTrabajadoresMixin, View):
             'trabajadores': trabajadores,
             'resultados': resultados,
             'es_empresa': request.user.role == User.USUARIO_EMPRESA,
+            'es_garita': request.user.role == User.GARITA,
             'puede_ver_detalle': request.user.is_superuser or request.user.role in (
                 User.ADMINISTRADOR,
                 User.BECA_AZUL,
@@ -1105,8 +1103,14 @@ class TrabajadorDetailView(VerTrabajadorDetalleMixin, DetailView):
             {'tipo': Certificado.APTITUD_MEDICA, 'label': 'Aptitud médica', 'objeto': certificados.get(Certificado.APTITUD_MEDICA)},
         ])
         for fila in kwargs['certificados_requeridos'][:2]:
+            if fila['objeto']:
+                fila['objeto'].archivo_existe = bool(
+                    fila['objeto'].archivo
+                    and fila['objeto'].archivo.storage.exists(fila['objeto'].archivo.name)
+                )
+        for fila in kwargs['certificados_requeridos'][:2]:
             fila['puede_validarse'] = bool(
-                fila['objeto'] and fila['objeto'].esta_vigente
+                fila['objeto'] and fila['objeto'].esta_vigente and fila['objeto'].archivo_existe
             )
         kwargs.setdefault('sctr_pension_vigente', self.object.sctr_pension_efectivo)
         kwargs.setdefault('sctr_salud_vigente', self.object.sctr_salud_efectivo)
@@ -1169,10 +1173,7 @@ class TrabajadorSCTRValidacionToggleView(BecaAzulRequiredMixin, View):
         aprobado_empresa = getattr(trabajador.empresa, campo_aprobacion_empresa)
         if validado and not aprobado_empresa:
             nombre = 'SCTR pensión' if tipo == 'pension' else 'SCTR salud'
-            messages.error(
-                request,
-                f'Primero se requiere que el {nombre} en el panel de la empresa esté aprobado.',
-            )
+            messages.error(request, f'Primero se requiere que el {nombre} en el panel de la empresa esté aprobado.')
             return redirect('app_control:trabajador_detalle', pk=trabajador.pk)
         if validado and not certificado_vigente:
             messages.error(request, 'No se puede validar el SCTR porque el certificado no está vigente o falta el archivo.')

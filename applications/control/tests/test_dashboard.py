@@ -273,6 +273,20 @@ class DashboardViewTests(TestCase):
         self.assertContains(response, self.trabajador.dni)
         self.assertContains(response, segundo.dni)
 
+    def test_usuario_garita_ve_lista_aunque_haya_una_sola_coincidencia(self):
+        self.user.role = User.GARITA
+        self.user.save(update_fields=['role'])
+
+        response = self.client.get(
+            reverse('app_control:trabajador_buscar'),
+            {'q': self.trabajador.dni},
+        )
+
+        self.assertEqual(response.context['resultados'], 1)
+        self.assertIsNone(response.context['trabajador'])
+        self.assertContains(response, 'Trabajadores encontrados (1)')
+        self.assertNotContains(response, 'Ver detalle completo')
+
     def test_buscador_ignora_tildes_y_acepta_nombre_completo(self):
         self.trabajador.nombres = 'Rosa María'
         self.trabajador.apellidos = 'Torres Cárdenas'
