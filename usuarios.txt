@@ -1,20 +1,14 @@
+USUARIOS DE PRUEBA
+Listado basado en fixtures/seed.json. Se omiten contraseñas y hashes.
 
-la contraseña para todos es "admin"
-
-ID | Nombre             | Email               | Rol
-1  | Admin Principal     | admin@gmail.com     | Administrador
-2  | Beca Azul           | becaazul@gmail.com  | Beca Azul
-3  | Usuario Planta      | planta@gmail.com    | Usuario Planta
-5  | Usuario Garita      | garita@gmail.com    | Usuario Garita
-
-16 | Usuario Apple       | apple@gmail.com     | Usuario Empresa
-17 | Usuario Google      | google@gmail.com    | Usuario Empresa
-18 | Usuario Microsoft   | microsoft@gmail.com | Usuario Empresa
-19 | Usuario Amazon      | amazon@gmail.com    | Usuario Empresa
-20 | Usuario Tesla       | tesla@gmail.com     | Usuario Empresa
-21 | Usuario Samsung     | samsung@gmail.com   | Usuario Empresa
-22 | Usuario Toyota      | toyota@gmail.com    | Usuario Empresa
-23 | Usuario Adobe       | adobe@gmail.com     | Usuario Empresa
-24 | Usuario Oracle      | oracle@gmail.com    | Usuario Empresa
-25 | Usuario Netflix     | netflix@gmail.com   | Usuario Empresa
-
+Nombre             | Correo                | Rol             | Empresa    | Teléfono  | Activo | Superusuario
+-------------------|-----------------------|-----------------|------------|-----------|--------|-------------
+Admin Principal    | admin@gmail.com       | Administrador   | —          | 900000001 | Sí     | Sí
+Beca Azul          | becaazul@gmail.com   | Beca Azul       | —          | 900000002 | Sí     | No
+Usuario Planta     | planta@gmail.com     | Usuario Planta  | —          | 900000003 | Sí     | No
+Usuario Garita     | garita@gmail.com     | Usuario Garita  | —          | 900000005 | Sí     | No
+Usuario Apple      | apple@gmail.com      | Usuario Empresa | Apple      | —         | Sí     | No
+Usuario Google     | google@gmail.com     | Usuario Empresa | Google     | —         | Sí     | No
+Usuario Microsoft  | microsoft@gmail.com  | Usuario Empresa | Microsoft  | —         | Sí     | No
+Usuario Amazon     | amazon@gmail.com     | Usuario Empresa | Amazon     | —         | Sí     | No
+Usuario Tesla      | tesla@gmail.com      | Usuario Empresa | Tesla      | —         | Sí     | No
