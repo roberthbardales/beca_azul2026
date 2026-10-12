@@ -51,7 +51,7 @@ class DashboardViewTests(TestCase):
         response = self.client.get(reverse('app_control:dashboard'))
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context['dashboard_charts']['cumplimiento'], [1, 2, 1])
+        self.assertEqual(response.context['dashboard_charts']['cumplimiento'], [0, 1])
         self.assertEqual(response.context['certificados_sin_vencimiento'], 0)
 
     def test_dashboard_cuenta_empresas_homologadas_y_no_homologadas(self):
@@ -91,9 +91,9 @@ class DashboardViewTests(TestCase):
         self.assertEqual(response.context['empresas_habilitadas'], 1)
         self.assertEqual(response.context['empresas_no_homologadas'], 1)
         self.assertEqual(response.context['empresas_desactivadas'], 1)
-        self.assertContains(response, '1 homologadas')
-        self.assertContains(response, '1 no homologadas')
-        self.assertContains(response, '1 desactivadas')
+        self.assertContains(response, 'Homologadas')
+        self.assertContains(response, 'No homologadas')
+        self.assertContains(response, 'Desactivadas')
 
     def test_dashboard_cuenta_inducciones_vigentes_y_vencidas(self):
         hoy = date.today()
@@ -123,8 +123,8 @@ class DashboardViewTests(TestCase):
 
         self.assertEqual(response.context['inducciones_vigentes'], 1)
         self.assertEqual(response.context['inducciones_vencidas'], 1)
-        self.assertContains(response, '1 vigentes')
-        self.assertContains(response, '1 vencidas')
+        self.assertContains(response, 'Vigentes')
+        self.assertContains(response, 'Vencidas')
 
     def test_dashboard_cuenta_trabajadores_con_sctr_efectivo(self):
         hoy = date.today()
@@ -152,8 +152,8 @@ class DashboardViewTests(TestCase):
 
         response = self.client.get(reverse('app_control:dashboard'))
 
-        self.assertEqual(response.context['trabajadores_sctr_salud'], 1)
-        self.assertEqual(response.context['trabajadores_sctr_pension'], 1)
+        self.assertEqual(response.context['trabajadores_sctr_salud'], 2)
+        self.assertEqual(response.context['trabajadores_sctr_pension'], 2)
         self.assertEqual(response.context['trabajadores_sin_sctr_salud'], 1)
         self.assertEqual(response.context['trabajadores_sin_sctr_pension'], 1)
         self.assertEqual(response.context['sctr_salud_proximos_vencer'], 1)
@@ -189,7 +189,7 @@ class DashboardViewTests(TestCase):
         self.assertEqual(cursos[CursoTipo.CALIENTE], 1)
         self.assertEqual(cursos[CursoTipo.ALTURA], 1)
         self.assertEqual(cursos[CursoTipo.ELECTRICO], 0)
-        self.assertContains(response, 'Cursos vigentes por tipo')
+        self.assertContains(response, 'Cursos')
 
     def test_usuario_garita_no_puede_ver_reportes(self):
         self.user.role = User.GARITA
@@ -318,7 +318,6 @@ class DashboardViewTests(TestCase):
         self.assertNotContains(response, self.trabajador.dni)
 
     def test_lista_y_detalle_muestran_habilitacion_efectiva(self):
-        self.assertTrue(self.trabajador.habilitado)
         self.assertFalse(self.trabajador.habilitado_efectivo)
 
         self.user.role = User.BECA_AZUL
@@ -336,7 +335,7 @@ class DashboardViewTests(TestCase):
         )
 
         self.assertContains(response, 'No habilitado')
-        self.assertContains(response, 'Deshabilitar')
+        self.assertNotContains(response, 'Deshabilitar')
 
     def test_validacion_individual_sctr_es_requisito_y_solo_beca_azul_puede_cambiarla(self):
         hoy = date.today()
@@ -391,6 +390,10 @@ class DashboardViewTests(TestCase):
                 settings.NOTIFICACIONES_EMAIL_ADICIONAL,
             )))),
         )
+        html = mail.outbox[0].alternatives[0][0]
+        self.assertIn('Número de documento', html)
+        self.assertIn(self.trabajador.dni, html)
+        self.assertIn('Habilitado', html)
 
         Certificado.objects.filter(empresa=self.empresa, tipo=Certificado.SCTR_PENSION).update(fecha_vencimiento=hoy - timedelta(days=1))
         self.client.post(pension_url, {'validado': '0'})
@@ -439,133 +442,9 @@ class DashboardViewTests(TestCase):
         )
         self.assertFalse(Trabajador.objects.get(pk=self.trabajador.pk).sctr_pension_validado)
 
-    def test_no_se_puede_habilitar_sin_las_dos_validaciones_individuales_sctr(self):
-        hoy = date.today()
-        self.empresa.sctr_pension_aprobado = True
-        self.empresa.sctr_salud_aprobado = True
-        self.empresa.homologacion = True
-        self.empresa.save(update_fields=['sctr_pension_aprobado', 'sctr_salud_aprobado', 'homologacion'])
-        for tipo in (Certificado.SCTR_PENSION, Certificado.SCTR_SALUD, Certificado.HOMOLOGACION):
-            Certificado.objects.create(
-                empresa=self.empresa,
-                tipo=tipo,
-                fecha_emision=hoy - timedelta(days=1),
-                fecha_vencimiento=hoy + timedelta(days=30),
-                archivo=SimpleUploadedFile(f'{tipo.lower()}_habilitacion.pdf', b'%PDF-1.4 test'),
-            )
-        for tipo in (Certificado.INDUCCION, Certificado.APTITUD_MEDICA):
-            Certificado.objects.create(
-                trabajador=self.trabajador,
-                tipo=tipo,
-                fecha_emision=hoy - timedelta(days=1),
-                fecha_vencimiento=hoy + timedelta(days=30),
-                archivo=SimpleUploadedFile(f'{tipo.lower()}_habilitacion.pdf', b'%PDF-1.4 test'),
-                validado=True,
-            )
-        self.trabajador.habilitado = False
-        self.trabajador.save(update_fields=['habilitado'])
-        self.user.role = User.BECA_AZUL
-        self.user.save(update_fields=['role'])
-
-        response = self.client.post(
-            reverse('app_control:trabajador_habilitado_toggle', args=[self.trabajador.pk]),
-            follow=True,
-        )
-
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'validación individual del SCTR pensión')
-        self.assertContains(response, 'validación individual del SCTR salud')
-        trabajador = Trabajador.objects.get(pk=self.trabajador.pk)
-        self.assertFalse(trabajador.habilitado)
-
-    @override_settings(NOTIFICACIONES_EMAIL_ADICIONAL='roberthbardales@gmail.com')
-    def test_habilitar_trabajador_envia_correo_a_empresa_noreply_y_adicional(self):
-        hoy = date.today()
-        self.empresa.sctr_pension_aprobado = True
-        self.empresa.sctr_salud_aprobado = True
-        self.empresa.homologacion = True
-        self.empresa.save(update_fields=['sctr_pension_aprobado', 'sctr_salud_aprobado', 'homologacion'])
-        for tipo in (Certificado.SCTR_PENSION, Certificado.SCTR_SALUD, Certificado.HOMOLOGACION):
-            Certificado.objects.create(
-                empresa=self.empresa,
-                tipo=tipo,
-                fecha_emision=hoy - timedelta(days=1),
-                fecha_vencimiento=hoy + timedelta(days=30),
-                archivo=SimpleUploadedFile(f'{tipo.lower()}_correo.pdf', b'%PDF-1.4 test'),
-            )
-        for tipo in (Certificado.INDUCCION, Certificado.APTITUD_MEDICA):
-            Certificado.objects.create(
-                trabajador=self.trabajador,
-                tipo=tipo,
-                fecha_emision=hoy - timedelta(days=1),
-                fecha_vencimiento=hoy + timedelta(days=30),
-                archivo=SimpleUploadedFile(f'{tipo.lower()}_correo.pdf', b'%PDF-1.4 test'),
-                validado=True,
-            )
-        self.trabajador.habilitado = False
-        self.trabajador.sctr_pension_validado = True
-        self.trabajador.sctr_salud_validado = True
-        self.trabajador.save(update_fields=['habilitado', 'sctr_pension_validado', 'sctr_salud_validado'])
-        self.user.role = User.BECA_AZUL
-        self.user.save(update_fields=['role'])
-
-        response = self.client.post(
-            reverse('app_control:trabajador_habilitado_toggle', args=[self.trabajador.pk]),
-        )
-
-        self.assertRedirects(response, reverse('app_control:trabajador_detalle', args=[self.trabajador.pk]))
-        self.assertTrue(Trabajador.objects.get(pk=self.trabajador.pk).habilitado)
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(
-            mail.outbox[0].to,
-            ['principal@example.com', 'noreply.beca.azul@gmail.com', 'roberthbardales@gmail.com'],
-        )
-        self.assertIn('Ana Prueba', mail.outbox[0].body)
-
-    @patch('applications.control.views.send_mail', side_effect=OSError('SMTP no disponible'))
-    def test_fallo_de_correo_no_revierte_habilitacion_del_trabajador(self, enviar_correo):
-        hoy = date.today()
-        self.empresa.sctr_pension_aprobado = True
-        self.empresa.sctr_salud_aprobado = True
-        self.empresa.homologacion = True
-        self.empresa.save(update_fields=['sctr_pension_aprobado', 'sctr_salud_aprobado', 'homologacion'])
-        for tipo in (Certificado.SCTR_PENSION, Certificado.SCTR_SALUD, Certificado.HOMOLOGACION):
-            Certificado.objects.create(
-                empresa=self.empresa,
-                tipo=tipo,
-                fecha_emision=hoy - timedelta(days=1),
-                fecha_vencimiento=hoy + timedelta(days=30),
-                archivo=SimpleUploadedFile(f'{tipo.lower()}_smtp.pdf', b'%PDF-1.4 test'),
-            )
-        for tipo in (Certificado.INDUCCION, Certificado.APTITUD_MEDICA):
-            Certificado.objects.create(
-                trabajador=self.trabajador,
-                tipo=tipo,
-                fecha_emision=hoy - timedelta(days=1),
-                fecha_vencimiento=hoy + timedelta(days=30),
-                archivo=SimpleUploadedFile(f'{tipo.lower()}_smtp.pdf', b'%PDF-1.4 test'),
-                validado=True,
-            )
-        self.trabajador.habilitado = False
-        self.trabajador.sctr_pension_validado = True
-        self.trabajador.sctr_salud_validado = True
-        self.trabajador.save(update_fields=['habilitado', 'sctr_pension_validado', 'sctr_salud_validado'])
-        self.user.role = User.BECA_AZUL
-        self.user.save(update_fields=['role'])
-
-        response = self.client.post(
-            reverse('app_control:trabajador_habilitado_toggle', args=[self.trabajador.pk]),
-            follow=True,
-        )
-
-        self.assertTrue(Trabajador.objects.get(pk=self.trabajador.pk).habilitado)
-        self.assertContains(response, 'El trabajador fue habilitado, pero no se pudo enviar la notificación')
-        enviar_correo.assert_called_once()
-
     def test_grafica_agrupa_trabajadores_por_estado_e_incluye_inactivos(self):
         self.trabajador.activo = False
-        self.trabajador.habilitado = False
-        self.trabajador.save(update_fields=['activo', 'habilitado'])
+        self.trabajador.save(update_fields=['activo'])
 
         response = self.client.get(reverse('app_control:dashboard'))
         estados = response.context['dashboard_charts']['trabajadores_empresa']
@@ -577,10 +456,10 @@ class DashboardViewTests(TestCase):
     def test_grafica_agrupa_trabajadores_activos_por_empresa_y_estado(self):
         otra_empresa = Empresa.objects.create(nombre='Empresa secundaria', ruc='20987654321', correo='secundaria@example.com')
         Trabajador.objects.create(
-            empresa=self.empresa, dni='22345678', nombres='Luis', apellidos='Prueba', habilitado=False,
+            empresa=self.empresa, dni='22345678', nombres='Luis', apellidos='Prueba',
         )
         Trabajador.objects.create(
-            empresa=otra_empresa, dni='32345678', nombres='Marta', apellidos='Prueba', habilitado=False,
+            empresa=otra_empresa, dni='32345678', nombres='Marta', apellidos='Prueba',
         )
         Trabajador.objects.create(
             empresa=otra_empresa, dni='42345678', nombres='Rosa', apellidos='Prueba', activo=False,
@@ -593,9 +472,67 @@ class DashboardViewTests(TestCase):
         self.assertEqual(estados['habilitados'], [0, 0])
         self.assertEqual(estados['inhabilitados'], [2, 2])
 
+    def test_grafica_mensual_muestra_acumulado_por_estado_en_ultimos_meses_con_registros(self):
+        from ..models import EstadoTrabajadorHistorico
+        self.trabajador.registrar_estado_historico()
+        response = self.client.get(reverse('app_control:dashboard'))
+        mensual = response.context['dashboard_charts']['trabajadores_mensual']
+
+        self.assertEqual(len(mensual['labels']), 1)
+        self.assertEqual(mensual['habilitados'], [0])
+        self.assertEqual(mensual['inhabilitados'], [1])
+
+    def test_historial_guarda_cambios_y_dashboard_usa_estado_al_cierre(self):
+        from django.utils import timezone
+        from ..models import EstadoTrabajadorHistorico
+
+        hoy = timezone.localdate()
+        inicio_mes = timezone.make_aware(timezone.datetime(hoy.year, hoy.month, 1))
+        inicio_mes_anterior = inicio_mes - timedelta(days=1)
+        inicio_mes_anterior = inicio_mes_anterior.replace(day=1)
+        tz = timezone.get_current_timezone()
+        EstadoTrabajadorHistorico.objects.create(
+            trabajador=self.trabajador,
+            estado=EstadoTrabajadorHistorico.Estado.NO_HABILITADO,
+            vigente_desde=timezone.make_aware(timezone.datetime(
+                inicio_mes_anterior.year, inicio_mes_anterior.month, 1
+            ), tz),
+        )
+        self.trabajador.activo = False
+        self.trabajador.save(update_fields=['activo'])
+        self.trabajador.activo = True
+        self.trabajador.save(update_fields=['activo'])
+        EstadoTrabajadorHistorico.objects.create(
+            trabajador=self.trabajador,
+            estado=EstadoTrabajadorHistorico.Estado.DESACTIVADO,
+            vigente_desde=timezone.make_aware(timezone.datetime(
+                inicio_mes_anterior.year, inicio_mes_anterior.month, 20
+            ), tz),
+        )
+        from django.db.models import F
+        EstadoTrabajadorHistorico.objects.filter(
+            trabajador=self.trabajador,
+            estado=EstadoTrabajadorHistorico.Estado.NO_HABILITADO,
+            vigente_desde__gt=inicio_mes,
+        ).update(vigente_desde=F('vigente_desde') + timedelta(days=30))
+        EstadoTrabajadorHistorico.objects.create(
+            trabajador=self.trabajador,
+            estado=EstadoTrabajadorHistorico.Estado.NO_HABILITADO,
+            vigente_desde=inicio_mes,
+        )
+        EstadoTrabajadorHistorico.objects.create(
+            trabajador=self.trabajador,
+            estado=EstadoTrabajadorHistorico.Estado.NO_HABILITADO,
+            vigente_desde=inicio_mes + timedelta(seconds=1),
+        )
+
+        response = self.client.get(reverse('app_control:dashboard'))
+        mensual = response.context['dashboard_charts']['trabajadores_mensual']
+
+        self.assertEqual(mensual['inhabilitados'][-1], 1)
+        self.assertEqual(mensual['inhabilitados'][0], 0)
+
     def test_dashboard_cuenta_trabajadores_no_habilitados(self):
-        self.trabajador.habilitado = False
-        self.trabajador.save(update_fields=['habilitado'])
         Trabajador.objects.create(
             empresa=self.empresa,
             dni='98765432',
@@ -608,39 +545,7 @@ class DashboardViewTests(TestCase):
 
         self.assertEqual(response.context['total_trabajadores'], 2)
         self.assertEqual(response.context['trabajadores_habilitados'], 0)
-        self.assertEqual(response.context['trabajadores_no_habilitados'], 1)
-        self.assertEqual(response.context['trabajadores_desactivados'], 1)
-
-    def test_beca_azul_puede_alternar_estado_habilitado(self):
-        user = User.objects.create_user(
-            email='beca@example.com',
-            password='test-password',
-            first_name='Beca',
-            last_name='Azul',
-            role=User.BECA_AZUL,
-        )
-        self.client.force_login(user)
-
-        response = self.client.post(
-            reverse('app_control:trabajador_habilitado_toggle', args=[self.trabajador.pk]),
-            {},
-        )
-
-        self.assertRedirects(response, reverse('app_control:trabajador_detalle', args=[self.trabajador.pk]))
-        self.trabajador.refresh_from_db()
-        self.assertFalse(self.trabajador.habilitado)
-
-    def test_usuario_no_beca_azul_no_puede_alternar_estado_habilitado(self):
-        self.client.force_login(self.user)
-
-        response = self.client.post(
-            reverse('app_control:trabajador_habilitado_toggle', args=[self.trabajador.pk]),
-        )
-
-        self.assertEqual(response.status_code, 403)
-        self.trabajador.refresh_from_db()
-        self.assertTrue(self.trabajador.habilitado)
-
+        self.assertEqual(response.context['trabajadores_no_habilitados'], 2)
 
 class TrabajadorEmpresaCreateViewTests(TestCase):
     def test_usuario_empresa_no_puede_editar_trabajador_desactivado(self):
@@ -758,7 +663,8 @@ class TrabajadorEmpresaCreateViewTests(TestCase):
         self.assertEqual(tipo_contenido, 'text/html')
         self.assertIn('<table', contenido_html)
         self.assertIn(empresa.nombre, contenido_html)
-        self.assertNotIn(trabajador.dni, contenido_html)
+        self.assertIn('Número de documento', contenido_html)
+        self.assertIn(trabajador.dni, contenido_html)
 
     @patch('applications.control.views.send_mail', side_effect=OSError('SMTP no disponible'))
     def test_fallo_de_correo_muestra_advertencia_sin_cancelar_registro(self, enviar_correo):

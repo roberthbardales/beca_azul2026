@@ -12,12 +12,12 @@ from model_utils.models import TimeStampedModel
 
 
 class CursoTipo(models.TextChoices):
-    CALIENTE = 'CALIENTE', 'T. Caliente.'
-    ALTURA = 'ALTURA', 'T. Altura.'
-    ESPACIO_CONFINADO = 'ESPACIO_CONFINADO', 'T. Esp. Confinado.'
-    ELECTRICO = 'ELECTRICO', 'T. Eléctricos.'
-    EXCAVACION = 'EXCAVACION', 'T. Exca./ Perf'
-    IZAJE = 'IZAJE', 'T. de izaje.'
+    CALIENTE = 'CALIENTE', 'Trab. en Caliente'
+    ALTURA = 'ALTURA', 'Trab. en Altura'
+    ESPACIO_CONFINADO = 'ESPACIO_CONFINADO', 'Trab. Esp. Confinado'
+    ELECTRICO = 'ELECTRICO', 'Trab. Eléctrico'
+    EXCAVACION = 'EXCAVACION', 'Trab. Exca/Perfo'
+    IZAJE = 'IZAJE', 'Trab. de Izaje'
 
 
 class CertificadoTipo(models.TextChoices):
@@ -76,6 +76,9 @@ class Empresa(TimeStampedModel):
     def __str__(self):
         return self.nombre
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
     def _certificado_vigente(self, tipo, attr_name):
         certificado = self._certificado(tipo, attr_name)
         return bool(certificado and certificado.esta_vigente)
@@ -120,6 +123,30 @@ class Empresa(TimeStampedModel):
     def sctr_salud_estado(self):
         return self._certificado_estado(CertificadoTipo.SCTR_SALUD, 'sctr_salud_certificados', self.sctr_salud_aprobado)
 
+    def invalidar_aprobaciones_certificados_no_vigentes(self):
+        """Retira aprobaciones cuando falta un documento vigente y disponible."""
+        cambios = []
+        for tipo, campo in (
+            (CertificadoTipo.SCTR_PENSION, 'sctr_pension_aprobado'),
+            (CertificadoTipo.SCTR_SALUD, 'sctr_salud_aprobado'),
+        ):
+            certificado = self._certificado(tipo, {
+                CertificadoTipo.SCTR_PENSION: 'sctr_pension_certificados',
+                CertificadoTipo.SCTR_SALUD: 'sctr_salud_certificados',
+            }[tipo])
+            if getattr(self, campo) and not (certificado and certificado.esta_vigente):
+                setattr(self, campo, False)
+                cambios.append(campo)
+                campo_trabajador = 'sctr_pension_validado' if tipo == CertificadoTipo.SCTR_PENSION else 'sctr_salud_validado'
+                self.trabajadores.filter(**{campo_trabajador: True}).update(**{campo_trabajador: False})
+        if cambios:
+            update_values = {campo: False for campo in cambios}
+            if any(campo in cambios for campo in ('sctr_pension_aprobado', 'sctr_salud_aprobado')):
+                update_values['homologacion'] = False
+                self.homologacion = False
+            type(self).objects.filter(pk=self.pk).update(**update_values)
+        return bool(cambios)
+
     @cached_property
     def homologacion_vigente(self):
         return self._certificado_vigente(CertificadoTipo.HOMOLOGACION, 'homologacion_certificados')
@@ -131,6 +158,10 @@ class Empresa(TimeStampedModel):
     def invalidar_homologacion_si_corresponde(self):
         homologacion_valida = (
             self.homologacion_vigente
+            and self.sctr_pension_aprobado
+            and self._certificado_vigente(CertificadoTipo.SCTR_PENSION, 'sctr_pension_certificados')
+            and self.sctr_salud_aprobado
+            and self._certificado_vigente(CertificadoTipo.SCTR_SALUD, 'sctr_salud_certificados')
         )
         if self.homologacion and not homologacion_valida:
             type(self).objects.filter(pk=self.pk, homologacion=True).update(homologacion=False)
@@ -147,14 +178,21 @@ class Empresa(TimeStampedModel):
 
     @classmethod
     def sincronizar_homologaciones(cls):
-        empresas = cls.objects.filter(homologacion=True).prefetch_related(
+        empresas = cls.objects.filter(
+            Q(homologacion=True) | Q(sctr_pension_aprobado=True) | Q(sctr_salud_aprobado=True)
+        ).prefetch_related(
             Prefetch(
                 'certificados',
-                queryset=Certificado.objects.filter(tipo=CertificadoTipo.HOMOLOGACION),
-                to_attr='homologacion_certificados',
+                queryset=Certificado.objects.filter(tipo__in=(
+                    CertificadoTipo.HOMOLOGACION,
+                    CertificadoTipo.SCTR_PENSION,
+                    CertificadoTipo.SCTR_SALUD,
+                )),
+                to_attr='certificados_habilitacion',
             )
         )
         for empresa in empresas:
+            empresa.invalidar_aprobaciones_certificados_no_vigentes()
             empresa.invalidar_homologacion_si_corresponde()
 
     def clean(self):
@@ -165,6 +203,25 @@ class Empresa(TimeStampedModel):
             raise ValidationError({'sctr_salud_aprobado': 'El SCTR salud aprobado debe tener un certificado vigente.'})
         if self.homologacion and not self.homologacion_vigente:
             raise ValidationError({'homologacion': 'La homologacion aprobada debe tener un certificado vigente.'})
+
+class EstadoTrabajadorHistorico(models.Model):
+    class Estado(models.TextChoices):
+        HABILITADO = 'HABILITADO', 'Habilitado'
+        NO_HABILITADO = 'NO_HABILITADO', 'No habilitado'
+        DESACTIVADO = 'DESACTIVADO', 'Desactivado'
+
+    trabajador = models.ForeignKey('control.Trabajador', on_delete=models.CASCADE, related_name='historial_estados')
+    estado = models.CharField(max_length=20, choices=Estado.choices)
+    vigente_desde = models.DateTimeField(default=timezone.now, db_index=True)
+
+    class Meta:
+        ordering = ('vigente_desde', 'pk')
+        verbose_name = 'Historial de estado de trabajador'
+        verbose_name_plural = 'Historial de estados de trabajadores'
+
+    def __str__(self):
+        return f'{self.trabajador}: {self.get_estado_display()} desde {self.vigente_desde}'
+
 
 class Trabajador(TimeStampedModel):
     DNI = TipoDocumento.DNI
@@ -179,7 +236,6 @@ class Trabajador(TimeStampedModel):
     apellidos = models.CharField(max_length=150)
     cargo = models.CharField(max_length=150, blank=True)
 
-    habilitado = models.BooleanField(default=True, db_index=True)
     activo = models.BooleanField(default=True)
     sctr_pension_validado = models.BooleanField(default=False)
     sctr_salud_validado = models.BooleanField(default=False)
@@ -204,8 +260,7 @@ class Trabajador(TimeStampedModel):
             if certificado.tipo == CertificadoTipo.CURSOS
         }
         return bool(
-            self.habilitado
-            and self.activo
+            self.activo
             and empresa.activo
             and empresa.homologacion
             and empresa.sctr_pension_aprobado
@@ -233,6 +288,26 @@ class Trabajador(TimeStampedModel):
 
     def __str__(self):
         return f'{self.nombres} {self.apellidos}'
+
+    def registrar_estado_historico(self):
+        if not self.pk:
+            return None
+        estado = (
+            EstadoTrabajadorHistorico.Estado.DESACTIVADO if not self.activo else
+            EstadoTrabajadorHistorico.Estado.HABILITADO if self.habilitado_efectivo else
+            EstadoTrabajadorHistorico.Estado.NO_HABILITADO
+        )
+        ultimo = self.historial_estados.order_by('-vigente_desde', '-pk').first()
+        if ultimo and ultimo.estado == estado:
+            return ultimo
+        vigente_desde = timezone.now()
+        if ultimo and vigente_desde <= ultimo.vigente_desde:
+            vigente_desde = ultimo.vigente_desde + timedelta(microseconds=1)
+        return EstadoTrabajadorHistorico.objects.create(
+            trabajador=self,
+            estado=estado,
+            vigente_desde=vigente_desde,
+        )
 
     def limpiar_validaciones_sctr_invalidas(self):
         if not self.pk:
@@ -528,6 +603,36 @@ class Certificado(TimeStampedModel):
         if self.pk:
             anterior = Certificado.objects.get(pk=self.pk)
             archivo_anterior = anterior.archivo.name
+            tipo_anterior = anterior.tipo
+            empresa_anterior_id = anterior.empresa_id
+            if empresa_anterior_id and tipo_anterior in (
+                self.SCTR_PENSION, self.SCTR_SALUD, self.HOMOLOGACION
+            ):
+                campos = {
+                    self.SCTR_PENSION: ('sctr_pension_aprobado',),
+                    self.SCTR_SALUD: ('sctr_salud_aprobado',),
+                    self.HOMOLOGACION: ('homologacion',),
+                }[tipo_anterior]
+                documento_actualizado = (
+                    self.tipo != anterior.tipo
+                    or self.empresa_id != anterior.empresa_id
+                    or self.fecha_emision != anterior.fecha_emision
+                    or self.fecha_vencimiento != anterior.fecha_vencimiento
+                    or self.archivo.name != anterior.archivo.name
+                )
+                if documento_actualizado:
+                    Empresa.objects.filter(pk=empresa_anterior_id).update(
+                        **{campo: False for campo in campos}
+                    )
+                if self.empresa_id and self.tipo in (
+                    self.SCTR_PENSION, self.SCTR_SALUD, self.HOMOLOGACION
+                ) and documento_actualizado and self.empresa_id != empresa_anterior_id:
+                    nuevo_campo = {
+                        self.SCTR_PENSION: 'sctr_pension_aprobado',
+                        self.SCTR_SALUD: 'sctr_salud_aprobado',
+                        self.HOMOLOGACION: 'homologacion',
+                    }[self.tipo]
+                    Empresa.objects.filter(pk=self.empresa_id).update(**{nuevo_campo: False})
             if (
                 self.trabajador_id
                 and self.tipo in (self.INDUCCION, self.APTITUD_MEDICA, self.CURSOS)

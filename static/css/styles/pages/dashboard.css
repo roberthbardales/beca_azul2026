@@ -1,4 +1,7 @@
 .dashboard-page { width: 100%; max-width: 100rem; margin-inline: auto; }
+.dashboard-page > section[aria-labelledby="dashboard-summary-title"] > h2 { transform: translateY(-8px); }
+.dashboard-page > section[aria-labelledby="metric-cursos-title"] > h2 { transform: translateY(-8px); }
+.dashboard-page > section[aria-labelledby="dashboard-charts-title"] > h2 { transform: translateY(-8px); }
 .dashboard-metrics { grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)) !important; justify-content: start; }
 .dashboard-course-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .dashboard-course-metrics .dashboard-metric { min-width: 0; }
@@ -15,6 +18,87 @@
 .dashboard-summary-negative { color: #dc2626; }
 .dashboard-summary-neutral { color: #64748b; }
 .dashboard-summary-warning { color: #b45309; }
+.dashboard-summary-companies, .dashboard-summary-card { position: relative; overflow: hidden; border-color: #dbeafe !important; border-top: 3px solid #0f6fc6 !important; padding: 4px .9rem .9rem !important; }
+.dashboard-summary-companies, .dashboard-summary-card { padding: 4px 8px !important; }
+.dashboard-summary-companies, .dashboard-summary-card { padding-top: 4px !important; }
+.dashboard-course-metrics .dashboard-summary-card { min-height: 60px !important; padding: 0 8px !important; }
+.dashboard-course-metrics .dashboard-summary-metric { min-height: 60px !important; }
+.dashboard-companies-heading { display: flex; align-items: center; gap: .6rem; }
+.dashboard-summary-companies .dashboard-companies-heading .dashboard-companies-total { position: static; display: block; flex: 0 0 auto; width: auto; min-width: 2.5rem; margin: 0 .2rem 0 auto !important; overflow: visible; font-size: 1.6rem !important; line-height: 1.8rem !important; text-align: right; white-space: nowrap; }
+.dashboard-summary-companies:not(.dashboard-summary-workers) .dashboard-companies-heading .dashboard-companies-total { margin-right: 0 !important; }
+.dashboard-companies-heading h2 { margin: 0; }
+.dashboard-summary-card .dashboard-companies-heading h2,
+.dashboard-summary-card .dashboard-companies-heading h3,
+.dashboard-summary-card > .dashboard-course-title { width: 100%; text-align: center; }
+.dashboard-companies-icon { display: grid; width: 2.25rem; height: 2.25rem; flex: 0 0 auto; place-items: center; border-radius: .65rem; background: #eff6ff; color: #0f6fc6; }
+.dashboard-companies-icon svg { width: 1.3rem; height: 1.3rem; }
+.dashboard-summary-companies > .dashboard-companies-heading > .dashboard-companies-icon { width: 1.6rem !important; height: 1.6rem !important; }
+.dashboard-summary-companies > .dashboard-companies-heading > .dashboard-companies-icon svg { width: 1.2rem !important; height: 1.2rem !important; }
+.dashboard-summary-workers > .dashboard-companies-heading > .dashboard-companies-icon { width: 1.6rem !important; height: 1.6rem !important; }
+.dashboard-summary-workers > .dashboard-companies-heading > .dashboard-companies-icon svg { width: 1.2rem !important; height: 1.2rem !important; }
+.dashboard-summary-companies .dashboard-card-content, .dashboard-summary-card .dashboard-card-content { grid-template-columns: minmax(3.5rem, .65fr) minmax(0, 1.35fr); gap: .7rem; margin-top: .8rem; align-items: start; }
+.dashboard-summary-card .dashboard-card-content { display: block; margin-top: .8rem; }
+.dashboard-page article[aria-labelledby="metric-inducciones"],
+.dashboard-page article[aria-labelledby="metric-aptitudes-medicas"],
+.dashboard-page article[aria-labelledby="metric-sctr-salud"],
+.dashboard-page article[aria-labelledby="metric-sctr-pension"] { min-height: 0 !important; padding: 0 8px !important; }
+.dashboard-page article[aria-labelledby="metric-empresas"],
+.dashboard-page article[aria-labelledby="metric-trabajadores"] { padding: 0 8px 4px !important; }
+.dashboard-page article[aria-labelledby="metric-empresas"] .dashboard-card-content,
+.dashboard-page article[aria-labelledby="metric-trabajadores"] .dashboard-card-content { position: relative; top: -5px; margin-top: 0 !important; }
+.dashboard-page article[aria-labelledby="metric-empresas"] .dashboard-summary-statuses,
+.dashboard-page article[aria-labelledby="metric-trabajadores"] .dashboard-summary-statuses { gap: .1rem; }
+.dashboard-page article[aria-labelledby="metric-trabajadores"] { min-height: 0; }
+.dashboard-page article[aria-labelledby="metric-inducciones"] .dashboard-companies-heading,
+.dashboard-page article[aria-labelledby="metric-aptitudes-medicas"] .dashboard-companies-heading,
+.dashboard-page article[aria-labelledby="metric-sctr-salud"] .dashboard-companies-heading,
+.dashboard-page article[aria-labelledby="metric-sctr-pension"] .dashboard-companies-heading { transform: translateY(-2px); }
+.dashboard-page article[aria-labelledby="metric-inducciones"] .dashboard-card-content,
+.dashboard-page article[aria-labelledby="metric-aptitudes-medicas"] .dashboard-card-content,
+.dashboard-page article[aria-labelledby="metric-sctr-salud"] .dashboard-card-content,
+.dashboard-page article[aria-labelledby="metric-sctr-pension"] .dashboard-card-content { position: relative; top: -5px; margin-top: 0 !important; }
+.dashboard-page article[aria-labelledby="metric-inducciones"] .dashboard-card-content,
+.dashboard-page article[aria-labelledby="metric-aptitudes-medicas"] .dashboard-card-content,
+.dashboard-page article[aria-labelledby="metric-sctr-salud"] .dashboard-card-content,
+.dashboard-page article[aria-labelledby="metric-sctr-pension"] .dashboard-card-content { top: -12px; }
+.dashboard-page article[aria-labelledby="metric-inducciones"] .dashboard-company-status,
+.dashboard-page article[aria-labelledby="metric-aptitudes-medicas"] .dashboard-company-status,
+.dashboard-page article[aria-labelledby="metric-sctr-salud"] .dashboard-company-status,
+.dashboard-page article[aria-labelledby="metric-sctr-pension"] .dashboard-company-status { padding-block: 0; line-height: .85rem; }
+.dashboard-course-metrics .dashboard-summary-card .dashboard-course-title { display: block; width: 100%; min-height: 1rem; margin: 0; transform: none; line-height: 1rem; text-align: center; }
+.dashboard-course-metrics .dashboard-summary-card .dashboard-card-content { position: relative; top: 0; margin-top: 4px !important; margin-bottom: 0; }
+.dashboard-course-metrics .dashboard-summary-card .dashboard-summary-statuses { gap: .5px; }
+.dashboard-course-metrics .dashboard-summary-card .dashboard-company-status { padding-block: 0; line-height: .85rem; }
+.dashboard-course-metrics .dashboard-summary-card { padding-top: 4px !important; padding-bottom: 0 !important; }
+.dashboard-page article[aria-labelledby="metric-inducciones"] .dashboard-summary-statuses,
+.dashboard-page article[aria-labelledby="metric-aptitudes-medicas"] .dashboard-summary-statuses,
+.dashboard-page article[aria-labelledby="metric-sctr-salud"] .dashboard-summary-statuses,
+.dashboard-page article[aria-labelledby="metric-sctr-pension"] .dashboard-summary-statuses { gap: .5px; }
+.dashboard-page > section[aria-labelledby="dashboard-summary-title"] .dashboard-summary-metric { min-height: 0 !important; padding: 0 8px !important; }
+.dashboard-page > section[aria-labelledby="dashboard-summary-title"] .dashboard-summary-companies { padding-top: 0 !important; }
+.dashboard-page > section[aria-labelledby="dashboard-summary-title"] .dashboard-summary-card { padding-bottom: 0 !important; }
+.dashboard-page > section[aria-labelledby="dashboard-summary-title"] .dashboard-companies-heading { transform: translateY(-8px); }
+.dashboard-page > section[aria-labelledby="dashboard-summary-title"] .dashboard-card-content { position: relative; top: -12px; margin-top: 0 !important; }
+.dashboard-page > section[aria-labelledby="dashboard-summary-title"] .dashboard-card-content { margin-bottom: -12px; }
+.dashboard-page > section[aria-labelledby="dashboard-summary-title"] .dashboard-summary-statuses { gap: .5px; }
+.dashboard-page > section[aria-labelledby="dashboard-summary-title"] .dashboard-company-status { padding-block: 0; line-height: .85rem; }
+.dashboard-summary-companies .dashboard-companies-total, .dashboard-summary-card .dashboard-companies-total { color: #0f172a; font-size: 2rem !important; line-height: 2.25rem !important; }
+.dashboard-summary-companies .dashboard-summary-statuses, .dashboard-summary-card .dashboard-summary-statuses { gap: .35rem; }
+.dashboard-summary-companies .dashboard-summary-statuses { width: 100%; min-width: 0; }
+.dashboard-summary-companies .dashboard-card-content { display: block; min-width: 0; margin-top: .8rem; }
+.dashboard-summary-companies .dashboard-company-status { flex-wrap: nowrap; white-space: nowrap; }
+.dashboard-summary-companies .dashboard-company-status span { flex: 1 1 auto; white-space: nowrap; }
+.dashboard-page > section:first-of-type .dashboard-company-status,
+.dashboard-page > section[aria-labelledby="metric-cursos-title"] .dashboard-company-status { font-size: .8rem; line-height: 1.1rem; }
+.dashboard-page > section:first-of-type .dashboard-company-status strong,
+.dashboard-page > section[aria-labelledby="metric-cursos-title"] .dashboard-company-status strong { font-size: .8rem; }
+.dashboard-company-status { display: flex; min-width: 0; align-items: center; justify-content: space-between; gap: .5rem; padding: 2px .45rem; border-radius: .4rem; font-size: .7rem; font-weight: 600; line-height: 1rem; }
+.dashboard-company-status span { min-width: 0; }
+.dashboard-company-status strong { flex: 0 0 auto; font-size: .72rem; font-variant-numeric: tabular-nums; }
+.dashboard-company-status--positive { background: #f0fdf4; color: #15803d; }
+.dashboard-company-status--negative { background: #fef2f2; color: #b91c1c; }
+.dashboard-company-status--neutral { background: #f1f5f9; color: #475569; }
+.dashboard-company-status--warning { background: #fffbeb; color: #b45309; }
 .dashboard-metric .bg-green-100 { background: var(--success-50) !important; color: var(--success-700) !important; }
 .dashboard-metric .bg-red-50 { background: var(--danger-50) !important; color: var(--danger-700) !important; }
 .dashboard-metric .bg-blue-100 { color: var(--primary-600) !important; }
@@ -39,8 +123,8 @@
 
 .dashboard-doughnut-layout { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
 .dashboard-doughnut-canvas { width: 11rem; height: 11rem; }
-.dashboard-chart-legend { display: grid; width: 100%; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .5rem; }
-.dashboard-chart-legend-item { display: grid; min-width: 0; grid-template-columns: auto minmax(0, 1fr); grid-template-rows: auto auto; align-items: center; justify-content: center; gap: .3rem .35rem; padding: .55rem .25rem; border: 1px solid var(--ink-200); border-radius: .5rem; text-align: center; }
+.dashboard-chart-legend { display: grid; width: 100%; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); gap: .5rem; }
+.dashboard-chart-legend-item { display: grid; min-width: 0; grid-template-columns: auto minmax(0, 1fr); grid-template-rows: auto auto; align-items: center; justify-content: center; gap: .3rem .45rem; padding: .65rem .45rem; border: 1px solid var(--ink-200); border-radius: .5rem; text-align: left; }
 .dashboard-chart-legend-dot { width: .65rem; height: .65rem; border-radius: 9999px; }
 .dashboard-chart-legend-label { min-width: 0; color: #475569; font-size: .72rem; font-weight: 600; line-height: 1rem; overflow-wrap: anywhere; }
 .dashboard-chart-legend-value { grid-column: 1 / -1; color: #0f172a; font-size: .78rem; font-weight: 700; font-variant-numeric: tabular-nums; }

@@ -2,7 +2,7 @@
     var dataElement = document.getElementById('dashboard-charts-data');
     if (!dataElement) return;
 
-    var chartIds = ['estado-cumplimiento', 'trabajadores-por-empresa'];
+    var chartIds = ['estado-cumplimiento', 'trabajadores-por-empresa', 'vencimientos-por-empresa', 'trabajadores-mensual'];
 
     function showChartError(message) {
         chartIds.forEach(function (id) {
@@ -36,11 +36,24 @@
         showChartError('No hay datos válidos para generar las gráficas.');
         return;
     }
+    if (!data.vencimientos_empresa || !Array.isArray(data.vencimientos_empresa.labels) ||
+            !Array.isArray(data.vencimientos_empresa.vigentes) ||
+            !Array.isArray(data.vencimientos_empresa.proximos) ||
+            !Array.isArray(data.vencimientos_empresa.vencidos)) {
+        showChartError('No hay datos válidos para generar las gráficas.');
+        return;
+    }
+    if (!data.trabajadores_mensual || !Array.isArray(data.trabajadores_mensual.labels) ||
+            !Array.isArray(data.trabajadores_mensual.habilitados) ||
+            !Array.isArray(data.trabajadores_mensual.inhabilitados)) {
+        showChartError('No hay datos válidos para generar las gráficas.');
+        return;
+    }
     var textColor = '#475569';
     var gridColor = '#e8edf3';
     var fontFamily = 'Inter, ui-sans-serif, system-ui, sans-serif';
-    var doughnutLabels = ['Vigentes', 'Próximos a vencer', 'Vencidos'];
-    var doughnutColors = ['#22c55e', '#fbbf24', '#ef4444'];
+    var doughnutLabels = ['Habilitados', 'No habilitados'];
+    var doughnutColors = ['#22c55e', '#ef4444'];
 
     Chart.defaults.color = textColor;
     Chart.defaults.font.family = fontFamily;
@@ -58,7 +71,7 @@
             padding: 9,
             cornerRadius: 4,
             displayColors: false,
-            callbacks: { label: function (context) { return context.raw + suffix; } }
+                callbacks: { label: function (context) { return context.raw + suffix; } }
         };
     }
 
@@ -105,7 +118,9 @@
     var complianceLegend = document.getElementById('cumplimiento-legend');
     var complianceCanvas = document.getElementById('estado-cumplimiento');
     var workersStatusCanvas = document.getElementById('trabajadores-por-empresa');
-    if (!complianceLegend || !complianceCanvas || !workersStatusCanvas) {
+    var expirationsCanvas = document.getElementById('vencimientos-por-empresa');
+    var workersMonthlyCanvas = document.getElementById('trabajadores-mensual');
+    if (!complianceLegend || !complianceCanvas || !workersStatusCanvas || !expirationsCanvas || !workersMonthlyCanvas) {
         showChartError('No fue posible preparar las gráficas.');
         return;
     }
@@ -121,7 +136,7 @@
         return '<div class="dashboard-chart-legend-item">' +
             '<span class="dashboard-chart-legend-dot" style="background:' + doughnutColors[index] + '"></span>' +
             '<span class="dashboard-chart-legend-label">' + label + '</span>' +
-            '<span class="dashboard-chart-legend-value">' + percentage + '% (' + value + ')</span>' +
+            '<span class="dashboard-chart-legend-value">' + value + ' trabajadores · ' + percentage + '%</span>' +
             '</div>';
     }).join('');
 
@@ -142,10 +157,10 @@
                     padding: 9,
                     cornerRadius: 4,
                     displayColors: false,
-                    callbacks: {
-                        label: function (context) {
-                            var percentage = complianceTotal ? Math.round((context.raw / complianceTotal) * 100) : 0;
-                            return ' ' + context.raw + ' certificados (' + percentage + '%)';
+                callbacks: {
+                    label: function (context) {
+                        var percentage = complianceTotal ? Math.round((context.raw / complianceTotal) * 100) : 0;
+                            return ' ' + context.raw + ' trabajadores (' + percentage + '%)';
                         }
                     }
                 }
@@ -157,9 +172,36 @@
         type: 'bar', plugins: [emptyStatePlugin],
         data: { labels: data.trabajadores_empresa.labels, datasets: [
             { label: 'Habilitados', data: data.trabajadores_empresa.habilitados, backgroundColor: '#10b981', borderRadius: 4, borderSkipped: false, maxBarThickness: 32 },
-            { label: 'Inhabilitados', data: data.trabajadores_empresa.inhabilitados, backgroundColor: '#ef4444', borderRadius: 4, borderSkipped: false, maxBarThickness: 32 }
+            { label: 'No habilitados', data: data.trabajadores_empresa.inhabilitados, backgroundColor: '#ef4444', borderRadius: 4, borderSkipped: false, maxBarThickness: 32 }
         ] },
         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' }, tooltip: tooltipOptions(' trabajadores') }, scales: { x: { ticks: { autoSkip: false, maxRotation: 55, minRotation: 30, padding: 6 }, border: { display: false }, grid: { display: false } }, y: { beginAtZero: true, ticks: { precision: 0, padding: 8 }, border: { display: false }, grid: { color: gridColor } } } }
+    });
+
+    new Chart(expirationsCanvas, {
+        type: 'bar', plugins: [emptyStatePlugin],
+        data: { labels: data.vencimientos_empresa.labels, datasets: [
+            { label: 'Vigentes', data: data.vencimientos_empresa.vigentes, backgroundColor: '#10b981', borderRadius: 4, borderSkipped: false },
+            { label: 'Próximos a vencer', data: data.vencimientos_empresa.proximos, backgroundColor: '#fbbf24', borderRadius: 4, borderSkipped: false },
+            { label: 'Vencidos', data: data.vencimientos_empresa.vencidos, backgroundColor: '#ef4444', borderRadius: 4, borderSkipped: false }
+        ] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' }, tooltip: tooltipOptions(' certificados') }, scales: { x: { ticks: { autoSkip: false, maxRotation: 55, minRotation: 30 }, border: { display: false }, grid: { display: false } }, y: { beginAtZero: true, ticks: { precision: 0 }, border: { display: false }, grid: { color: gridColor } } } }
+    });
+
+    new Chart(workersMonthlyCanvas, {
+        type: 'bar', plugins: [emptyStatePlugin],
+        data: { labels: data.trabajadores_mensual.labels, datasets: [
+            { label: 'Habilitados', data: data.trabajadores_mensual.habilitados, backgroundColor: '#10b981', borderRadius: 4, borderSkipped: false },
+            { label: 'No habilitados', data: data.trabajadores_mensual.inhabilitados, backgroundColor: '#ef4444', borderRadius: 4, borderSkipped: false }
+        ] },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom' }, tooltip: tooltipOptions(' trabajadores') },
+            scales: {
+                x: { stacked: true, border: { display: false }, grid: { display: false } },
+                y: { stacked: true, beginAtZero: true, ticks: { precision: 0 }, border: { display: false }, grid: { color: gridColor } }
+            }
+        }
     });
 
 })();

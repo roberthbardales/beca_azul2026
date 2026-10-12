@@ -73,13 +73,13 @@ main .workers-list-filter--compact select { border-color: #f8fafc !important; }
 }
 
 .search-result--garita .app-table th:first-child,
-.search-result--garita .app-table td:first-child { width: 34%; }
+.search-result--garita .app-table td:first-child { width: 31%; }
 .search-result--garita .app-table th:nth-child(2),
-.search-result--garita .app-table td:nth-child(2) { width: 23%; }
+.search-result--garita .app-table td:nth-child(2) { width: 21%; }
 .search-result--garita .app-table th:nth-child(3),
-.search-result--garita .app-table td:nth-child(3) { width: 27%; }
+.search-result--garita .app-table td:nth-child(3) { width: 24%; }
 .search-result--garita .app-table th:last-child,
-.search-result--garita .app-table td:last-child { width: 16%; }
+.search-result--garita .app-table td:last-child { width: 24%; }
 
 /* Shared table baseline for worker certificate and course data. */
 .worker-data-table {

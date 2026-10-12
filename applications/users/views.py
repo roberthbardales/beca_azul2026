@@ -1,7 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
-from django.db.models import Q
+from django.db.models import Case, IntegerField, Q, Value, When
 from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
@@ -138,7 +138,14 @@ class UsuarioListView(ConsultaUsuariosPermisoMixin, ListView):
         elif user.role == User.BECA_AZUL:
             queryset = User.objects.filter(
                 role__in=[User.PLANTA, User.USUARIO_EMPRESA, User.GARITA]
-            ).order_by('first_name', 'last_name')
+            ).annotate(
+                role_label_order=Case(
+                    When(role=User.USUARIO_EMPRESA, then=Value(0)),
+                    When(role=User.GARITA, then=Value(1)),
+                    When(role=User.PLANTA, then=Value(2)),
+                    output_field=IntegerField(),
+                )
+            ).order_by('role_label_order')
         else:
             queryset = User.objects.filter(
                 role__in=[User.BECA_AZUL, User.PLANTA, User.GARITA]

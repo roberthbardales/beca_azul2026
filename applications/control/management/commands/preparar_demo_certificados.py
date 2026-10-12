@@ -14,6 +14,9 @@ from applications.control.models import Certificado, CertificadoTipo, Empresa
 class Command(BaseCommand):
     help = 'Instala los PDFs demo y prepara estados variados sin borrar empresas ni trabajadores.'
 
+    EMPRESAS_HOMOLOGADAS = {21, 22, 23}
+    TRABAJADORES_HABILITADOS = {53, 54, 55, 56, 58, 59, 60, 63, 64, 65}
+
     def handle(self, *args, **options):
         origen = Path(settings.BASE_DIR) / 'pdf'
         fuentes = {
@@ -69,7 +72,7 @@ class Command(BaseCommand):
             default_storage.delete(nombre_guardado)
             raise CommandError(f'No se pudo escribir el PDF demo en la ruta esperada: {nombre}')
 
-        if certificado.empresa_id:
+        if certificado.empresa_id or certificado.trabajador_id in self.TRABAJADORES_HABILITADOS:
             fecha_emision = hoy - timedelta(days=30)
             fecha_vencimiento = hoy + timedelta(days=180)
             validado = True
@@ -103,10 +106,10 @@ class Command(BaseCommand):
 
     @staticmethod
     def _preparar_empresa(empresa):
-        grupo = (empresa.pk - 21) % 4
-        empresa.sctr_pension_aprobado = grupo in (0, 1)
-        empresa.sctr_salud_aprobado = grupo in (0, 1, 2)
-        empresa.homologacion = grupo == 0
+        homologada = empresa.pk in Command.EMPRESAS_HOMOLOGADAS
+        empresa.sctr_pension_aprobado = homologada
+        empresa.sctr_salud_aprobado = homologada
+        empresa.homologacion = homologada
         empresa.save(update_fields=(
             'sctr_pension_aprobado',
             'sctr_salud_aprobado',

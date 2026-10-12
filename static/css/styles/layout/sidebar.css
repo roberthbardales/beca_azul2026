@@ -2,6 +2,9 @@
 .brand-lockup { min-height: var(--topbar-height); padding-inline: 1rem; border-color: rgba(255, 255, 255, .12) !important; background: #062c4d !important; }
 .brand-mark { display: inline-flex; align-items: center; justify-content: center; width: 1.8rem; height: 1.8rem; border-radius: .35rem; background: #1678d2; color: #fff; }
 .brand-logo { display: block; width: 100%; max-width: 12rem; max-height: 3.5rem; height: auto; object-fit: contain; }
+.check-id-logo--sidebar { font-size: 1.2rem; }
+.check-id-logo--sidebar .check-id-logo__id { height: 1.95rem; font-size: 1.4rem; }
+.check-id-logo--sidebar .check-id-logo__check { width: 1.55rem; height: 1.55rem; }
 .brand-name { color: #fff; font-size: .875rem; font-weight: 700; line-height: 1.1; } .brand-subtitle { margin-top: .125rem; color: rgba(255, 255, 255, .62); font-size: .75rem; line-height: 1.1; }
 .sidebar-section { color: rgba(255, 255, 255, .5) !important; font-size: .6875rem !important; letter-spacing: .08em; } .sidebar-link { min-height: 2.35rem; color: rgba(255, 255, 255, .82) !important; font-size: .8rem; font-weight: 500 !important; }
 .sidebar-link:hover { color: #fff !important; background: rgba(255, 255, 255, .1) !important; } .sidebar-link--active { color: #fff !important; background: #1678d2 !important; box-shadow: 0 4px 10px rgba(0, 0, 0, .12) !important; }

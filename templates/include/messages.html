@@ -1,7 +1,7 @@
 {% if messages %}
     <div class="toast-container{% if request.user.is_authenticated %} toast-container--with-topbar{% endif %}" aria-live="polite" aria-atomic="true">
         {% for message in messages %}
-            <div class="toast toast-{{ message.level_tag|default:'info' }}{% if 'worker-created' in message.tags %} toast-worker-created{% elif 'worker-updated' in message.tags %} toast-worker-updated{% elif 'worker-toggled' in message.tags %} toast-worker-toggled{% elif 'worker-deleted' in message.tags %} toast-worker-deleted{% endif %}" role="status">
+            <div class="toast toast-{{ message.level_tag|default:'info' }}{% if 'worker-created' in message.tags %} toast-worker-created{% elif 'worker-updated' in message.tags %} toast-worker-updated{% elif 'worker-toggled' in message.tags %} toast-worker-toggled{% elif 'worker-deleted' in message.tags %} toast-worker-deleted{% elif 'worker-delete-blocked' in message.tags %} toast-warning{% endif %}" role="status">
                 <span class="toast-indicator" aria-hidden="true"></span>
                 <p class="toast-message">{{ message }}</p>
                 <button class="toast-close" type="button" aria-label="Cerrar mensaje">&times;</button>

@@ -3,77 +3,74 @@
         Resumen general
     </h2>
     <div class="dashboard-metrics grid items-stretch gap-4 sm:grid-cols-2 2xl:grid-cols-6">
-    <article class="dashboard-metric dashboard-summary-metric rounded-lg border border-gray-100 bg-white p-4 shadow-sm"
+    <article class="dashboard-metric dashboard-summary-metric dashboard-summary-companies rounded-lg border border-gray-100 bg-white p-4 shadow-sm"
              aria-labelledby="metric-empresas">
+        <div class="dashboard-companies-heading">
         <h2 id="metric-empresas" class="text-xs font-semibold uppercase tracking-wide text-[#A5A5A5]">
             Empresas
         </h2>
+        <p class="dashboard-companies-total text-3xl font-bold tabular-nums text-[#0f172a]">{{ total_empresas }}</p>
+        </div>
         <div class="dashboard-card-content">
-            <p class="text-3xl font-bold tabular-nums text-[#0f172a]">{{ total_empresas }}</p>
             <div class="dashboard-summary-statuses">
-                <span class="dashboard-summary-positive">{{ empresas_habilitadas }} homologadas</span>
-                <span class="dashboard-summary-negative">{{ empresas_no_homologadas }} no homologadas</span>
-                <span class="dashboard-summary-neutral">{{ empresas_desactivadas }} desactivadas</span>
+                <span class="dashboard-company-status dashboard-company-status--positive"><span>Homologadas</span><strong>{{ empresas_habilitadas }}</strong></span>
+                <span class="dashboard-company-status dashboard-company-status--negative"><span>No homologadas</span><strong>{{ empresas_no_homologadas }}</strong></span>
             </div>
         </div>
     </article>
 
-    <article class="dashboard-metric dashboard-summary-metric rounded-lg border border-gray-100 bg-white p-4 shadow-sm"
+    <article class="dashboard-metric dashboard-summary-metric dashboard-summary-companies dashboard-summary-workers rounded-lg border border-gray-100 bg-white p-4 shadow-sm"
              aria-labelledby="metric-trabajadores">
-        <h2 id="metric-trabajadores" class="text-xs font-semibold uppercase tracking-wide text-[#A5A5A5]">Trabajadores</h2>
+        <div class="dashboard-companies-heading"><h2 id="metric-trabajadores" class="text-xs font-semibold uppercase tracking-wide text-[#A5A5A5]">Trabajadores</h2><p class="dashboard-companies-total text-3xl font-bold tabular-nums text-[#0f172a]">{{ total_trabajadores }}</p></div>
         <div class="dashboard-card-content">
-            <p class="text-3xl font-bold tabular-nums text-[#0f172a]">{{ total_trabajadores }}</p>
             <div class="dashboard-summary-statuses">
-                <span class="dashboard-summary-positive">{{ trabajadores_habilitados }} habilitados</span>
-                <span class="dashboard-summary-negative">{{ trabajadores_no_habilitados }} no habilitados</span>
-                <span class="dashboard-summary-neutral">{{ trabajadores_desactivados }} desactivados</span>
+                <span class="dashboard-company-status dashboard-company-status--positive"><span>Total habilitados</span><strong>{{ trabajadores_habilitados }}</strong></span>
+                <span class="dashboard-company-status dashboard-company-status--negative"><span>Total no habilitados</span><strong>{{ trabajadores_no_habilitados }}</strong></span>
             </div>
         </div>
     </article>
 
-    <article class="dashboard-metric dashboard-summary-metric rounded-lg border border-gray-100 bg-white p-4 shadow-sm"
+    <article class="dashboard-metric dashboard-summary-metric dashboard-summary-card rounded-lg border border-gray-100 bg-white p-4 shadow-sm"
              aria-labelledby="metric-inducciones">
-        <h2 id="metric-inducciones" class="text-xs font-semibold uppercase tracking-wide text-[#A5A5A5]">Inducciones</h2>
+        <div class="dashboard-companies-heading"><h2 id="metric-inducciones" class="text-xs font-semibold uppercase tracking-wide text-[#A5A5A5]">Inducciones</h2></div>
         <div class="dashboard-card-content">
-            <p class="text-3xl font-bold tabular-nums text-[#0f172a]">{{ inducciones_vigentes }}</p>
             <div class="dashboard-summary-statuses">
-                <span class="dashboard-summary-positive">{{ inducciones_vigentes }} vigentes</span>
-                <span class="dashboard-summary-negative">{{ inducciones_vencidas }} vencidas</span>
+                <span class="dashboard-company-status dashboard-company-status--positive"><span>Vigentes</span><strong>{{ inducciones_vigentes }}</strong></span>
+                <span class="dashboard-company-status dashboard-company-status--warning"><span>Próximas a vencer</span><strong>{{ inducciones_proximas_30 }}</strong></span>
+                <span class="dashboard-company-status dashboard-company-status--negative"><span>Vencidas</span><strong>{{ inducciones_vencidas }}</strong></span>
             </div>
         </div>
     </article>
 
-    <article class="dashboard-metric dashboard-summary-metric rounded-lg border border-gray-100 bg-white p-4 shadow-sm"
+    <article class="dashboard-metric dashboard-summary-metric dashboard-summary-card rounded-lg border border-gray-100 bg-white p-4 shadow-sm"
              aria-labelledby="metric-aptitudes-medicas">
-        <h2 id="metric-aptitudes-medicas" class="text-xs font-semibold uppercase tracking-wide text-[#A5A5A5]">Aptitudes médicas</h2>
+        <div class="dashboard-companies-heading"><h2 id="metric-aptitudes-medicas" class="text-xs font-semibold uppercase tracking-wide text-[#A5A5A5]">Aptitudes médicas</h2></div>
         <div class="dashboard-card-content">
-            <p class="text-3xl font-bold tabular-nums text-[#0f172a]">{{ aptitudes_medicas_vigentes }}</p>
             <div class="dashboard-summary-statuses">
-                <span class="dashboard-summary-positive">{{ aptitudes_medicas_vigentes }} vigentes</span>
-                <span class="dashboard-summary-negative">{{ aptitudes_medicas_vencidas }} vencidas</span>
+                <span class="dashboard-company-status dashboard-company-status--positive"><span>Vigentes</span><strong>{{ aptitudes_medicas_vigentes }}</strong></span>
+                <span class="dashboard-company-status dashboard-company-status--warning"><span>Próximas a vencer</span><strong>{{ aptitudes_medicas_proximas_30 }}</strong></span>
+                <span class="dashboard-company-status dashboard-company-status--negative"><span>Vencidos</span><strong>{{ aptitudes_medicas_vencidas }}</strong></span>
             </div>
         </div>
     </article>
 
-        <article class="dashboard-metric dashboard-summary-metric rounded-lg border border-gray-100 bg-white p-4 shadow-sm" aria-labelledby="metric-sctr-salud">
-            <h3 id="metric-sctr-salud" class="text-xs font-semibold uppercase tracking-wide text-[#A5A5A5]">SCTR Salud</h3>
+        <article class="dashboard-metric dashboard-summary-metric dashboard-summary-card rounded-lg border border-gray-100 bg-white p-4 shadow-sm" aria-labelledby="metric-sctr-salud">
+            <div class="dashboard-companies-heading"><h3 id="metric-sctr-salud" class="text-xs font-semibold uppercase tracking-wide text-[#A5A5A5]">SCTR Salud</h3></div>
             <div class="dashboard-card-content">
-                <p class="text-3xl font-bold tabular-nums text-[#0f172a]">{{ trabajadores_sctr_salud }}</p>
                 <div class="dashboard-summary-statuses">
-                    <span class="dashboard-summary-neutral">de {{ total_trabajadores }} trabajadores</span>
-                    <span class="dashboard-summary-negative">{{ trabajadores_sin_sctr_salud }} sin cobertura</span>
-                    <span class="dashboard-summary-warning">{{ sctr_salud_proximos_vencer }} vencen ≤30 días</span>
+                    <span class="dashboard-company-status dashboard-company-status--positive"><span>Vigentes</span><strong>{{ trabajadores_con_sctr_salud }}</strong></span>
+                    <span class="dashboard-company-status dashboard-company-status--warning"><span>Próximos a vencer</span><strong>{{ sctr_salud_proximos_vencer }}</strong></span>
+                    <span class="dashboard-company-status dashboard-company-status--negative"><span>Vencidos</span><strong>{{ trabajadores_sin_sctr_salud }}</strong></span>
                 </div>
             </div>
         </article>
-        <article class="dashboard-metric dashboard-summary-metric rounded-lg border border-gray-100 bg-white p-4 shadow-sm" aria-labelledby="metric-sctr-pension">
-            <h3 id="metric-sctr-pension" class="text-xs font-semibold uppercase tracking-wide text-[#A5A5A5]">SCTR Pensión</h3>
+        <article class="dashboard-metric dashboard-summary-metric dashboard-summary-card rounded-lg border border-gray-100 bg-white p-4 shadow-sm" aria-labelledby="metric-sctr-pension">
+            <div class="dashboard-companies-heading"><h3 id="metric-sctr-pension" class="text-xs font-semibold uppercase tracking-wide text-[#A5A5A5]">SCTR Pensión</h3></div>
             <div class="dashboard-card-content">
-                <p class="text-3xl font-bold tabular-nums text-[#0f172a]">{{ trabajadores_sctr_pension }}</p>
                 <div class="dashboard-summary-statuses">
-                    <span class="dashboard-summary-neutral">de {{ total_trabajadores }} trabajadores</span>
-                    <span class="dashboard-summary-negative">{{ trabajadores_sin_sctr_pension }} sin cobertura</span>
-                    <span class="dashboard-summary-warning">{{ sctr_pension_proximos_vencer }} vencen ≤30 días</span>
+                    <span class="dashboard-company-status dashboard-company-status--positive"><span>Vigentes</span><strong>{{ trabajadores_con_sctr_pension }}</strong></span>
+                    <span class="dashboard-company-status dashboard-company-status--warning"><span>Próximos a vencer</span><strong>{{ sctr_pension_proximos_vencer }}</strong></span>
+                    <span class="dashboard-company-status dashboard-company-status--negative"><span>Vencidos</span><strong>{{ trabajadores_sin_sctr_pension }}</strong></span>
                 </div>
             </div>
         </article>

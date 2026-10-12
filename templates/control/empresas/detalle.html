@@ -54,9 +54,8 @@
                         <div class="flex flex-wrap gap-2">{% if request.user.role == '1' or request.user.role == '3' %}{% if homologacion_archivo_existe %}<a class="btn btn-secondary btn-sm" href="{% url 'app_control:empresa_certificado_ver' homologacion.pk %}" target="_blank" rel="noopener">Ver certificado</a>{% endif %}{% endif %}{% if request.user.role == '1' %}<form method="post" action="{% url 'app_control:empresa_homologacion_toggle' empresa.pk %}" class="inline">{% csrf_token %}<button type="submit" class="btn btn-sm {% if empresa.homologacion %}btn-quinary{% else %}btn-primary{% endif %}"{% if not empresa.activo or not empresa.homologacion and not sctr_valido or not empresa.homologacion and not homologacion_valida %} disabled{% endif %}>{% if empresa.homologacion %}Desaprobar homologación{% else %}Aprobar homologación{% endif %}</button></form>{% endif %}{% if request.user.role == '3' %}<a class="btn btn-primary btn-sm {% if not empresa.activo %}pointer-events-none opacity-50{% endif %}" href="{% url 'app_control:empresa_homologacion_editar' empresa.pk %}"{% if not empresa.activo %} aria-disabled="true"{% endif %}>{% if homologacion and homologacion.archivo %}Editar homologación{% else %}Registrar homologación{% endif %}</a>{% endif %}</div>
             </div>
         </section>
-        <section aria-label="Resumen de empresa" class="company-metrics grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-            <div class="rounded-lg border border-gray-100 bg-white px-4 py-3 shadow-sm"><p class="text-xs font-semibold uppercase tracking-wide text-[var(--ink-500)]">Trabajadores</p><p class="mt-1 text-xl font-bold text-[var(--ink-900)]">{{ total_trabajadores }}</p></div>
-            {% if request.user.is_superuser or request.user.role == '0' or request.user.role == '1' %}<div class="rounded-lg border border-gray-100 bg-white px-4 py-3 shadow-sm"><p class="text-xs font-semibold uppercase tracking-wide text-[var(--ink-500)]">Usuarios</p><p class="mt-1 text-xl font-bold text-[var(--ink-900)]">{{ total_usuarios }}</p></div>{% endif %}
+        <section aria-label="Resumen de empresa" class="company-metrics grid w-full grid-cols-1 gap-2 sm:grid-cols-3">
+            <div class="rounded-lg border border-gray-100 bg-white px-4 py-3 shadow-sm"><p class="text-xs font-semibold uppercase tracking-wide text-[var(--ink-500)]">Total trabajadores</p><p class="mt-1 text-xl font-bold text-[var(--ink-900)]">{{ total_trabajadores }}</p></div>
              {% for grupo in trabajadores_por_estado %}<div class="rounded-lg border border-gray-100 bg-white px-4 py-3 shadow-sm"><p class="text-xs font-semibold uppercase tracking-wide text-[var(--ink-500)]">{{ grupo.label }}</p><p class="mt-1 text-xl font-bold {% if grupo.estado == 'HABILITADO' %}text-green-600{% else %}text-red-600{% endif %}">{{ grupo.total }}</p></div>{% endfor %}
         </section>
          {% if request.user.role == '3' or request.user.role == '2' %}
@@ -69,7 +68,7 @@
         {{ empresa_trabajadores_chart|json_script:"empresa-trabajadores-chart-data" }}
         {% endif %}
     </div>
-    {% if request.user.role == '2' or request.user.role == '3' %}
+    {% if request.user.role == '2' %}
     <div class="mt-4 flex justify-center">
         <a class="btn btn-secondary" href="{% url 'app_control:empresa_lista' %}">Volver</a>
     </div>

@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Certificado, Empresa, Incidencia, Trabajador
+from .models import Certificado, Empresa, EstadoTrabajadorHistorico, Incidencia, Trabajador
 
 
 @admin.register(Empresa)
@@ -14,9 +14,9 @@ class EmpresaAdmin(admin.ModelAdmin):
 
 @admin.register(Trabajador)
 class TrabajadorAdmin(admin.ModelAdmin):
-    list_display = ('dni', 'nombres', 'apellidos', 'empresa', 'habilitado', 'activo')
+    list_display = ('dni', 'nombres', 'apellidos', 'empresa', 'activo')
     search_fields = ('dni', 'nombres', 'apellidos', 'cargo')
-    list_filter = ('habilitado', 'activo', 'empresa')
+    list_filter = ('activo', 'empresa')
     list_per_page = 20
     list_select_related = ('empresa',)
 
@@ -24,6 +24,15 @@ class TrabajadorAdmin(admin.ModelAdmin):
         if db_field.name == 'empresa':
             kwargs['queryset'] = Empresa.objects.filter(activo=True)
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+
+@admin.register(EstadoTrabajadorHistorico)
+class EstadoTrabajadorHistoricoAdmin(admin.ModelAdmin):
+    list_display = ('trabajador', 'estado', 'vigente_desde')
+    list_filter = ('estado', 'vigente_desde')
+    search_fields = ('trabajador__dni', 'trabajador__nombres', 'trabajador__apellidos')
+    list_select_related = ('trabajador',)
+    readonly_fields = ('trabajador', 'estado', 'vigente_desde')
 
 
 @admin.register(Incidencia)

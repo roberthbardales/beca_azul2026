@@ -1,6 +1,13 @@
-<div class="dashboard-chart-grid dashboard-chart-grid-layout mt-5 grid items-stretch gap-5">
+<section class="mt-5" aria-labelledby="dashboard-charts-title">
+    <h2 id="dashboard-charts-title" class="mb-3 text-sm font-semibold uppercase tracking-wide text-[#64748b]">
+        Gráficas
+    </h2>
+<div class="dashboard-chart-grid dashboard-chart-grid-layout grid items-stretch gap-5">
     <div class="dashboard-compliance-width">
         {% include 'users/dashboard/charts/compliance.html' %}
     </div>
     {% include 'users/dashboard/charts/workers_by_company.html' %}
 </div>
+{% include 'users/dashboard/charts/recent_registrations.html' %}
+{% include 'users/dashboard/charts/workers_monthly.html' %}
+</section>

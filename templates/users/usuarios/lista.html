@@ -56,7 +56,7 @@
                 <td data-label="Nombre" class="px-5 py-3 text-sm font-medium">{{ usuario.first_name }} {{ usuario.last_name }}</td>
                 <td data-label="Email" class="px-5 py-3 text-sm">{{ usuario.email }}</td>
                 <td data-label="Tipo de usuario" class="px-5 py-3 text-sm">
-                    <span class="inline-block rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">{{ usuario.get_role_display }}</span>
+                    <span class="inline-block rounded-full px-2 py-0.5 text-xs font-medium {% if usuario.role == '3' %}bg-cyan-100 text-cyan-700{% elif usuario.role == '4' %}bg-orange-100 text-orange-700{% elif usuario.role == '2' %}bg-purple-100 text-purple-700{% else %}bg-blue-100 text-blue-700{% endif %}">{{ usuario.get_role_display }}</span>
                 </td>
                 <td data-label="Empresa" class="px-5 py-3 text-sm">{{ usuario.empresa.nombre|default:'-' }}</td>
                 <td data-label="Estado" class="px-5 py-3 text-sm">

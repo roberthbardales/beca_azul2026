@@ -101,6 +101,21 @@ class FormValidationTests(TestCase):
         self.assertFalse(form.is_valid())
         self.assertIn('dni', form.errors)
 
+    def test_trabajador_empresa_form_rechaza_dni_que_no_tenga_ocho_digitos(self):
+        for dni in ('1234567', '123456789', '1234abcd', '1234 678'):
+            with self.subTest(dni=dni):
+                form = TrabajadorEmpresaForm(
+                    data={
+                        'tipo_documento': Trabajador.DNI,
+                        'dni': dni,
+                        'nombres': 'Nuevo',
+                        'apellidos': 'Trabajador',
+                    },
+                    empresa=self.empresa,
+                )
+                self.assertFalse(form.is_valid())
+                self.assertIn('dni', form.errors)
+
     def test_trabajador_form_no_incluye_sctr(self):
         form = TrabajadorForm(data={
             'empresa': self.empresa.pk,

@@ -1,248 +1,144 @@
-# Contexto del proyecto
+# Sistema de control Beca Azul
 
-## Resumen
+## 1. Propósito y alcance
 
-`beca_azul2026` es una aplicación Django para administrar empresas,
-trabajadores, certificados, incidencias y usuarios con permisos por rol. Usa
-plantillas HTML del lado del servidor y PostgreSQL.
+Aplicación web interna para administrar empresas proveedoras y sus trabajadores, registrar y revisar documentación de seguridad y salud en el trabajo, determinar la habilitación del personal y dar seguimiento a homologaciones y vencimientos.
 
-## Stack y estructura
+El sistema permite consultar paneles y reportes de cumplimiento, gestionar usuarios según su rol y mantener información de certificados e incidencias. Los archivos PDF de certificados se almacenan como archivos multimedia y se relacionan con una empresa o un trabajador.
 
-- Python 3.12 y Django 4.2.
-- PostgreSQL con `psycopg2-binary`.
-- Usuario personalizado `applications.users.models.User`, autenticado por correo.
-- Archivos subidos en `media/` y recursos estáticos en `static/`.
-- Chart.js local para las gráficas del dashboard.
-- `applications/users/`: autenticación, usuarios y permisos.
-- `applications/control/`: empresas, trabajadores, certificados e incidencias.
-- `templates/`: interfaz HTML.
+## 2. Tecnologías y arquitectura
 
-## Rutas principales
+- **Backend:** Python y Django 4.2.25.
+- **Base de datos:** PostgreSQL, conectado mediante `psycopg2-binary`.
+- **Configuración:** `django-environ` carga variables desde `.env`.
+- **Interfaz:** plantillas Django, HTML, hojas de estilo CSS y JavaScript. Los estilos se encuentran bajo `static/css`; hay estilos Tailwind compilados y estilos propios por componentes y páginas.
+- **Gráficos:** Chart.js incluido localmente en `static/vendor/chartjs` y utilizado por los scripts del panel.
+- **Archivos:** almacenamiento local de Django bajo `media/` para los documentos cargados. Los PDFs de demostración fuente están bajo `pdf/`.
+- **Dependencias adicionales:** `django-model-utils` para campos de fecha de creación/modificación y Pillow para manejo de imágenes.
 
-- `/`: inicio.
-- `/panel/`: dashboard para Administrador, Beca Azul y Planta.
-- `/reportes/`: reportes para Administrador, Beca Azul, Planta y Usuario Empresa.
-- `/users/`: autenticación, perfil y gestión protegida de usuarios.
-- `/empresas/`: consulta y administración de empresas.
-- `/trabajadores/`: listado y búsqueda de trabajadores.
-- `/trabajadores/<id>/`: detalle general del trabajador.
-- `/trabajadores/empresa/<id>/`: detalle, edición y certificados de cursos para
-  Usuario Empresa.
-- `/certificados/crear/<trabajador_id>/`, `/certificados/<id>/editar/` y
-  `/certificados/<id>/eliminar/`: gestión de certificados de trabajadores por
-  Beca Azul.
-- `/certificados/<id>/validar/`: aprobación o desaprobación de Inducción,
-  Aptitud médica y cursos por Beca Azul.
-- `/media/certificados/empresa_<id>/...`: descarga protegida de archivos según
-  el rol y la empresa asociada.
-- `/admin/`: administración nativa de Django.
+El proyecto Django se configura en `beca_azul2026/`. Las aplicaciones de negocio están en `applications/`, las plantillas globales en `templates/` y los recursos estáticos en `static/`. La configuración define español de Perú, zona horaria `America/Lima` y uso de fechas con zona horaria.
 
-La creación pública de usuarios está deshabilitada. La gestión se realiza desde
-`/users/gestion/`.
+Las rutas principales se distribuyen así:
 
-El inicio de sesión redirige a cada usuario según su rol: dashboard para los
-roles administrativos, lista de trabajadores para Usuario Empresa y búsqueda
-de trabajadores para Usuario Garita. Cada usuario puede consultar y editar su
-propio perfil y cambiar su contraseña.
+- `/`: redirige a la pantalla correspondiente según autenticación y rol.
+- `/users/`: inicio de sesión, perfil, contraseña y administración de usuarios.
+- `/panel/`, `/reportes/`, `/empresas/`, `/trabajadores/`, `/certificados/` e `/incidencias/`: operaciones del sistema de control.
+- `/admin/`: administración de Django.
 
-El listado de `/trabajadores/` permite buscar por DNI completo o por palabras
-del nombre y apellido, en cualquier orden y sin distinguir tildes. No permite
-coincidencias parciales del DNI.
+## 3. Aplicaciones y estructura del código
 
-## Usuarios y roles
+### `applications.users`
 
-| Código | Rol |
+Contiene el modelo de usuario propio (`User`), el gestor de usuarios, autenticación, perfil, cambio de contraseña, administración de cuentas y mixins de autorización. El correo electrónico es el identificador de inicio de sesión.
+
+### `applications.control`
+
+Contiene los modelos y la lógica de empresas, trabajadores, certificados, cursos obligatorios, incidencias e historial de estados. Sus vistas implementan paneles, reportes, administración de empresas y trabajadores, validación de documentación y operaciones específicas para cada rol. Los archivos de URL están en `applications/control/urls.py`.
+
+La aplicación incluye la señal de eliminación de archivos asociados a certificados y el comando `preparar_demo_certificados`, que instala documentos PDF de ejemplo y establece estados de demostración.
+
+### `applications.home`
+
+Resuelve la entrada al sistema redirigiendo a cada usuario a su área inicial y contiene la vista de acceso denegado.
+
+### Recursos transversales
+
+- `beca_azul2026/settings.py`: aplicaciones instaladas, base de datos, idioma, correo, estáticos y archivos multimedia.
+- `beca_azul2026/urls.py`: rutas raíz y asociación de rutas de las aplicaciones.
+- `templates/`: páginas HTML y fragmentos reutilizables.
+- `static/`: estilos, JavaScript y librerías locales.
+- `fixtures/seed.json`: datos iniciales de demostración.
+- `pdf/`: archivos PDF fuente usados por la preparación de la demo.
+
+## 4. Roles y acceso
+
+Los permisos se comprueban en las vistas y mixins del backend, además de ocultar o mostrar opciones en la interfaz. Los superusuarios de Django tienen bypass de las comprobaciones por rol definidas en los mixins.
+
+| Rol | Alcance general |
 |---|---|
-| `0` | Administrador |
-| `1` | Beca Azul |
-| `2` | Usuario Planta |
-| `3` | Usuario Empresa |
-| `4` | Usuario Garita |
+| **Administrador** | Administración general de usuarios y acceso a las funciones administrativas que permiten las vistas. |
+| **Beca Azul** | Gestión operativa central: empresas, trabajadores, revisiones y aprobaciones de certificados, homologaciones, incidencias y envío de reportes por correo. |
+| **Usuario Planta** | Consulta del panel e información de empresas y trabajadores según los permisos de cada vista. |
+| **Usuario Empresa** | Acceso limitado a su propia empresa y sus trabajadores; puede registrar y gestionar trabajadores de su empresa y aportar su documentación. |
+| **Usuario Garita** | Consulta y búsqueda de trabajadores para verificar su información operativa, sin acceso a la administración completa. |
 
-Un superusuario de Django puede superar los mixins basados únicamente en rol.
-Esto es independiente del valor guardado en `User.role`.
+Las sesiones de Usuario Empresa requieren que exista una empresa asociada y que esta se encuentre activa. Las vistas de trabajadores aplican filtros por empresa para impedir que ese rol opere sobre registros de otras empresas.
 
-## Modelo de datos
+## 5. Modelos y reglas de negocio
+
+### Usuario (`applications.users.User`)
+
+Extiende la autenticación de Django y los permisos (`PermissionsMixin`). Incluye correo único, nombres, apellidos, rol, género, fecha de nacimiento, teléfono y estados de actividad. Un Usuario Empresa debe tener empresa asignada; los demás roles no deben asociarse a una empresa mediante el formulario de gestión.
 
 ### Empresa
 
-Una empresa tiene nombre, RUC, correo, representante legal, estado activo y
-estado de homologación. También puede tener certificados SCTR de pensión, SCTR
-de salud y homologación. La eliminación está protegida cuando existen
-relaciones.
+Registra nombre, RUC de 11 dígitos, correo, representante legal, actividad y estados de aprobación de SCTR y homologación. Mantiene certificados de empresa y trabajadores relacionados.
+
+La empresa solo puede estar homologada si cuenta con certificados vigentes de homologación, SCTR pensión y SCTR salud, y ambos SCTR están aprobados. Cuando falta un archivo o vence un documento que sustentaba una aprobación, la lógica puede invalidar la aprobación y la homologación.
 
 ### Trabajador
 
-Pertenece a una empresa y registra documento, nombres, apellidos y cargo.
-También contiene:
+Pertenece a una empresa y registra tipo y número de documento, nombres, apellidos, cargo, estado activo y validaciones individuales de SCTR pensión y salud. Para DNI se exige un número de ocho dígitos. No se permiten documentos duplicados entre trabajadores activos de la misma empresa.
 
-- `activo`: controla si el registro está activo.
-- `habilitado`: decisión manual de habilitación por Beca Azul.
-- `habilitado_efectivo`: estado operativo calculado en tiempo real.
+El estado **habilitado efectivo** requiere conjuntamente:
 
-Los certificados SCTR no se cargan por trabajador. Se heredan de la empresa a
-la que pertenece y sus fechas de emisión y vencimiento se toman de allí.
+1. Que el trabajador y su empresa estén activos.
+2. Que la empresa esté homologada y tenga aprobados y vigentes los SCTR de pensión y salud.
+3. Que los dos SCTR estén validados para el trabajador.
+4. Que haya certificados de inducción y aptitud médica vigentes, con archivo disponible y validados.
+5. Que cada curso obligatorio para ese trabajador tenga su certificado vigente, con archivo disponible y validado.
 
-Un trabajador solo está efectivamente habilitado si está activo, su empresa está
-activa, la habilitación manual está activa y la empresa tiene SCTR pensión, SCTR
-salud y homologación aprobados, con archivo físico existente y vigente.
-También debe tener Inducción y Aptitud médica validadas y vigentes, además de
-todos los cursos obligatorios para ese trabajador validados y vigentes. Los
-cursos que no son obligatorios no afectan la habilitación.
-Desactivar un trabajador lo deja no habilitado. Reactivarlo no cambia la
-decisión manual, pero el estado efectivo vuelve a calcularse con todos los
-requisitos vigentes.
+El historial conserva transiciones de estado del trabajador: habilitado, no habilitado o desactivado.
 
-### Certificados
+### Certificado
 
-Los certificados registran tipo, fechas, archivo PDF cuando corresponde y estado
-de validación. Los SCTR pensión, SCTR
-salud y homologación pertenecen a la empresa. Los certificados de
-Inducción y Aptitud médica pertenecen al trabajador y son independientes de los
-cursos. Los cursos permiten un certificado por categoría y trabajador.
+Puede pertenecer a una empresa o a un trabajador, según el tipo. Los tipos incluyen SCTR pensión, SCTR salud, homologación, inducción, aptitud médica y cursos. Registra fechas de emisión y vencimiento, archivo PDF y marca de validación.
 
-Inducción, Aptitud médica y cursos requieren un PDF para quedar completos. Al
-crear un trabajador como Usuario Empresa se deben cargar los PDF y las fechas de
-emisión y vencimiento de Inducción y Aptitud médica. En los formularios de SCTR,
-homologación y certificados de trabajadores, las fechas se habilitan después de
-seleccionar un PDF nuevo o cuando ya existe un archivo físico disponible. Beca
-Azul valida explícitamente Inducción, Aptitud médica y cada curso obligatorio
-mediante un checkbutton. Si falta el archivo o aún no se valida, queda
-`Pendiente`; si vence, queda `Desaprobado`; solo un requisito validado, vigente y
-con su archivo requerido queda `Vigente`.
+Un certificado está vigente cuando existe su archivo y la fecha actual cae entre emisión y vencimiento. La validación vigente también exige que haya sido aprobado. La emisión no puede ser posterior al vencimiento. El sistema aplica restricciones para que los tipos de certificado tengan el propietario y, cuando corresponda, el curso adecuados.
 
-Los seis cursos fijos son:
+Los PDFs cargados deben tener extensión `.pdf`, firma inicial `%PDF-` y tamaño máximo de 1 MB. Las rutas de almacenamiento se organizan por empresa, año y mes; los archivos demo usan `certificados/demo/`.
 
-- Caliente (`CALIENTE`).
-- Altura (`ALTURA`).
-- Espacio confinado (`ESPACIO_CONFINADO`).
-- Eléctrico (`ELECTRICO`).
-- Excavación (`EXCAVACION`).
-- Izaje (`IZAJE`).
+### Cursos obligatorios
 
-La fecha de vencimiento no puede ser anterior a la fecha de emisión. El estado
-del certificado puede ser `Vigente`, `Próximo a vencer` o `Vencido`.
+Se configuran por trabajador, sin duplicar el mismo curso. Las categorías disponibles son trabajo en caliente, trabajo en altura, espacios confinados, trabajo eléctrico, excavación/perforación e izaje. Un curso obligatorio requiere un certificado válido para que el trabajador pueda quedar habilitado.
 
-### Cursos obligatorios por trabajador
+### Incidencias
 
-`CursoObligatorio` relaciona individualmente un trabajador con cualquiera de
-los seis cursos fijos. No crea ni modifica certificados.
+Registran una descripción asociada a un trabajador y, opcionalmente, el usuario que la reportó. Su gestión está restringida al rol Beca Azul.
 
-- Los seis cursos comienzan como no obligatorios si no existe una relación.
-- Beca Azul puede activar o desactivar cada curso manualmente desde el detalle.
-- El cambio se guarda mediante `POST` inmediatamente.
-- Inducción y Aptitud médica no usan esta configuración y no fueron modificados.
-- Un curso puede ser obligatorio aunque todavía no tenga PDF.
-- Si es obligatorio y no existe constancia, el detalle muestra `Falta subir`.
-- Si ya existe una constancia, conserva sus fechas y estado documental.
-- La habilitación efectiva exige que cada curso obligatorio tenga PDF, esté
-  validado y vigente.
-- Al desactivar la obligación, la constancia y sus datos se conservan.
-- No existe todavía cálculo general de cumplimiento ni historial de cambios.
+## 6. Flujos funcionales
 
-Los trabajadores inactivos no pueden modificar la obligatoriedad de cursos ni
-validar certificados. Los interruptores y casillas de validación se muestran
-deshabilitados y las vistas también rechazan los cambios enviados directamente.
+### Empresas y homologación
 
-La ruta de configuración es:
+Una empresa registra sus datos y carga certificados de SCTR pensión, SCTR salud y homologación. Beca Azul revisa los documentos y aprueba los SCTR. La homologación se puede aprobar únicamente cuando están disponibles y vigentes los tres certificados y ambos SCTR están aprobados. Las actualizaciones de documentos pueden retirar aprobaciones anteriores para exigir una nueva revisión.
 
-`POST /trabajadores/<id>/cursos/<curso>/obligatorio/`
+### Registro y habilitación de trabajadores
 
-Solo acepta los seis valores definidos en `CursoTipo` y no permite modificar
-trabajadores inactivos.
+Usuario Empresa registra trabajadores de su propia empresa y adjunta inicialmente documentación requerida de inducción y aptitud médica. Beca Azul administra la documentación y revisa las validaciones individuales y los cursos obligatorios. La habilitación se calcula con las condiciones anteriores; no es solo un campo manual.
 
-## Certificados y carga de archivos
+### Panel y reportes
 
-Usuario Empresa carga, administra y consulta en PDF el SCTR y la homologación de
-su empresa, así como los certificados de sus trabajadores dentro de los límites
-de sus vistas. En el alta de trabajador debe adjuntar Inducción y Aptitud médica
-con sus fechas. En los formularios de SCTR y homologación, primero selecciona el
-PDF para habilitar las fechas de emisión y vencimiento. Puede consultar sus
-certificados empresariales aunque estén vencidos, si el archivo físico existe.
-Beca Azul puede gestionar y validar certificados de trabajadores desde las
-vistas permitidas. Administrador y Planta pueden consultarlos desde los detalles
-permitidos, sin gestionar su contenido.
+El panel presenta indicadores de empresas, trabajadores, habilitaciones, cumplimiento y vencimientos. La página de reportes ofrece cuatro vistas: certificados de trabajador por vencer, certificados empresariales por vencer, situación de trabajadores y resumen de empresas. Los reportes pueden imprimirse/exportarse desde el navegador como PDF. Beca Azul puede enviar por correo una versión HTML del reporte seleccionado.
 
-Las vistas específicas de certificados de cursos para Usuario Empresa solo
-permiten cursos marcados como obligatorios. El formulario de alta o edición de
-trabajadores también permite cargar los cursos del trabajador, y la empresa solo
-puede operar sobre trabajadores de su propia empresa.
+## 7. Correos, configuración e instalación
 
-Antes de mostrar o descargar documentos de empresa se comprueba que el archivo
-físico exista en el storage. Un registro sin archivo físico puede conservarse
-para permitir reemplazarlo.
+### Notificaciones por correo
 
-## Estados y homologación
+El envío usa el backend SMTP de Django. La configuración se obtiene de `.env` mediante `django-environ`; se utilizan las variables `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`, `EMAIL_USE_TLS`, `EMAIL_USE_SSL` y `DEFAULT_FROM_EMAIL`.
 
-La habilitación manual del trabajador se alterna desde un botón protegido de
-Beca Azul. El estado operativo se obtiene mediante `habilitado_efectivo` y
-considera trabajador activo, empresa activa, aprobaciones, archivos y vigencias.
-El SCTR que se utiliza para habilitar al trabajador corresponde a los
-certificados de su empresa.
+- **Alta de trabajador:** envía una notificación con nombre, apellido, tipo y número de documento, cargo y empresa al correo configurado como `EMAIL_HOST_USER`.
+- **Habilitación:** al pasar de no habilitado a habilitado, envía los datos del trabajador —incluido tipo y número de documento—, empresa, cargo y estado. Los destinatarios son el correo de la empresa, `noreply.beca.azul@gmail.com` y el valor opcional `NOTIFICACIONES_EMAIL_ADICIONAL`.
+- **Homologación:** al aprobarla, envía la empresa, RUC y los certificados empresariales —SCTR pensión, SCTR salud y homologación— con fechas y estado, a los mismos destinatarios de las notificaciones de habilitación.
+- **Reporte:** Beca Azul envía el reporte seleccionado como HTML a `REPORTES_EMAILS`; si no está definida, se usa `REPORTES_EMAIL` y, como alternativa, `EMAIL_HOST_USER`.
 
-Beca Azul puede homologar una empresa solo si los SCTR de pensión y salud están
-aprobados, tienen archivo físico vigente, y el certificado de homologación
-también tiene archivo físico vigente. Si cualquiera de esas aprobaciones o
-vigencias deja de cumplirse, la homologación se invalida automáticamente.
+Los correos de alta, habilitación y homologación tienen una versión HTML en tabla y un cuerpo de texto alternativo.
 
-## Dashboard y reportes
+### Configuración e inicialización de un entorno
 
-El dashboard presenta métricas de empresas, trabajadores y certificados, además
-de gráficas de estados y vencimientos. Los reportes permiten consultar datos
-globales a los roles administrativos y datos limitados a su empresa a Usuario
-Empresa.
+La configuración local requiere Python, las dependencias fijadas en `requirements.txt` y una instancia de PostgreSQL accesible. El archivo `.env` debe contener la clave secreta, el modo `DEBUG`, hosts permitidos, nombre/usuario/contraseña/host/puerto de la base de datos y, si se enviarán correos, las variables SMTP y destinatarios indicadas arriba. Los valores concretos son propios del entorno y no forman parte de este documento.
 
-La consulta está disponible para Administrador, Beca Azul, Planta y Usuario
-Empresa. Solo Beca Azul puede enviar reportes por correo mediante `POST`.
+El esquema de la base se administra mediante migraciones de Django. Para una base nueva, se generan las migraciones de las aplicaciones propias a partir de sus modelos y luego se aplican junto con las migraciones integradas de Django. Los datos de demostración se cargan desde `fixtures/seed.json`; después se ejecuta `preparar_demo_certificados`, que copia los PDF fuente de `pdf/` a las rutas demo y calcula fechas relativas a la fecha de ejecución.
 
-## Configuración y comprobaciones
+El fixture actual contiene cinco empresas —Apple, Google, Microsoft, Amazon y Tesla— con cinco trabajadores cada una, cursos obligatorios y certificados demo. Al preparar la demo, Apple, Google y Microsoft quedan homologadas y diez trabajadores de esas tres empresas quedan con los documentos necesarios preparados para habilitarse. El comando es repetible para los archivos y estados demo; no crea ni reemplaza los registros principales del fixture.
 
-La configuración local se realiza mediante `.env`. No deben publicarse claves,
-contraseñas, archivos reales de `media/` ni datos de producción.
-
-Comandos habituales:
-
-```text
-python manage.py migrate
-python manage.py check
-python manage.py makemigrations --check
-python manage.py test
-```
-
-## Carga inicial en VPS
-
-El proyecto utiliza un único fixture de datos iniciales:
-
-`fixtures/seed.json`
-
-Este archivo contiene empresas, trabajadores, usuarios, certificados y cursos
-obligatorios. No se debe cargar un segundo fixture para completar esos datos.
-
-`preparar_demo_certificados` instala los PDFs de ejemplo y calcula fechas y
-aprobaciones relativas al día de ejecución. Se ejecuta después del fixture y
-no crea ni reemplaza empresas, trabajadores o usuarios.
-
-En una base de datos nueva, el orden es:
-
-```text
-python manage.py migrate
-python manage.py loaddata seed
-python manage.py preparar_demo_certificados
-python manage.py check
-```
-
-El fixture no reemplaza las migraciones. Los archivos de migración de todas las
-aplicaciones deben estar desplegados antes de ejecutar `migrate`.
-
-`preparar_demo_certificados` copia los PDFs fuente disponibles en `pdf/` a las
-rutas `certificados/demo/` registradas en el fixture y deja estados variados
-de vigencia, validación y homologación. Puede volver a ejecutarse sin borrar
-registros; solo cambia los certificados demo y los estados de las empresas
-asociadas. No sustituye las migraciones ni la carga del fixture.
-
-Para reiniciar la demo se recrea la base de datos y se repite la secuencia de
-comandos anterior; no ejecutar esa secuencia sobre datos reales.
-
-Las autorizaciones se validan siempre en backend mediante mixins, querysets
-restringidos y comprobaciones explícitas; ocultar botones no es una medida de
-seguridad suficiente.
+La configuración multimedia usa `MEDIA_ROOT=media/` y `MEDIA_URL=/media/`. En modo `DEBUG`, Django sirve los archivos multimedia localmente; el acceso a certificados empresariales también está conectado a una vista con control de acceso.

@@ -57,12 +57,12 @@ class CertificadoModelTests(TestCase):
         with self.assertRaises(ValueError):
             certificado_upload_path(certificado, 'certificado.pdf')
 
-    def test_bulk_create_rechaza_certificado_con_propietario_inconsistente(self):
+    def test_bulk_create_rechaza_fecha_de_vencimiento_anterior_a_emision(self):
         certificado = Certificado(
             trabajador=self.trabajador,
-            tipo=Certificado.SCTR_PENSION,
+            tipo=Certificado.INDUCCION,
             fecha_emision=date.today(),
-            fecha_vencimiento=date.today() + timedelta(days=1),
+            fecha_vencimiento=date.today() - timedelta(days=1),
         )
 
         with self.assertRaises(IntegrityError):
@@ -160,7 +160,6 @@ class HomologacionManualTests(TestCase):
             dni='12345678',
             nombres='Ana',
             apellidos='Prueba',
-            habilitado=True,
         )
         empresa_anterior.homologacion = True
         empresa_anterior.save(update_fields=['homologacion'])
