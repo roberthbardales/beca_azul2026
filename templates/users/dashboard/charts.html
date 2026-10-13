@@ -2,12 +2,10 @@
     <h2 id="dashboard-charts-title" class="mb-3 text-sm font-semibold uppercase tracking-wide text-[#64748b]">
         Gráficas
     </h2>
-<div class="dashboard-chart-grid dashboard-chart-grid-layout grid items-stretch gap-5">
-    <div class="dashboard-compliance-width">
-        {% include 'users/dashboard/charts/compliance.html' %}
-    </div>
+<div class="grid grid-cols-1 items-stretch gap-y-6">
+    {% include 'users/dashboard/charts/compliance.html' %}
     {% include 'users/dashboard/charts/workers_by_company.html' %}
+    {% include 'users/dashboard/charts/recent_registrations.html' %}
+    {% include 'users/dashboard/charts/workers_monthly.html' %}
 </div>
-{% include 'users/dashboard/charts/recent_registrations.html' %}
-{% include 'users/dashboard/charts/workers_monthly.html' %}
 </section>

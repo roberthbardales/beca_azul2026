@@ -350,6 +350,68 @@ main table.app-table th {
     line-height: 1.35;
 }
 
+main table.app-table.company-workers-table th:nth-child(4),
+main table.app-table.company-workers-table th:nth-child(5),
+main table.app-table.company-workers-table th:nth-child(2),
+main table.app-table.company-workers-table th:nth-child(3) {
+    text-align: center !important;
+}
+
+main table.app-table.workers-list-table th,
+main table.app-table.workers-list-table td {
+    padding-right: .5rem !important;
+    padding-left: .5rem !important;
+}
+
+main table.app-table.company-workers-table td:nth-child(2),
+main table.app-table.company-workers-table td:nth-child(3) {
+    text-align: center !important;
+}
+
+main table.app-table.company-workers-table th,
+main table.app-table.company-workers-table td {
+    height: 0 !important;
+    padding-top: .5rem !important;
+    padding-bottom: .5rem !important;
+    line-height: 1.1 !important;
+}
+
+main table.app-table.companies-list-table.companies-list-table--roomy th,
+main table.app-table.companies-list-table.companies-list-table--roomy td {
+    height: auto !important;
+    padding-top: .5rem !important;
+    padding-bottom: .5rem !important;
+}
+
+main table.app-table.companies-list-table.companies-list-table--roomy tbody td {
+    height: auto !important;
+    padding-top: .4rem !important;
+    padding-bottom: .4rem !important;
+}
+
+main table.app-table.users-list-table.users-list-table--roomy th,
+main table.app-table.users-list-table.users-list-table--roomy td {
+    height: auto !important;
+    padding-top: .5rem !important;
+    padding-bottom: .5rem !important;
+}
+
+main table.app-table.users-list-table.users-list-table--roomy tbody td {
+    height: auto !important;
+    min-height: 0 !important;
+    padding-top: .3rem !important;
+    padding-bottom: .3rem !important;
+    line-height: 1.35 !important;
+}
+
+main table.app-table.companies-list-table th:nth-child(n+3) {
+    text-align: center !important;
+}
+
+main table.app-table.companies-list-table td:nth-child(n+3) {
+    text-align: center !important;
+}
+
 main table.app-table td {
     padding: .5rem .375rem !important;
     border-color: #b8c0cc !important;
@@ -445,5 +507,12 @@ main .list-filter select:focus {
 
     main .responsive-table table.app-table td {
         display: table-cell !important;
+    }
+
+    main table.app-table.company-workers-table th,
+    main table.app-table.company-workers-table td {
+        height: 0 !important;
+        padding-top: .5rem !important;
+        padding-bottom: .5rem !important;
     }
 }

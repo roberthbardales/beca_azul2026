@@ -27,7 +27,7 @@
                 </div>
             </div>
         </section>
-        <section class="company-sctr-card rounded-xl border px-4 py-3 shadow-sm {% if sctr_valido %}company-sctr-card--registered{% else %}company-sctr-card--pending{% endif %}">
+        <section class="company-sctr-card rounded-xl border px-4 py-1 shadow-sm {% if sctr_valido %}company-sctr-card--registered{% else %}company-sctr-card--pending{% endif %}">
             <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                 <div class="min-w-0">
                      <div class="flex flex-wrap items-center gap-2"><h2 class="text-base font-bold text-[var(--ink-900)]">SCTR pensión</h2><span class="inline-flex rounded-full px-2 py-0.5 text-xs font-semibold {% if sctr_pension_valido %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">{% if sctr_pension_valido %}Registrado{% else %}Pendiente{% endif %}</span><span class="text-xs font-semibold {% if sctr_pension_aprobado %}text-green-700{% else %}text-red-700{% endif %}">Aprobación: {% if sctr_pension_aprobado %}Aprobada{% else %}No aprobada{% endif %}</span></div>
@@ -36,7 +36,7 @@
                        <div class="flex flex-wrap gap-2">{% if request.user.role == '1' or request.user.role == '3' %}{% if sctr_pension_archivo_existe %}<a class="btn btn-secondary btn-sm" href="{% url 'app_control:empresa_certificado_ver' sctr_pension.pk %}" target="_blank" rel="noopener">Ver certificado</a>{% endif %}{% endif %}{% if request.user.role == '1' %}<form method="post" action="{% url 'app_control:empresa_sctr_toggle' empresa.pk 'pension' %}" class="inline">{% csrf_token %}<button type="submit" class="btn btn-sm {% if sctr_pension_aprobado %}btn-quinary{% else %}btn-primary{% endif %}"{% if not empresa.activo or not sctr_pension_valido and not sctr_pension_aprobado %} disabled{% endif %}>{% if sctr_pension_aprobado %}Desaprobar SCTR pensión{% else %}Aprobar SCTR pensión{% endif %}</button></form>{% endif %}{% if request.user.role == '3' %}<a class="btn btn-primary btn-sm {% if not empresa.activo %}pointer-events-none opacity-50{% endif %}" href="{% url 'app_control:empresa_sctr_editar' empresa.pk %}"{% if not empresa.activo %} aria-disabled="true"{% endif %}>{% if sctr_pension and sctr_pension.archivo %}Editar SCTR pensión{% else %}Registrar SCTR pensión{% endif %}</a>{% endif %}</div>
             </div>
         </section>
-        <section class="company-sctr-card rounded-xl border px-4 py-3 shadow-sm {% if sctr_salud_valido %}company-sctr-card--registered{% else %}company-sctr-card--pending{% endif %}">
+        <section class="company-sctr-card rounded-xl border px-4 py-1 shadow-sm {% if sctr_salud_valido %}company-sctr-card--registered{% else %}company-sctr-card--pending{% endif %}">
             <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                 <div class="min-w-0">
                      <div class="flex flex-wrap items-center gap-2"><h2 class="text-base font-bold text-[var(--ink-900)]">SCTR salud</h2><span class="inline-flex rounded-full px-2 py-0.5 text-xs font-semibold {% if sctr_salud_valido %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">{% if sctr_salud_valido %}Registrado{% else %}Pendiente{% endif %}</span><span class="text-xs font-semibold {% if sctr_salud_aprobado %}text-green-700{% else %}text-red-700{% endif %}">Aprobación: {% if sctr_salud_aprobado %}Aprobada{% else %}No aprobada{% endif %}</span></div>
@@ -45,7 +45,7 @@
                     <div class="flex flex-wrap gap-2">{% if request.user.role == '1' or request.user.role == '3' %}{% if sctr_salud_archivo_existe %}<a class="btn btn-secondary btn-sm" href="{% url 'app_control:empresa_certificado_ver' sctr_salud.pk %}" target="_blank" rel="noopener">Ver certificado</a>{% endif %}{% endif %}{% if request.user.role == '1' %}<form method="post" action="{% url 'app_control:empresa_sctr_toggle' empresa.pk 'salud' %}" class="inline"><button type="submit" class="btn btn-sm {% if sctr_salud_aprobado %}btn-quinary{% else %}btn-primary{% endif %}"{% if not empresa.activo or not sctr_salud_valido and not sctr_salud_aprobado %} disabled{% endif %}>{% csrf_token %}{% if sctr_salud_aprobado %}Desaprobar SCTR salud{% else %}Aprobar SCTR salud{% endif %}</button></form>{% endif %}{% if request.user.role == '3' %}<a class="btn btn-primary btn-sm {% if not empresa.activo %}pointer-events-none opacity-50{% endif %}" href="{% url 'app_control:empresa_sctr_salud_editar' empresa.pk %}"{% if not empresa.activo %} aria-disabled="true"{% endif %}>{% if sctr_salud and sctr_salud.archivo %}Editar SCTR salud{% else %}Registrar SCTR salud{% endif %}</a>{% endif %}</div>
             </div>
         </section>
-        <section class="company-sctr-card rounded-xl border px-4 py-3 shadow-sm {% if homologacion_valida %}company-sctr-card--registered{% else %}company-sctr-card--pending{% endif %}">
+        <section class="company-sctr-card rounded-xl border px-4 py-1 shadow-sm {% if homologacion_valida %}company-sctr-card--registered{% else %}company-sctr-card--pending{% endif %}">
             <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                 <div class="min-w-0">
                      <div class="flex flex-wrap items-center gap-2"><h2 class="text-base font-bold text-[var(--ink-900)]">Cert. Homologación</h2><span class="inline-flex rounded-full px-2 py-0.5 text-xs font-semibold {% if homologacion_valida %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">{% if homologacion_valida %}Vigente{% elif homologacion_archivo_existe %}Vencido{% else %}Pendiente{% endif %}</span><span class="text-xs font-semibold {% if empresa.homologacion %}text-green-700{% else %}text-red-700{% endif %}">Aprobación: {% if empresa.homologacion %}Aprobada{% else %}No aprobada{% endif %}</span></div>
@@ -57,6 +57,35 @@
         <section aria-label="Resumen de empresa" class="company-metrics grid w-full grid-cols-1 gap-2 sm:grid-cols-3">
             <div class="rounded-lg border border-gray-100 bg-white px-4 py-3 shadow-sm"><p class="text-xs font-semibold uppercase tracking-wide text-[var(--ink-500)]">Total trabajadores</p><p class="mt-1 text-xl font-bold text-[var(--ink-900)]">{{ total_trabajadores }}</p></div>
              {% for grupo in trabajadores_por_estado %}<div class="rounded-lg border border-gray-100 bg-white px-4 py-3 shadow-sm"><p class="text-xs font-semibold uppercase tracking-wide text-[var(--ink-500)]">{{ grupo.label }}</p><p class="mt-1 text-xl font-bold {% if grupo.estado == 'HABILITADO' %}text-green-600{% else %}text-red-600{% endif %}">{{ grupo.total }}</p></div>{% endfor %}
+        </section>
+        <section class="rounded-xl border border-gray-100 bg-white p-4 shadow-sm" aria-labelledby="empresa-trabajadores-title">
+            <h2 id="empresa-trabajadores-title" class="mb-3 text-base font-bold text-[#0f172a]">Trabajadores</h2>
+            <div class="app-table-wrap responsive-table">
+                <table class="app-table company-workers-table min-w-full responsive-table" aria-label="Trabajadores de {{ empresa.nombre }}" style="table-layout: fixed;">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="w-[34%] px-3 py-2 text-left text-xs font-semibold text-[#A5A5A5]">Nombre completo</th>
+                            <th class="w-[14%] whitespace-nowrap px-3 py-2 text-left text-xs font-semibold text-[#A5A5A5]">DNI</th>
+                            <th class="w-[22%] px-3 py-2 text-left text-xs font-semibold text-[#A5A5A5]">Cargo</th>
+                            <th class="w-[13%] whitespace-nowrap px-3 py-2 text-center text-xs font-semibold text-[#A5A5A5]">Estado</th>
+                            <th class="w-[17%] px-3 py-2 text-center text-xs font-semibold text-[#A5A5A5]">Habilitación</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        {% for trabajador in empresa.trabajadores.all %}
+                        <tr>
+                            <td data-label="Nombre completo" class="px-5 py-3 text-sm font-medium">{{ trabajador.apellidos }}, {{ trabajador.nombres }}</td>
+                            <td data-label="DNI" class="px-5 py-3 text-sm">{{ trabajador.dni }}</td>
+                            <td data-label="Cargo" class="px-5 py-3 text-sm">{{ trabajador.cargo|default:'—' }}</td>
+                            <td data-label="Estado" class="px-5 py-3 text-center text-sm"><span class="inline-block rounded-full px-2 py-0.5 text-xs font-medium {% if trabajador.activo %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">{% if trabajador.activo %}Activo{% else %}Inactivo{% endif %}</span></td>
+                            <td data-label="Habilitación" class="px-5 py-3 text-center text-sm"><span class="inline-block rounded-full px-2 py-0.5 text-xs font-medium {% if trabajador.activo and trabajador.habilitado_efectivo %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">{% if trabajador.activo and trabajador.habilitado_efectivo %}Habilitado{% else %}No habilitado{% endif %}</span></td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5" class="px-4 py-8 text-center text-sm text-[#A5A5A5]">No hay trabajadores registrados.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </section>
          {% if request.user.role == '3' or request.user.role == '2' %}
         <section class="dashboard-chart mx-auto w-full max-w-xl rounded-lg border border-gray-100 bg-white px-4 py-2 shadow-sm" aria-labelledby="empresa-estado-trabajadores-title">
