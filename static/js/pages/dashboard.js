@@ -2,7 +2,7 @@
     var dataElement = document.getElementById('dashboard-charts-data');
     if (!dataElement) return;
 
-    var chartIds = ['estado-cumplimiento', 'trabajadores-por-empresa', 'vencimientos-por-empresa', 'trabajadores-mensual'];
+    var chartIds = ['estado-cumplimiento', 'trabajadores-por-empresa', 'trabajadores-mensual', 'documentos-por-vencer'];
 
     function showChartError(message) {
         chartIds.forEach(function (id) {
@@ -36,16 +36,14 @@
         showChartError('No hay datos válidos para generar las gráficas.');
         return;
     }
-    if (!data.vencimientos_empresa || !Array.isArray(data.vencimientos_empresa.labels) ||
-            !Array.isArray(data.vencimientos_empresa.vigentes) ||
-            !Array.isArray(data.vencimientos_empresa.proximos) ||
-            !Array.isArray(data.vencimientos_empresa.vencidos)) {
-        showChartError('No hay datos válidos para generar las gráficas.');
-        return;
-    }
     if (!data.trabajadores_mensual || !Array.isArray(data.trabajadores_mensual.labels) ||
             !Array.isArray(data.trabajadores_mensual.habilitados) ||
             !Array.isArray(data.trabajadores_mensual.inhabilitados)) {
+        showChartError('No hay datos válidos para generar las gráficas.');
+        return;
+    }
+    if (!data.documentos_por_vencer || !Array.isArray(data.documentos_por_vencer.labels) ||
+            !Array.isArray(data.documentos_por_vencer.data)) {
         showChartError('No hay datos válidos para generar las gráficas.');
         return;
     }
@@ -118,9 +116,9 @@
     var complianceLegend = document.getElementById('cumplimiento-legend');
     var complianceCanvas = document.getElementById('estado-cumplimiento');
     var workersStatusCanvas = document.getElementById('trabajadores-por-empresa');
-    var expirationsCanvas = document.getElementById('vencimientos-por-empresa');
     var workersMonthlyCanvas = document.getElementById('trabajadores-mensual');
-    if (!complianceLegend || !complianceCanvas || !workersStatusCanvas || !expirationsCanvas || !workersMonthlyCanvas) {
+    var expiringDocumentsCanvas = document.getElementById('documentos-por-vencer');
+    if (!complianceLegend || !complianceCanvas || !workersStatusCanvas || !workersMonthlyCanvas || !expiringDocumentsCanvas) {
         showChartError('No fue posible preparar las gráficas.');
         return;
     }
@@ -177,16 +175,6 @@
         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' }, tooltip: tooltipOptions(' trabajadores') }, scales: { x: { ticks: { autoSkip: false, maxRotation: 55, minRotation: 30, padding: 6 }, border: { display: false }, grid: { display: false } }, y: { beginAtZero: true, ticks: { precision: 0, padding: 8 }, border: { display: false }, grid: { color: gridColor } } } }
     });
 
-    new Chart(expirationsCanvas, {
-        type: 'bar', plugins: [emptyStatePlugin],
-        data: { labels: data.vencimientos_empresa.labels, datasets: [
-            { label: 'Vigentes', data: data.vencimientos_empresa.vigentes, backgroundColor: '#10b981', borderRadius: 4, borderSkipped: false },
-            { label: 'Próximos a vencer', data: data.vencimientos_empresa.proximos, backgroundColor: '#fbbf24', borderRadius: 4, borderSkipped: false },
-            { label: 'Vencidos', data: data.vencimientos_empresa.vencidos, backgroundColor: '#ef4444', borderRadius: 4, borderSkipped: false }
-        ] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' }, tooltip: tooltipOptions(' certificados') }, scales: { x: { ticks: { autoSkip: false, maxRotation: 55, minRotation: 30 }, border: { display: false }, grid: { display: false } }, y: { beginAtZero: true, ticks: { precision: 0 }, border: { display: false }, grid: { color: gridColor } } } }
-    });
-
     new Chart(workersMonthlyCanvas, {
         type: 'bar', plugins: [emptyStatePlugin],
         data: { labels: data.trabajadores_mensual.labels, datasets: [
@@ -200,6 +188,32 @@
             scales: {
                 x: { stacked: true, border: { display: false }, grid: { display: false } },
                 y: { stacked: true, beginAtZero: true, ticks: { precision: 0 }, border: { display: false }, grid: { color: gridColor } }
+            }
+        }
+    });
+
+    new Chart(expiringDocumentsCanvas, {
+        type: 'bar',
+        plugins: [emptyStatePlugin],
+        data: {
+            labels: data.documentos_por_vencer.labels,
+            datasets: [{
+                label: 'Documentos por vencer',
+                data: data.documentos_por_vencer.data,
+                backgroundColor: '#f59e0b',
+                borderRadius: 4,
+                borderSkipped: false,
+                maxBarThickness: 42
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            indexAxis: 'y',
+            plugins: { legend: { display: false }, tooltip: tooltipOptions(' documentos') },
+            scales: {
+                x: { beginAtZero: true, ticks: { precision: 0 }, border: { display: false }, grid: { color: gridColor } },
+                y: { ticks: { autoSkip: false }, border: { display: false }, grid: { display: false } }
             }
         }
     });

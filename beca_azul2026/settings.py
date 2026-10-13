@@ -176,6 +176,8 @@ AUTH_USER_MODEL = 'users.User'
 EMAIL_BACKEND = 'anymail.backends.brevo.EmailBackend'
 ANYMAIL = {
     'BREVO_API_KEY': env('BREVO_API_KEY'),
+    # Máximo de espera por cada solicitud a la API transaccional de Brevo.
+    'REQUESTS_TIMEOUT': 10,
 }
 DEFAULT_FROM_EMAIL = 'CheckID <notificaciones@envios.beca-azul.com>'
 NOTIFICACIONES_EMAIL_ADICIONAL = env('NOTIFICACIONES_EMAIL_ADICIONAL', default='').strip()

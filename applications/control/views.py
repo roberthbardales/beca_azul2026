@@ -85,37 +85,53 @@ def capturar_estados_habilitacion(empresa):
 
 def notificar_transiciones_habilitacion(request, trabajador_ids, estados_anteriores):
     for trabajador_id in trabajador_ids:
-        if estados_anteriores.get(trabajador_id, False):
-            continue
         trabajador = Trabajador.objects.select_related('empresa').get(pk=trabajador_id)
-        if not trabajador.habilitado_efectivo:
+        habilitado_antes = estados_anteriores.get(trabajador_id, False)
+        habilitado_ahora = trabajador.habilitado_efectivo
+        if habilitado_antes == habilitado_ahora:
             continue
         try:
-            enviados = enviar_notificacion_habilitacion(
-                'Trabajador habilitado automáticamente',
-                (
+            if habilitado_ahora:
+                asunto = 'Trabajador habilitado automáticamente'
+                mensaje = (
                     f'El trabajador {trabajador.nombres} {trabajador.apellidos} '
                     f'quedó habilitado automáticamente para {trabajador.empresa.nombre} '
-                    f'al completar los requisitos requeridos.\n'
-                    f'Documento: {trabajador.get_tipo_documento_display()} {trabajador.dni}\n'
-                    f'Cargo: {trabajador.cargo or "-"}'
-                ),
-                trabajador.empresa.correo,
-                (
+                    'al completar los requisitos requeridos.'
+                )
+                datos = (
                     ('Nombre completo', f'{trabajador.nombres} {trabajador.apellidos}'),
                     ('Documento', trabajador.get_tipo_documento_display()),
                     ('Número de documento', trabajador.dni),
                     ('Cargo', trabajador.cargo),
                     ('Empresa', trabajador.empresa.nombre),
                     ('Habilitación', 'Habilitado'),
-                ),
+                )
+            else:
+                asunto = 'Trabajador deshabilitado'
+                mensaje = (
+                    f'El trabajador {trabajador.nombres} {trabajador.apellidos} '
+                    'quedó deshabilitado.'
+                )
+                datos = (
+                    ('Nombre completo', f'{trabajador.nombres} {trabajador.apellidos}'),
+                    ('Documento', trabajador.get_tipo_documento_display()),
+                    ('Número de documento', trabajador.dni),
+                    ('Habilitación', 'Deshabilitado'),
+                )
+
+            enviados = enviar_notificacion_habilitacion(
+                asunto,
+                mensaje,
+                trabajador.empresa.correo,
+                datos,
             )
             if not enviados:
                 raise RuntimeError('El correo no fue aceptado para envío.')
         except Exception:
+            estado = 'habilitado' if habilitado_ahora else 'deshabilitado'
             messages.warning(
                 request,
-                f'El trabajador "{trabajador}" quedó habilitado, pero no se pudo enviar la notificación por correo.',
+                f'El trabajador "{trabajador}" quedó {estado}, pero no se pudo enviar la notificación por correo.',
             )
 
 
@@ -277,6 +293,23 @@ class DashboardView(LoginRequiredMixin, View):
         certificados_proximos_30 = certificados_con_archivo.filter(
             fecha_emision__lte=hoy, fecha_vencimiento__gte=hoy, fecha_vencimiento__lte=limite_30
         ).count()
+        certificados_por_vencer = Certificado.objects.filter(
+            fecha_vencimiento__gte=hoy,
+            fecha_vencimiento__lte=limite_30,
+        )
+        vencimientos_por_tipo = []
+        for tipo, etiqueta in Certificado.TIPO_CHOICES:
+            if tipo == Certificado.CURSOS:
+                for curso, nombre_curso in Certificado.CURSO_CHOICES:
+                    vencimientos_por_tipo.append({
+                        'label': nombre_curso,
+                        'total': certificados_por_vencer.filter(tipo=tipo, curso=curso).count(),
+                    })
+            else:
+                vencimientos_por_tipo.append({
+                    'label': etiqueta,
+                    'total': certificados_por_vencer.filter(tipo=tipo).count(),
+                })
         certificados_proximos_60 = certificados_con_archivo.filter(
             fecha_emision__lte=hoy, fecha_vencimiento__gte=hoy, fecha_vencimiento__lte=limite_60
         ).count()
@@ -429,6 +462,10 @@ class DashboardView(LoginRequiredMixin, View):
                     'inhabilitados': [empresa['inhabilitados'] for empresa in trabajadores_por_empresa],
                 },
                 'trabajadores_mensual': trabajadores_por_mes,
+                'documentos_por_vencer': {
+                    'labels': [item['label'] for item in vencimientos_por_tipo],
+                    'data': [item['total'] for item in vencimientos_por_tipo],
+                },
                 'cumplimiento': [
                     trabajadores_habilitados,
                     trabajadores_no_habilitados,
@@ -691,39 +728,19 @@ class EmpresaSCTRToggleView(EmpresaActivaRequiredMixin, BecaAzulRequiredMixin, V
 class EmpresaHomologacionToggleView(EmpresaActivaRequiredMixin, BecaAzulRequiredMixin, View):
     def post(self, request, pk):
         empresa = get_object_or_404(Empresa, pk=pk)
-        empresa.invalidar_aprobaciones_certificados_no_vigentes()
         estados_habilitacion = capturar_estados_habilitacion(empresa)
-        empresa.invalidar_homologacion_si_corresponde()
         if not empresa.homologacion:
             certificados = {
                 certificado.tipo: certificado
                 for certificado in empresa.certificados.filter(
-                    tipo__in=(Certificado.SCTR_PENSION, Certificado.SCTR_SALUD, Certificado.HOMOLOGACION)
+                    tipo=Certificado.HOMOLOGACION
                 )
             }
-            sctr_pension = certificados.get(Certificado.SCTR_PENSION)
-            sctr_salud = certificados.get(Certificado.SCTR_SALUD)
             homologacion = certificados.get(Certificado.HOMOLOGACION)
-            tiene_sctr_pension = bool(sctr_pension and sctr_pension.esta_vigente)
-            tiene_sctr_salud = bool(sctr_salud and sctr_salud.esta_vigente)
             tiene_homologacion = bool(homologacion and homologacion.esta_vigente)
-            if not empresa.sctr_pension_aprobado:
-                messages.error(request, 'El SCTR pensión debe estar aprobado.')
-            if not empresa.sctr_salud_aprobado:
-                messages.error(request, 'El SCTR salud debe estar aprobado.')
-            if not tiene_sctr_pension:
-                messages.error(request, 'Falta subir el SCTR pensión o no está vigente.')
-            if not tiene_sctr_salud:
-                messages.error(request, 'Falta subir el SCTR salud o no está vigente.')
             if not tiene_homologacion:
                 messages.error(request, 'Falta subir el certificado de homologación.')
-            if (
-                not tiene_sctr_pension
-                or not tiene_sctr_salud
-                or not tiene_homologacion
-                or not empresa.sctr_pension_aprobado
-                or not empresa.sctr_salud_aprobado
-            ):
+            if not tiene_homologacion:
                 return redirect('app_control:empresa_detalle', pk=empresa.pk)
         empresa.homologacion = not empresa.homologacion
         empresa.save(update_fields=['homologacion'])
@@ -1438,11 +1455,17 @@ class TrabajadorCursoObligatorioToggleView(BecaAzulRequiredMixin, View):
 
 class TrabajadorToggleView(AdministrarTrabajadoresMixin, View):
     def post(self, request, pk):
-        trabajador = get_object_or_404(Trabajador, pk=pk)
+        trabajador = get_object_or_404(Trabajador.objects.select_related('empresa'), pk=pk)
         if not trabajador.empresa.activo:
             raise PermissionDenied
+        estado_anterior = trabajador.habilitado_efectivo
         trabajador.activo = not trabajador.activo
         trabajador.save(update_fields=['activo'])
+        notificar_transiciones_habilitacion(
+            request,
+            [trabajador.pk],
+            {trabajador.pk: estado_anterior},
+        )
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return JsonResponse({'activo': trabajador.activo, 'nombre': str(trabajador)})
         estado = 'activado' if trabajador.activo else 'desactivado'

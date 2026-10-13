@@ -79,6 +79,15 @@ class Empresa(TimeStampedModel):
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
 
+    @property
+    def puede_aprobar_homologacion(self):
+        return (
+            self.sctr_pension_aprobado
+            and self.sctr_salud_aprobado
+            and self.sctr_empresa_vigente(CertificadoTipo.SCTR_PENSION)
+            and self.sctr_empresa_vigente(CertificadoTipo.SCTR_SALUD)
+        )
+
     def _certificado_vigente(self, tipo, attr_name):
         certificado = self._certificado(tipo, attr_name)
         return bool(certificado and certificado.esta_vigente)
@@ -141,9 +150,6 @@ class Empresa(TimeStampedModel):
                 self.trabajadores.filter(**{campo_trabajador: True}).update(**{campo_trabajador: False})
         if cambios:
             update_values = {campo: False for campo in cambios}
-            if any(campo in cambios for campo in ('sctr_pension_aprobado', 'sctr_salud_aprobado')):
-                update_values['homologacion'] = False
-                self.homologacion = False
             type(self).objects.filter(pk=self.pk).update(**update_values)
         return bool(cambios)
 
@@ -156,13 +162,9 @@ class Empresa(TimeStampedModel):
         return self._certificado_estado(CertificadoTipo.HOMOLOGACION, 'homologacion_certificados', self.homologacion)
 
     def invalidar_homologacion_si_corresponde(self):
-        homologacion_valida = (
-            self.homologacion_vigente
-            and self.sctr_pension_aprobado
-            and self._certificado_vigente(CertificadoTipo.SCTR_PENSION, 'sctr_pension_certificados')
-            and self.sctr_salud_aprobado
-            and self._certificado_vigente(CertificadoTipo.SCTR_SALUD, 'sctr_salud_certificados')
-        )
+        # Una homologación aprobada conserva su estado al desaprobar un SCTR.
+        # Los requisitos SCTR solo se verifican al momento de aprobarla.
+        homologacion_valida = self.homologacion_vigente
         if self.homologacion and not homologacion_valida:
             type(self).objects.filter(pk=self.pk, homologacion=True).update(homologacion=False)
             self.homologacion = False
