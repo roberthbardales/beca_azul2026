@@ -595,6 +595,11 @@ class TrabajadorEmpresaCreateViewTests(TestCase):
         self.assertNotContains(response, 'Aptitud médica')
         self.assertNotContains(response, 'induccion_archivo')
 
+    @override_settings(
+        EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend',
+        REPORTES_EMAILS=['reportes@example.com'],
+        DEFAULT_FROM_EMAIL='CheckID <notificaciones@envios.beca-azul.com>',
+    )
     def test_usuario_empresa_puede_crear_trabajador(self):
         empresa = Empresa.objects.create(nombre='Empresa', ruc='20123456789', correo='empresa@example.com')
         user = User.objects.create_user(
@@ -652,8 +657,8 @@ class TrabajadorEmpresaCreateViewTests(TestCase):
         self.assertEqual(trabajador.certificados.count(), 2)
         self.assertEqual(len(mail.outbox), 1)
         correo = mail.outbox[0]
-        self.assertEqual(correo.to, [settings.EMAIL_HOST_USER])
-        self.assertEqual(correo.from_email, settings.EMAIL_HOST_USER)
+        self.assertEqual(correo.to, ['reportes@example.com'])
+        self.assertEqual(correo.from_email, settings.DEFAULT_FROM_EMAIL)
         self.assertIn(trabajador.nombres, correo.body)
         self.assertIn(trabajador.apellidos, correo.body)
         self.assertIn(empresa.nombre, correo.body)
@@ -666,7 +671,7 @@ class TrabajadorEmpresaCreateViewTests(TestCase):
         self.assertIn('Número de documento', contenido_html)
         self.assertIn(trabajador.dni, contenido_html)
 
-    @patch('applications.control.views.send_mail', side_effect=OSError('SMTP no disponible'))
+    @patch('applications.control.views.send_mail', side_effect=OSError('API de correo no disponible'))
     def test_fallo_de_correo_muestra_advertencia_sin_cancelar_registro(self, enviar_correo):
         empresa = Empresa.objects.create(nombre='Empresa aviso', ruc='20123456789', correo='empresa-aviso@example.com')
         user = User.objects.create_user(

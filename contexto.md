@@ -124,18 +124,18 @@ El panel presenta indicadores de empresas, trabajadores, habilitaciones, cumplim
 
 ### Notificaciones por correo
 
-El envío usa el backend SMTP de Django. La configuración se obtiene de `.env` mediante `django-environ`; se utilizan las variables `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`, `EMAIL_USE_TLS`, `EMAIL_USE_SSL` y `DEFAULT_FROM_EMAIL`.
+El envío usa `django-anymail` con el backend de Brevo por API HTTPS; no utiliza SMTP. La clave se obtiene de `BREVO_API_KEY` en `.env` mediante `django-environ`. El remitente predeterminado es `CheckID <notificaciones@envios.beca-azul.com>`.
 
-- **Alta de trabajador:** envía una notificación con nombre, apellido, tipo y número de documento, cargo y empresa al correo configurado como `EMAIL_HOST_USER`.
+- **Alta de trabajador:** envía una notificación con nombre, apellido, tipo y número de documento, cargo y empresa a `REPORTES_EMAILS`.
 - **Habilitación:** al pasar de no habilitado a habilitado, envía los datos del trabajador —incluido tipo y número de documento—, empresa, cargo y estado. Los destinatarios son el correo de la empresa, `noreply.beca.azul@gmail.com` y el valor opcional `NOTIFICACIONES_EMAIL_ADICIONAL`.
 - **Homologación:** al aprobarla, envía la empresa, RUC y los certificados empresariales —SCTR pensión, SCTR salud y homologación— con fechas y estado, a los mismos destinatarios de las notificaciones de habilitación.
-- **Reporte:** Beca Azul envía el reporte seleccionado como HTML a `REPORTES_EMAILS`; si no está definida, se usa `REPORTES_EMAIL` y, como alternativa, `EMAIL_HOST_USER`.
+- **Reporte:** Beca Azul envía el reporte seleccionado como HTML a `REPORTES_EMAILS`. Configura esa variable con una lista de destinatarios separados por comas.
 
 Los correos de alta, habilitación y homologación tienen una versión HTML en tabla y un cuerpo de texto alternativo.
 
 ### Configuración e inicialización de un entorno
 
-La configuración local requiere Python, las dependencias fijadas en `requirements.txt` y una instancia de PostgreSQL accesible. El archivo `.env` debe contener la clave secreta, el modo `DEBUG`, hosts permitidos, nombre/usuario/contraseña/host/puerto de la base de datos y, si se enviarán correos, las variables SMTP y destinatarios indicadas arriba. Los valores concretos son propios del entorno y no forman parte de este documento.
+La configuración local requiere Python, las dependencias fijadas en `requirements.txt` y una instancia de PostgreSQL accesible. El archivo `.env` debe contener la clave secreta, el modo `DEBUG`, hosts permitidos, nombre/usuario/contraseña/host/puerto de la base de datos y, si se enviarán correos, `BREVO_API_KEY` y los destinatarios configurados arriba. Los valores concretos son propios del entorno y no forman parte de este documento.
 
 El esquema de la base se administra mediante migraciones de Django. Para una base nueva, se generan las migraciones de las aplicaciones propias a partir de sus modelos y luego se aplican junto con las migraciones integradas de Django. Los datos de demostración se cargan desde `fixtures/seed.json`; después se ejecuta `preparar_demo_certificados`, que copia los PDF fuente de `pdf/` a las rutas demo y calcula fechas relativas a la fecha de ejecución.
 

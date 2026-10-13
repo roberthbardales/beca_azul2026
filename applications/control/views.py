@@ -1669,8 +1669,8 @@ class TrabajadorEmpresaCreateView(TrabajadorEmpresaBaseMixin, CreateView):
                     f'Apellido: {self.object.apellidos}\n'
                     f'Empresa: {self.object.empresa.nombre}'
                 ),
-                from_email=settings.EMAIL_HOST_USER,
-                recipient_list=[settings.EMAIL_HOST_USER],
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=settings.REPORTES_EMAILS,
                 fail_silently=False,
                 html_message=tabla_notificacion_html(
                     'Nuevo trabajador registrado',

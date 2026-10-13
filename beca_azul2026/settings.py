@@ -172,17 +172,14 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'users.User'
 
-# Email SMTP
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = env('EMAIL_HOST', default='smtp.gmail.com')
-EMAIL_PORT = env.int('EMAIL_PORT', default=587)
-EMAIL_HOST_USER = env('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
-EMAIL_USE_TLS = env.bool('EMAIL_USE_TLS', default=True)
-EMAIL_USE_SSL = env.bool('EMAIL_USE_SSL', default=False)
-DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default=EMAIL_HOST_USER)
+# Email transaccional mediante la API HTTPS de Brevo (sin SMTP).
+EMAIL_BACKEND = 'anymail.backends.brevo.EmailBackend'
+ANYMAIL = {
+    'BREVO_API_KEY': env('BREVO_API_KEY'),
+}
+DEFAULT_FROM_EMAIL = 'CheckID <notificaciones@envios.beca-azul.com>'
 NOTIFICACIONES_EMAIL_ADICIONAL = env('NOTIFICACIONES_EMAIL_ADICIONAL', default='').strip()
-REPORTES_EMAIL = env('REPORTES_EMAIL', default=EMAIL_HOST_USER)
+REPORTES_EMAIL = env('REPORTES_EMAIL', default=env('EMAIL_HOST_USER', default=''))
 REPORTES_EMAILS = [
     email.strip()
     for email in env('REPORTES_EMAILS', default=REPORTES_EMAIL).split(',')

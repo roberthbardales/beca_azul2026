@@ -45,7 +45,7 @@ Las versiones de dependencias Python están declaradas en `requirements.txt`.
 - **Habilitación:** el estado se calcula considerando actividad de empresa y trabajador, homologación y SCTR empresarial aprobados y vigentes, validaciones SCTR del trabajador y certificados vigentes de inducción, aptitud médica y cursos obligatorios configurados. El código contempla notificaciones por correo cuando un trabajador pasa a habilitado.
 - **Incidencias:** registro, consulta y mantenimiento de incidencias ligadas a trabajadores.
 - **Usuarios:** inicio/cierre de sesión, perfil, cambio y restablecimiento de contraseña, alta y gestión de cuentas.
-- **Paneles y reportes:** indicadores y gráficos de empresas, trabajadores y cumplimiento. El código incluye vistas de reportes y configuración SMTP para el envío por correo.
+- **Paneles y reportes:** indicadores y gráficos de empresas, trabajadores y cumplimiento. El código incluye vistas de reportes y envío de correo mediante la API HTTPS de Brevo.
 - **Garita:** búsqueda de trabajadores para consultar resultados de habilitación, con acceso de consulta según el rol.
 
 Los cursos son configurables como obligatorios por trabajador. Las reglas de validación impiden aprobar documentación que no esté vigente o cuyo archivo no esté disponible.
@@ -82,7 +82,7 @@ Las vistas verifican sesión y rol, y algunas operaciones tienen restricciones a
 
 ## 7. Arquitectura del sistema
 
-La aplicación utiliza el patrón web de Django con renderizado en servidor. Las URL dirigen solicitudes a vistas; estas aplican permisos, consultan o actualizan modelos mediante el ORM y renderizan plantillas. El navegador recibe HTML y recursos estáticos (CSS y JavaScript). PostgreSQL almacena los datos estructurados y `media/` almacena archivos. La configuración SMTP se utiliza para las notificaciones y reportes que envía la aplicación.
+La aplicación utiliza el patrón web de Django con renderizado en servidor. Las URL dirigen solicitudes a vistas; estas aplican permisos, consultan o actualizan modelos mediante el ORM y renderizan plantillas. El navegador recibe HTML y recursos estáticos (CSS y JavaScript). PostgreSQL almacena los datos estructurados y `media/` almacena archivos. Las notificaciones y reportes se envían mediante la API HTTPS de Brevo, sin SMTP.
 
 ## 8. Instalación y ejecución
 
@@ -101,7 +101,7 @@ La seguridad final también depende de mantener las variables y servicios del en
 
 ## 10. Observaciones
 
-- La base de datos debe ser PostgreSQL; las funciones de correo requieren una configuración SMTP válida.
+- La base de datos debe ser PostgreSQL; las funciones de correo requieren `BREVO_API_KEY` y destinatarios configurados en el entorno.
 - En modo de desarrollo Django sirve los medios según la configuración local. Para producción se debe configurar el servicio que servirá los archivos estáticos y medios.
 - El README contiene instrucciones generales de instalación y ejecución; la configuración concreta depende del entorno de despliegue.
 - El repositorio contiene cambios locales respecto de su último commit; este documento describe el contenido actual del proyecto y no afirma que esos cambios estén publicados o desplegados.

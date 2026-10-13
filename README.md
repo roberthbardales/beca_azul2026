@@ -68,7 +68,7 @@ Variables opcionales de base de datos y aplicación:
 | `DEBUG` | `False` |
 | `ALLOWED_HOSTS` | Lista separada por comas de hosts permitidos. |
 
-Para habilitar el correo SMTP, configura las variables correspondientes, como `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`, `EMAIL_USE_TLS` y `EMAIL_USE_SSL`. También pueden definirse remitente y destinatarios de reportes/notificaciones. No se incluyen aquí valores reales ni credenciales.
+El correo transaccional se envía mediante la API HTTPS de Brevo (no SMTP). Define `BREVO_API_KEY` en el archivo `.env` y configura allí los destinatarios de reportes y notificaciones. El remitente predeterminado es `CheckID <notificaciones@envios.beca-azul.com>`. No guardes credenciales en el repositorio.
 
 ## Instalación y ejecución
 
@@ -114,14 +114,14 @@ Desde la raíz del repositorio:
 
 Abrir `http://127.0.0.1:8000/` en el navegador. El servidor de desarrollo no está destinado a producción.
 
-La configuración SMTP solo es necesaria si se van a utilizar las funciones de notificación y envío de reportes por correo.
+`BREVO_API_KEY` solo es necesaria si se van a utilizar las funciones de notificación y envío de reportes por correo.
 
 ## Solución de problemas básicos
 
 - **Error al iniciar por configuración incompleta:** confirma que el archivo `.env` existe en la raíz y que contiene las variables requeridas, sin compartir sus valores.
 - **No conecta con PostgreSQL:** verifica que el servicio esté activo y que el nombre de base, usuario, contraseña, host y puerto coincidan con la configuración de tu entorno.
 - **Faltan dependencias:** activa el entorno virtual del proyecto e instala los paquetes con `pip install -r requirements.txt`.
-- **No se envían correos:** revisa la configuración SMTP y comprueba que sea necesaria para la función que estás probando.
+- **No se envían correos:** revisa `BREVO_API_KEY`, los destinatarios y la configuración de Brevo.
 - **Archivos estáticos o certificados no se muestran en producción:** comprueba la configuración del servidor para entregar archivos estáticos y medios; `runserver` es solo para desarrollo.
 
 ## Usuarios y permisos
@@ -138,4 +138,4 @@ El sistema contempla los roles Administrador, Beca Azul, Usuario Planta, Usuario
 
 ## Notas de despliegue
 
-En producción se requiere configurar correctamente PostgreSQL, variables de entorno, HTTPS, correo SMTP y la entrega de archivos estáticos y medios. También deben definirse procesos operativos de respaldo y monitoreo para el entorno donde se despliegue la aplicación.
+En producción se requiere configurar correctamente PostgreSQL, variables de entorno, HTTPS, correo transaccional por API HTTPS de Brevo y la entrega de archivos estáticos y medios. También deben definirse procesos operativos de respaldo y monitoreo para el entorno donde se despliegue la aplicación.
