@@ -1,11 +1,12 @@
 from datetime import date, datetime, timedelta
+import logging
 from unicodedata import combining, normalize
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
-from django.core.mail import EmailMultiAlternatives, send_mail
+from django.core.mail import send_mail
 from django.db import transaction
 from django.db.models import Count, Exists, Func, OuterRef, Prefetch, Q, Subquery, Value
 from django.db.models.functions import Concat, Lower
@@ -42,38 +43,60 @@ from .forms import (
     TrabajadorForm,
 )
 from .models import Certificado, CursoObligatorio, Empresa, EstadoTrabajadorHistorico, Incidencia, Trabajador
+from .services.notificaciones import (
+    enviar_notificacion_habilitacion,
+    enviar_reporte,
+    notificar_nuevo_trabajador,
+    tabla_notificacion_html,
+)
+
+logger = logging.getLogger(__name__)
 
 
-def tabla_notificacion_html(titulo, filas):
-    filas_html = ''.join(
-        '<tr>'
-        f'<th style="border: 1px solid #d1d5db; padding: 8px; text-align: left">{escape(etiqueta)}</th>'
-        f'<td style="border: 1px solid #d1d5db; padding: 8px">{escape(valor or "-")}</td>'
-        '</tr>'
-        for etiqueta, valor in filas
-    )
-    return (
-        f'<h2>{escape(titulo)}</h2>'
-        '<table border="1" cellpadding="6" cellspacing="0" '
-        'style="border-collapse: collapse; width: 100%; max-width: 600px">'
-        f'<tbody>{filas_html}</tbody></table>'
-    )
+def sincronizar_homologaciones_y_notificar():
+    with transaction.atomic():
+        empresas_pendientes = list(Empresa.objects.select_for_update().filter(
+            homologacion=False,
+            sctr_pension_aprobado=True,
+            sctr_salud_aprobado=True,
+        ).values_list('pk', flat=True))
+        Empresa.sincronizar_homologaciones()
+        homologadas_ids = list(Empresa.objects.filter(
+            pk__in=empresas_pendientes, homologacion=True,
+        ).values_list('pk', flat=True))
 
-
-def enviar_notificacion_habilitacion(asunto, mensaje, destinatario_empresa, datos):
-    destinatarios = list(dict.fromkeys(filter(None, (
-        destinatario_empresa,
-        'noreply.beca.azul@gmail.com',
-        settings.NOTIFICACIONES_EMAIL_ADICIONAL,
-    ))))
-    return send_mail(
-        subject=asunto,
-        message=mensaje,
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        recipient_list=destinatarios,
-        fail_silently=False,
-        html_message=tabla_notificacion_html(asunto, datos),
-    )
+    # Registrar o enviar correos fuera de la transacción de homologación:
+    # un problema de correo/log no debe revertir una aprobación válida.
+    for empresa in Empresa.objects.filter(pk__in=homologadas_ids):
+        certificados = empresa.certificados.filter(tipo__in=(
+            Certificado.SCTR_PENSION,
+            Certificado.SCTR_SALUD,
+            Certificado.HOMOLOGACION,
+        ))
+        filas_certificados = tuple(
+            (
+                certificado.get_tipo_display(),
+                f'Emisión: {certificado.fecha_emision:%d/%m/%Y}; '
+                f'vencimiento: {certificado.fecha_vencimiento:%d/%m/%Y}; '
+                f'estado: {certificado.estado}',
+            )
+            for certificado in certificados
+        )
+        try:
+            enviados = enviar_notificacion_habilitacion(
+                'Homologación de empresa aprobada',
+                f'La homologación de {empresa.nombre} fue aprobada automáticamente.\n'
+                f'RUC: {empresa.ruc}\n'
+                + '\n'.join(f'{etiqueta}: {valor}' for etiqueta, valor in filas_certificados),
+                empresa.correo,
+                (('Empresa', empresa.nombre), ('RUC', empresa.ruc), *filas_certificados,
+                 ('Homologación', 'Aprobada automáticamente')),
+                evento='homologacion_empresa',
+            )
+            if not enviados:
+                raise RuntimeError('El correo no fue aceptado para envío.')
+        except Exception:
+            logger.exception('No se pudo notificar la homologación automática de la empresa %s', empresa.pk)
 
 
 def capturar_estados_habilitacion(empresa):
@@ -124,10 +147,16 @@ def notificar_transiciones_habilitacion(request, trabajador_ids, estados_anterio
                 mensaje,
                 trabajador.empresa.correo,
                 datos,
+                evento='habilitacion_trabajador' if habilitado_ahora else 'deshabilitacion_trabajador',
             )
             if not enviados:
                 raise RuntimeError('El correo no fue aceptado para envío.')
         except Exception:
+            logger.exception(
+                'No se pudo enviar notificación de habilitación trabajador_id=%s estado=%s',
+                trabajador.pk,
+                'habilitado' if habilitado_ahora else 'deshabilitado',
+            )
             estado = 'habilitado' if habilitado_ahora else 'deshabilitado'
             messages.warning(
                 request,
@@ -183,7 +212,7 @@ class DashboardView(LoginRequiredMixin, View):
             User.PLANTA,
         ):
             raise PermissionDenied
-        Empresa.sincronizar_homologaciones()
+        sincronizar_homologaciones_y_notificar()
         hoy = timezone.localdate()
         limite_30 = hoy + timedelta(days=30)
         limite_60 = hoy + timedelta(days=60)
@@ -496,16 +525,13 @@ class ReportesView(LoginRequiredMixin, View):
         context = self._get_context(request)
         titulo = dict((clave, titulo) for clave, titulo, _ in context['reportes'])[context['reporte_actual']]
         html = render_to_string('control/reportes_email.html', context, request=request)
-        email = EmailMultiAlternatives(
-            subject=f'Reporte: {titulo}',
-            body=f'Reporte: {titulo}. Este correo contiene una versión HTML del reporte.',
-            from_email=None,
-            to=settings.REPORTES_EMAILS,
-        )
-        email.attach_alternative(html, 'text/html')
         try:
-            email.send()
+            enviar_reporte(titulo, html, settings.REPORTES_EMAILS)
         except Exception:
+            logger.exception(
+                'No se pudo enviar reporte por correo reporte=%s usuario_id=%s',
+                context['reporte_actual'], request.user.pk,
+            )
             messages.error(request, 'No se pudo enviar el reporte por correo.')
         else:
             messages.success(request, 'Reporte enviado correctamente por correo.')
@@ -516,7 +542,7 @@ class ReportesView(LoginRequiredMixin, View):
             User.ADMINISTRADOR, User.BECA_AZUL, User.PLANTA, User.USUARIO_EMPRESA
         ):
             raise PermissionDenied
-        Empresa.sincronizar_homologaciones()
+        sincronizar_homologaciones_y_notificar()
 
         reporte = request.POST.get('reporte') or request.GET.get('reporte', 'vencimientos')
         if reporte not in self.reportes:
@@ -604,7 +630,7 @@ class EmpresaListView(VerEmpresasMixin, ListView):
     paginate_by = 20
 
     def get_queryset(self):
-        Empresa.sincronizar_homologaciones()
+        sincronizar_homologaciones_y_notificar()
         queryset = Empresa.objects.annotate(
             total_trabajadores=Count('trabajadores', distinct=True),
             total_usuarios=Count('usuarios', distinct=True),
@@ -637,8 +663,6 @@ class EmpresaListView(VerEmpresasMixin, ListView):
         kwargs.setdefault('homologacion', self.request.GET.get('homologacion', ''))
         kwargs.setdefault('es_garita', self.request.user.role == User.GARITA)
         context = super().get_context_data(**kwargs)
-        for empresa in context['empresas']:
-            empresa.invalidar_homologacion_si_corresponde()
         return context
 
 
@@ -714,6 +738,7 @@ class EmpresaSCTRToggleView(EmpresaActivaRequiredMixin, BecaAzulRequiredMixin, V
                 empresa.trabajadores.filter(**{worker_validation_field: True}).update(
                     **{worker_validation_field: False}
                 )
+            sincronizar_homologaciones_y_notificar()
         estado = 'aprobado' if aprobado else 'desaprobado'
         messages.success(request, f'El SCTR {tipo} de "{empresa.nombre}" fue {estado} para sus trabajadores.')
         if aprobado:
@@ -728,67 +753,18 @@ class EmpresaSCTRToggleView(EmpresaActivaRequiredMixin, BecaAzulRequiredMixin, V
 class EmpresaHomologacionToggleView(EmpresaActivaRequiredMixin, BecaAzulRequiredMixin, View):
     def post(self, request, pk):
         empresa = get_object_or_404(Empresa, pk=pk)
-        estados_habilitacion = capturar_estados_habilitacion(empresa)
-        if not empresa.homologacion:
-            certificados = {
-                certificado.tipo: certificado
-                for certificado in empresa.certificados.filter(
-                    tipo=Certificado.HOMOLOGACION
-                )
-            }
-            homologacion = certificados.get(Certificado.HOMOLOGACION)
-            tiene_homologacion = bool(homologacion and homologacion.esta_vigente)
-            if not tiene_homologacion:
-                messages.error(request, 'Falta subir el certificado de homologación.')
-            if not tiene_homologacion:
-                return redirect('app_control:empresa_detalle', pk=empresa.pk)
-        empresa.homologacion = not empresa.homologacion
-        empresa.save(update_fields=['homologacion'])
-        estado = 'aprobada' if empresa.homologacion else 'desaprobada'
-        messages.success(request, f'La homologación de "{empresa.nombre}" fue {estado}.')
-        if empresa.homologacion:
-            notificar_transiciones_habilitacion(
-                request,
-                estados_habilitacion.keys(),
-                estados_habilitacion,
-            )
-            try:
-                enviados = enviar_notificacion_habilitacion(
-                    'Homologación de empresa aprobada',
-                    (
-                        f'La homologación de {empresa.nombre} fue aprobada.\n'
-                        f'RUC: {empresa.ruc}\n'
-                        + '\n'.join(
-                            f'{certificado.get_tipo_display()}: '
-                            f'emisión {certificado.fecha_emision:%d/%m/%Y}, '
-                            f'vencimiento {certificado.fecha_vencimiento:%d/%m/%Y}, '
-                            f'estado {certificado.estado}'
-                            for certificado in certificados.values()
-                        )
-                    ),
-                    empresa.correo,
-                    (
-                        ('Empresa', empresa.nombre),
-                        ('RUC', empresa.ruc),
-                        *tuple(
-                            (
-                                certificado.get_tipo_display(),
-                                f'Emisión: {certificado.fecha_emision:%d/%m/%Y}; '
-                                f'vencimiento: {certificado.fecha_vencimiento:%d/%m/%Y}; '
-                                f'estado: {certificado.estado}',
-                            )
-                            for certificado in certificados.values()
-                        ),
-                        ('Homologación', 'Aprobada'),
-                    ),
-                )
-                if not enviados:
-                    raise RuntimeError('El correo no fue aceptado para envío.')
-            except Exception:
-                messages.warning(
-                    request,
-                    'La homologación fue aprobada, pero no se pudo enviar la notificación por correo.',
-                )
+        sincronizar_homologaciones_y_notificar()
+        empresa.refresh_from_db()
+        empresa.invalidar_aprobaciones_certificados_no_vigentes()
+        aprobar = not empresa.homologacion_certificado_aprobado
+        if aprobar and not empresa.homologacion_vigente:
+            messages.error(request, 'No se puede aprobar el Cert. homologación sin un documento vigente.')
+            return redirect('app_control:empresa_detalle', pk=empresa.pk)
+        empresa.homologacion_certificado_aprobado = aprobar
+        empresa.save(update_fields=['homologacion_certificado_aprobado'])
+        sincronizar_homologaciones_y_notificar()
+        estado = 'aprobado' if aprobar else 'desaprobado'
+        messages.success(request, f'El Cert. homologación de "{empresa.nombre}" fue {estado}.')
         return redirect('app_control:empresa_detalle', pk=empresa.pk)
 
 
@@ -864,8 +840,8 @@ class EmpresaDetailView(LoginRequiredMixin, DetailView):
         return queryset
 
     def get_context_data(self, **kwargs):
-        self.object.invalidar_aprobaciones_certificados_no_vigentes()
-        self.object.invalidar_homologacion_si_corresponde()
+        sincronizar_homologaciones_y_notificar()
+        self.object.refresh_from_db()
         trabajadores = self.object.trabajadores.order_by('apellidos', 'nombres')
         sctr_pension = self.object.certificados.filter(tipo=Certificado.SCTR_PENSION).first()
         sctr_salud = self.object.certificados.filter(tipo=Certificado.SCTR_SALUD).first()
@@ -916,6 +892,7 @@ class EmpresaDetailView(LoginRequiredMixin, DetailView):
         kwargs.setdefault('sctr_valido', sctr_pension_valido and sctr_salud_valido)
         kwargs.setdefault('homologacion', homologacion)
         kwargs.setdefault('homologacion_valida', homologacion_valida)
+        kwargs.setdefault('homologacion_certificado_aprobado', self.object.homologacion_certificado_aprobado)
         kwargs.setdefault('homologacion_archivo_existe', homologacion_archivo_existe)
         kwargs.setdefault(
             'trabajadores_por_estado',
@@ -1684,32 +1661,14 @@ class TrabajadorEmpresaCreateView(TrabajadorEmpresaBaseMixin, CreateView):
         form.instance.empresa = self.request.user.empresa
         self.object = form.save()
         try:
-            enviados = send_mail(
-                subject='Nuevo trabajador registrado',
-                message=(
-                    'Se ha creado un nuevo trabajador.\n\n'
-                    f'Nombre: {self.object.nombres}\n'
-                    f'Apellido: {self.object.apellidos}\n'
-                    f'Empresa: {self.object.empresa.nombre}'
-                ),
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=settings.REPORTES_EMAILS,
-                fail_silently=False,
-                html_message=tabla_notificacion_html(
-                    'Nuevo trabajador registrado',
-                    (
-                        ('Nombre', self.object.nombres),
-                        ('Apellido', self.object.apellidos),
-                        ('Documento', self.object.get_tipo_documento_display()),
-                        ('Número de documento', self.object.dni),
-                        ('Cargo', self.object.cargo),
-                        ('Empresa', self.object.empresa.nombre),
-                    ),
-                ),
-            )
+            enviados = notificar_nuevo_trabajador(self.object)
             if not enviados:
                 raise RuntimeError('El correo no fue aceptado para envío.')
         except Exception:
+            logger.exception(
+                'El trabajador fue registrado pero falló su notificación trabajador_id=%s',
+                self.object.pk,
+            )
             messages.warning(
                 self.request,
                 'El trabajador fue registrado, pero no se pudo enviar la notificación por correo.',

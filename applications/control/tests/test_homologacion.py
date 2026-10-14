@@ -7,7 +7,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 
 from applications.users.models import User
 
-from ..models import Certificado, Empresa, Trabajador
+from ..models import Certificado, Empresa, RegistroNotificacion, Trabajador
 
 
 class HomologacionToggleViewTests(TestCase):
@@ -33,7 +33,7 @@ class HomologacionToggleViewTests(TestCase):
         EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend',
         NOTIFICACIONES_EMAIL_ADICIONAL='roberthbardales@gmail.com',
     )
-    def test_beca_azul_aprueba_y_desaprueba_homologacion(self):
+    def test_aprobar_certificado_homologacion_independiente_habilita_y_notifica(self):
         for tipo, nombre in (
             (Certificado.SCTR_PENSION, 'sctr-pension.pdf'),
             (Certificado.SCTR_SALUD, 'sctr-salud.pdf'),
@@ -54,25 +54,49 @@ class HomologacionToggleViewTests(TestCase):
         response = self.client.post(self.url)
         self.assertRedirects(response, reverse('app_control:empresa_detalle', args=[self.empresa.pk]))
         self.empresa.refresh_from_db()
+        self.assertTrue(self.empresa.homologacion_certificado_aprobado)
         self.assertTrue(self.empresa.homologacion)
         self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(
-            mail.outbox[0].to,
-            ['empresa@example.com', 'noreply.beca.azul@gmail.com', 'roberthbardales@gmail.com'],
-        )
-        contenido_html, tipo_contenido = mail.outbox[0].alternatives[0]
-        self.assertEqual(tipo_contenido, 'text/html')
-        self.assertIn('<table', contenido_html)
-        self.assertIn(self.empresa.ruc, contenido_html)
-        self.assertIn('Homologación', contenido_html)
-        self.assertIn('Emisión:', contenido_html)
-        self.assertIn('vencimiento:', contenido_html)
-        self.assertIn('estado:', contenido_html)
+        self.assertEqual(mail.outbox[0].to, [
+            'empresa@example.com', 'noreply.beca.azul@gmail.com', 'roberthbardales@gmail.com',
+        ])
+        self.assertIn('aprobada automáticamente', mail.outbox[0].body)
 
-        self.client.post(self.url)
-        self.empresa.refresh_from_db()
-        self.assertFalse(self.empresa.homologacion)
+        self.client.get(reverse('app_control:dashboard'))
         self.assertEqual(len(mail.outbox), 1)
+
+    @override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
+    def test_detalle_sincroniza_homologacion_cuando_requisitos_ya_estan_aprobados(self):
+        for tipo, nombre in (
+            (Certificado.SCTR_PENSION, 'sctr-pension.pdf'),
+            (Certificado.SCTR_SALUD, 'sctr-salud.pdf'),
+            (Certificado.HOMOLOGACION, 'homologacion.pdf'),
+        ):
+            Certificado.objects.create(
+                empresa=self.empresa,
+                tipo=tipo,
+                fecha_emision=date.today() - timedelta(days=1),
+                fecha_vencimiento=date.today() + timedelta(days=30),
+                archivo=SimpleUploadedFile(nombre, b'%PDF-1.4 test'),
+            )
+        type(self.empresa).objects.filter(pk=self.empresa.pk).update(
+            sctr_pension_aprobado=True,
+            sctr_salud_aprobado=True,
+            homologacion_certificado_aprobado=True,
+            homologacion=False,
+        )
+        self.client.force_login(self.crear_usuario(User.BECA_AZUL))
+
+        response = self.client.get(reverse('app_control:empresa_detalle', args=[self.empresa.pk]))
+
+        self.assertEqual(response.status_code, 200)
+        self.empresa.refresh_from_db()
+        self.assertTrue(self.empresa.homologacion)
+        self.assertContains(response, 'Homologada')
+        self.assertEqual(
+            RegistroNotificacion.objects.filter(evento='homologacion_empresa').count(),
+            1,
+        )
 
     def test_desaprobar_sctr_empresarial_desmarca_validaciones_individuales_del_tipo(self):
         for tipo in (Certificado.SCTR_PENSION, Certificado.SCTR_SALUD):
@@ -107,7 +131,7 @@ class HomologacionToggleViewTests(TestCase):
         self.assertFalse(trabajador.sctr_pension_validado)
         self.assertTrue(trabajador.sctr_salud_validado)
 
-    def test_desaprobar_sctr_no_desaprueba_homologacion(self):
+    def test_desaprobar_sctr_desaprueba_homologacion(self):
         for tipo, nombre in (
             (Certificado.SCTR_PENSION, 'sctr-pension.pdf'),
             (Certificado.SCTR_SALUD, 'sctr-salud.pdf'),
@@ -131,9 +155,9 @@ class HomologacionToggleViewTests(TestCase):
         self.empresa.refresh_from_db()
         self.assertFalse(self.empresa.sctr_pension_aprobado)
         self.assertTrue(self.empresa.sctr_salud_aprobado)
-        self.assertTrue(self.empresa.homologacion)
+        self.assertFalse(self.empresa.homologacion)
 
-    def test_desaprobar_homologacion_no_cambia_aprobaciones_sctr(self):
+    def test_homologacion_general_no_se_cambia_al_desaprobar_certificado(self):
         self.empresa.sctr_pension_aprobado = True
         self.empresa.sctr_salud_aprobado = True
         self.empresa.homologacion = True
@@ -144,8 +168,8 @@ class HomologacionToggleViewTests(TestCase):
 
         self.empresa.refresh_from_db()
         self.assertFalse(self.empresa.homologacion)
-        self.assertTrue(self.empresa.sctr_pension_aprobado)
-        self.assertTrue(self.empresa.sctr_salud_aprobado)
+        self.assertFalse(self.empresa.sctr_pension_aprobado)
+        self.assertFalse(self.empresa.sctr_salud_aprobado)
 
     def test_otros_roles_no_pueden_cambiar_homologacion(self):
         for role in (User.ADMINISTRADOR, User.PLANTA, User.USUARIO_EMPRESA):
@@ -166,7 +190,7 @@ class HomologacionToggleViewTests(TestCase):
         self.assertFalse(self.empresa.homologacion)
         self.assertEqual(len(list(response.wsgi_request._messages)), 1)
 
-    def test_puede_aprobar_homologacion_sin_aprobar_sctr(self):
+    def test_no_aprueba_homologacion_si_sctr_no_estan_aprobados(self):
         for tipo, nombre in (
             (Certificado.SCTR_PENSION, 'sctr-pension.pdf'),
             (Certificado.SCTR_SALUD, 'sctr-salud.pdf'),
@@ -181,11 +205,11 @@ class HomologacionToggleViewTests(TestCase):
             )
         self.client.force_login(self.crear_usuario(User.BECA_AZUL))
 
-        response = self.client.post(self.url)
+        response = self.client.get(reverse('app_control:empresa_detalle', args=[self.empresa.pk]))
 
-        self.assertRedirects(response, reverse('app_control:empresa_detalle', args=[self.empresa.pk]))
+        self.assertEqual(response.status_code, 200)
         self.empresa.refresh_from_db()
-        self.assertTrue(self.empresa.homologacion)
+        self.assertFalse(self.empresa.homologacion)
         self.assertFalse(self.empresa.sctr_pension_aprobado)
         self.assertFalse(self.empresa.sctr_salud_aprobado)
 
@@ -226,14 +250,15 @@ class HomologacionToggleViewTests(TestCase):
         self.assertFalse(self.empresa.homologacion)
         self.assertEqual(len(list(response.wsgi_request._messages)), 1)
 
-    def test_puede_desaprobar_sin_certificados(self):
-        self.empresa.homologacion = True
-        self.empresa.save(update_fields=['homologacion'])
+    def test_aprobacion_de_certificado_se_invalida_si_no_hay_documento(self):
+        self.empresa.homologacion_certificado_aprobado = True
+        self.empresa.save(update_fields=['homologacion_certificado_aprobado'])
         self.client.force_login(self.crear_usuario(User.BECA_AZUL))
 
         self.client.post(self.url)
 
         self.empresa.refresh_from_db()
+        self.assertFalse(self.empresa.homologacion_certificado_aprobado)
         self.assertFalse(self.empresa.homologacion)
 
     def test_detalle_muestra_pendiente_y_bloquea_aprobacion_si_falta_archivo(self):
@@ -267,6 +292,7 @@ class HomologacionToggleViewTests(TestCase):
         self.assertTrue(response.context['sctr_salud_valido'])
         self.assertFalse(response.context['homologacion_valida'])
         self.assertContains(response, 'Pendiente')
+        self.assertContains(response, 'Aprobar Cert. homologación')
         self.assertContains(response, 'disabled')
 
     def test_detalle_habilita_aprobacion_con_ambos_archivos(self):
@@ -344,7 +370,7 @@ class HomologacionToggleViewTests(TestCase):
         self.assertFalse(self.empresa.trabajadores.filter(sctr_pension_validado=True).exists())
         self.assertFalse(self.empresa.trabajadores.filter(sctr_salud_validado=True).exists())
 
-    def test_homologacion_aprobada_se_conserva_si_se_desaprueba_sctr_salud(self):
+    def test_homologacion_se_desaprueba_si_sctr_salud_no_esta_aprobado(self):
         Certificado.objects.create(
             empresa=self.empresa,
             tipo=Certificado.HOMOLOGACION,
@@ -361,5 +387,5 @@ class HomologacionToggleViewTests(TestCase):
         response = self.client.get(reverse('app_control:empresa_detalle', args=[self.empresa.pk]))
 
         self.empresa.refresh_from_db()
-        self.assertTrue(response.context['empresa'].homologacion)
-        self.assertTrue(self.empresa.homologacion)
+        self.assertFalse(response.context['empresa'].homologacion)
+        self.assertFalse(self.empresa.homologacion)

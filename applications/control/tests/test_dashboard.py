@@ -71,7 +71,12 @@ class DashboardViewTests(TestCase):
         empresa_homologada = Empresa.objects.get(ruc='20987654321')
         empresa_homologada.sctr_pension_aprobado = True
         empresa_homologada.sctr_salud_aprobado = True
-        empresa_homologada.save(update_fields=('sctr_pension_aprobado', 'sctr_salud_aprobado'))
+        empresa_homologada.homologacion_certificado_aprobado = True
+        empresa_homologada.save(update_fields=(
+            'sctr_pension_aprobado',
+            'sctr_salud_aprobado',
+            'homologacion_certificado_aprobado',
+        ))
         for tipo in (
             Certificado.SCTR_PENSION,
             Certificado.SCTR_SALUD,
@@ -93,7 +98,7 @@ class DashboardViewTests(TestCase):
         self.assertEqual(response.context['empresas_desactivadas'], 1)
         self.assertContains(response, 'Homologadas')
         self.assertContains(response, 'No homologadas')
-        self.assertContains(response, 'Desactivadas')
+        self.assertNotContains(response, 'Desactivadas')
 
     def test_dashboard_cuenta_inducciones_vigentes_y_vencidas(self):
         hoy = date.today()
@@ -671,7 +676,7 @@ class TrabajadorEmpresaCreateViewTests(TestCase):
         self.assertIn('Número de documento', contenido_html)
         self.assertIn(trabajador.dni, contenido_html)
 
-    @patch('applications.control.views.send_mail', side_effect=OSError('API de correo no disponible'))
+    @patch('applications.control.services.notificaciones.send_mail', side_effect=OSError('API de correo no disponible'))
     def test_fallo_de_correo_muestra_advertencia_sin_cancelar_registro(self, enviar_correo):
         empresa = Empresa.objects.create(nombre='Empresa aviso', ruc='20123456789', correo='empresa-aviso@example.com')
         user = User.objects.create_user(

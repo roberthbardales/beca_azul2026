@@ -64,6 +64,7 @@ class Empresa(TimeStampedModel):
     representante_legal = models.CharField(max_length=150, blank=True)
 
     homologacion = models.BooleanField(default=False, db_index=True)
+    homologacion_certificado_aprobado = models.BooleanField(default=False)
     sctr_pension_aprobado = models.BooleanField(default=False)
     sctr_salud_aprobado = models.BooleanField(default=False)
     activo = models.BooleanField(default=True)
@@ -86,6 +87,8 @@ class Empresa(TimeStampedModel):
             and self.sctr_salud_aprobado
             and self.sctr_empresa_vigente(CertificadoTipo.SCTR_PENSION)
             and self.sctr_empresa_vigente(CertificadoTipo.SCTR_SALUD)
+            and self.homologacion_certificado_aprobado
+            and self.homologacion_vigente
         )
 
     def _certificado_vigente(self, tipo, attr_name):
@@ -159,17 +162,32 @@ class Empresa(TimeStampedModel):
 
     @property
     def homologacion_estado(self):
-        return self._certificado_estado(CertificadoTipo.HOMOLOGACION, 'homologacion_certificados', self.homologacion)
+        return self._certificado_estado(
+            CertificadoTipo.HOMOLOGACION,
+            'homologacion_certificados',
+            self.homologacion_certificado_aprobado,
+        )
 
     def invalidar_homologacion_si_corresponde(self):
-        # Una homologación aprobada conserva su estado al desaprobar un SCTR.
-        # Los requisitos SCTR solo se verifican al momento de aprobarla.
-        homologacion_valida = self.homologacion_vigente
-        if self.homologacion and not homologacion_valida:
-            type(self).objects.filter(pk=self.pk, homologacion=True).update(homologacion=False)
-            self.homologacion = False
-            return True
-        return False
+        certificado_homologacion_valido = (
+            self.homologacion_certificado_aprobado and self.homologacion_vigente
+        )
+        if self.homologacion_certificado_aprobado and not self.homologacion_vigente:
+            type(self).objects.filter(pk=self.pk).update(homologacion_certificado_aprobado=False)
+            self.homologacion_certificado_aprobado = False
+        aprobacion_valida = (
+            self.sctr_pension_aprobado
+            and self.sctr_salud_aprobado
+            and self.sctr_empresa_vigente(CertificadoTipo.SCTR_PENSION)
+            and self.sctr_empresa_vigente(CertificadoTipo.SCTR_SALUD)
+            and certificado_homologacion_valido
+        )
+        nuevo_estado = bool(aprobacion_valida)
+        if self.homologacion == nuevo_estado:
+            return False
+        type(self).objects.filter(pk=self.pk).update(homologacion=nuevo_estado)
+        self.homologacion = nuevo_estado
+        return True
 
     def sctr_empresa_vigente(self, tipo):
         attr_name = {
@@ -181,7 +199,8 @@ class Empresa(TimeStampedModel):
     @classmethod
     def sincronizar_homologaciones(cls):
         empresas = cls.objects.filter(
-            Q(homologacion=True) | Q(sctr_pension_aprobado=True) | Q(sctr_salud_aprobado=True)
+            Q(homologacion=True) | Q(homologacion_certificado_aprobado=True)
+            | Q(sctr_pension_aprobado=True) | Q(sctr_salud_aprobado=True)
         ).prefetch_related(
             Prefetch(
                 'certificados',
@@ -203,8 +222,8 @@ class Empresa(TimeStampedModel):
             raise ValidationError({'sctr_pension_aprobado': 'El SCTR pensión aprobado debe tener un certificado vigente.'})
         if self.sctr_salud_aprobado and not self.sctr_empresa_vigente(CertificadoTipo.SCTR_SALUD):
             raise ValidationError({'sctr_salud_aprobado': 'El SCTR salud aprobado debe tener un certificado vigente.'})
-        if self.homologacion and not self.homologacion_vigente:
-            raise ValidationError({'homologacion': 'La homologacion aprobada debe tener un certificado vigente.'})
+        if self.homologacion_certificado_aprobado and not self.homologacion_vigente:
+            raise ValidationError({'homologacion_certificado_aprobado': 'El certificado de homologación aprobado debe estar vigente.'})
 
 class EstadoTrabajadorHistorico(models.Model):
     class Estado(models.TextChoices):
@@ -599,6 +618,7 @@ class Certificado(TimeStampedModel):
         if errores:
             raise ValidationError(errores)
 
+
     def save(self, *args, **kwargs):
         self.full_clean()
         archivo_anterior = None
@@ -700,3 +720,26 @@ class Certificado(TimeStampedModel):
         if self.validacion_vigente:
             return 'Vigente'
         return 'Pendiente'
+
+
+class RegistroNotificacion(models.Model):
+    class Estado(models.TextChoices):
+        ENVIANDO = 'ENVIANDO', 'Enviando'
+        ENVIADO = 'ENVIADO', 'Enviado'
+        FALLIDO = 'FALLIDO', 'Fallido'
+
+    evento = models.CharField(max_length=80, db_index=True)
+    asunto = models.CharField(max_length=255)
+    destinatarios = models.JSONField(default=list)
+    estado = models.CharField(max_length=10, choices=Estado.choices, default=Estado.ENVIANDO, db_index=True)
+    error = models.TextField(blank=True)
+    creado = models.DateTimeField(auto_now_add=True, db_index=True)
+    actualizado = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ('-creado',)
+        verbose_name = 'Registro de notificación'
+        verbose_name_plural = 'Registros de notificaciones'
+
+    def __str__(self):
+        return f'{self.evento}: {self.get_estado_display()}'

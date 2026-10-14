@@ -1,6 +1,6 @@
 # Sistema de Control de Empresas y Trabajadores
 
-> Guía técnica basada en el contenido actual del proyecto. Revisión del contenido: 12-10-2026. No identifica una versión publicada o desplegada.
+> Guía de instalación y uso técnico basada en el contenido actual del proyecto. No identifica una versión publicada o desplegada.
 
 Aplicación web para gestionar empresas, trabajadores y la documentación requerida para consultar y controlar su habilitación. Permite dar seguimiento a certificados, requisitos de seguridad, incidencias y estados de cumplimiento desde una interfaz con acceso según el rol del usuario.
 
@@ -37,8 +37,10 @@ media/           Archivos cargados por la aplicación
 static/          CSS, JavaScript, imágenes y otros recursos estáticos
 templates/       Plantillas HTML
 manage.py        Comandos administrativos de Django
-requirements.txt Dependencias Python
+  requirements.txt Dependencias Python
 ```
+
+Documentos complementarios: [`DOCUMENTACION_TECNICA.md`](DOCUMENTACION_TECNICA.md) describe la arquitectura, seguridad, base de datos, respaldo y despliegue; [`permisos.md`](permisos.md) resume los permisos por rol, también disponible en [`permisos.pdf`](permisos.pdf).
 
 ## Requisitos
 
@@ -126,7 +128,7 @@ Abrir `http://127.0.0.1:8000/` en el navegador. El servidor de desarrollo no est
 
 ## Usuarios y permisos
 
-El sistema contempla los roles Administrador, Beca Azul, Usuario Planta, Usuario Empresa y Usuario Garita. Los permisos dependen del rol y de la vista; las cuentas de Usuario Empresa están vinculadas a una empresa y su acceso se limita a ella.
+El sistema contempla los roles Administrador, Beca Azul, Usuario Planta, Usuario Empresa y Usuario Garita. Los permisos se aplican en las vistas y pueden depender de la operación y del estado de la empresa o trabajador. Las cuentas de Usuario Empresa están vinculadas a una empresa y las consultas de ese rol se limitan a ella en las vistas correspondientes. Consulta [`permisos.md`](permisos.md) para el resumen detallado; también está disponible en [`permisos.pdf`](permisos.pdf).
 
 ## Seguridad y archivos
 
@@ -135,7 +137,8 @@ El sistema contempla los roles Administrador, Beca Azul, Usuario Planta, Usuario
 - La configuración activa opciones adicionales de HTTPS, HSTS y cookies seguras cuando `DEBUG` está desactivado.
 - Los certificados y archivos de medios pueden contener información sensible: protege su almacenamiento y evita publicarlos o incluirlos en el control de versiones.
 - No publiques claves, contraseñas, direcciones privadas ni datos personales en este README, en el repositorio o en registros compartidos.
+- No se verificó una política automatizada de respaldos; el operador del despliegue debe definir y probar la copia y recuperación de PostgreSQL y de `MEDIA_ROOT`.
 
 ## Notas de despliegue
 
-En producción se requiere configurar correctamente PostgreSQL, variables de entorno, HTTPS, correo transaccional por API HTTPS de Brevo y la entrega de archivos estáticos y medios. También deben definirse procesos operativos de respaldo y monitoreo para el entorno donde se despliegue la aplicación.
+En producción se requiere configurar correctamente PostgreSQL, variables de entorno, HTTPS, correo transaccional por API HTTPS de Brevo y la entrega segura de archivos estáticos y medios. El repositorio no define servidor WSGI/ASGI, proxy, monitoreo ni política de copias; esos componentes deben definirse para el entorno de despliegue. No usar `runserver` en producción. Para el detalle técnico, consultar [`DOCUMENTACION_TECNICA.md`](DOCUMENTACION_TECNICA.md).

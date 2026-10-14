@@ -155,7 +155,10 @@ class SCTRForm(forms.ModelForm):
             if archivo_anterior and archivo_anterior.name != certificado.archivo.name:
                 archivo_anterior.delete(save=False)
             if self.certificate_type == Certificado.HOMOLOGACION:
-                Empresa.objects.filter(pk=certificado.empresa_id, homologacion=True).update(homologacion=False)
+                Empresa.objects.filter(pk=certificado.empresa_id).update(
+                    homologacion=False,
+                    homologacion_certificado_aprobado=False,
+                )
         return certificado
 
 

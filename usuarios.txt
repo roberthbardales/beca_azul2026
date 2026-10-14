@@ -1,5 +1,7 @@
-USUARIOS DE PRUEBA
+USUARIOS DE PRUEBA (DATOS DE FIXTURE)
 Listado basado en fixtures/seed.json. Se omiten contraseñas y hashes.
+Estas son cuentas de ejemplo incluidas en datos de prueba; no representan necesariamente las cuentas de una instalación activa.
+Los usuarios con rol Administrador o Beca Azul no tienen empresa asociada. Cada usuario Empresa está relacionado con la empresa indicada.
 
 Nombre             | Correo                | Rol             | Empresa    | Teléfono  | Activo | Superusuario
 -------------------|-----------------------|-----------------|------------|-----------|--------|-------------
@@ -7,8 +9,9 @@ Admin Principal    | admin@gmail.com       | Administrador   | —          | 90
 Beca Azul          | becaazul@gmail.com   | Beca Azul       | —          | 900000002 | Sí     | No
 Usuario Planta     | planta@gmail.com     | Usuario Planta  | —          | 900000003 | Sí     | No
 Usuario Garita     | garita@gmail.com     | Usuario Garita  | —          | 900000005 | Sí     | No
-Usuario Apple      | apple@gmail.com      | Usuario Empresa | Apple      | —         | Sí     | No
-Usuario Google     | google@gmail.com     | Usuario Empresa | Google     | —         | Sí     | No
-Usuario Microsoft  | microsoft@gmail.com  | Usuario Empresa | Microsoft  | —         | Sí     | No
-Usuario Amazon     | amazon@gmail.com     | Usuario Empresa | Amazon     | —         | Sí     | No
-Usuario Tesla      | tesla@gmail.com      | Usuario Empresa | Tesla      | —         | Sí     | No
+Usuario Apple      | apple@gmail.com       | Usuario Empresa | Apple      | —         | Sí     | No
+Usuario Google     | google@gmail.com      | Usuario Empresa | Google     | —         | Sí     | No
+Usuario Microsoft  | microsoft@gmail.com   | Usuario Empresa | Microsoft  | —         | Sí     | No
+Usuario Amazon     | amazon@gmail.com      | Usuario Empresa | Amazon     | —         | Sí     | No
+Usuario Tesla      | tesla@gmail.com       | Usuario Empresa | Tesla      | —         | Sí     | No
+

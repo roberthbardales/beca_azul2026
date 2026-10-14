@@ -175,7 +175,7 @@ AUTH_USER_MODEL = 'users.User'
 # Email transaccional mediante la API HTTPS de Brevo (sin SMTP).
 EMAIL_BACKEND = 'anymail.backends.brevo.EmailBackend'
 ANYMAIL = {
-    'BREVO_API_KEY': env('BREVO_API_KEY'),
+    'BREVO_API_KEY': env('BREVO_API_KEY', default='').strip(),
     # Máximo de espera por cada solicitud a la API transaccional de Brevo.
     'REQUESTS_TIMEOUT': 10,
 }
