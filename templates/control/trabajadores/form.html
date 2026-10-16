@@ -17,7 +17,7 @@
             <aside aria-label="Empresa asignada" class="mb-4 rounded-lg bg-blue-50 px-4 py-2 text-sm text-blue-700"><span class="font-semibold">Empresa asignada:</span> {{ request.user.empresa.nombre }}</aside>
             {% endif %}
 
-            <form method="post" enctype="multipart/form-data" novalidate class="space-y-3" data-max-pdf-size="2097152">
+            <form method="post" enctype="multipart/form-data" novalidate class="space-y-3" data-max-pdf-size="1048576">
                 {% csrf_token %}
 
                 {% if form.non_field_errors %}
@@ -89,8 +89,8 @@
                   <fieldset class="control-form-section border-t border-gray-100 pt-3"><legend class="mb-2 text-sm font-semibold text-[#0f172a]">Certificados</legend>
                       {{ certificado_formset.management_form }}
                         <div class="app-table-wrap responsive-table"><table class="app-table worker-data-table w-full min-w-[520px]"><thead><tr><th>Tipo</th><th>Archivo PDF</th><th>Emisión</th><th>Vencimiento</th></tr></thead><tbody id="certificados-fijos">
-                           <tr><td>Inducción <span class="text-red-600">*</span></td><td>{{ form.induccion_archivo }}{% for error in form.induccion_archivo.errors %}<div class="text-xs text-red-600">{{ error }}</div>{% endfor %}</td><td>{{ form.induccion_fecha_emision }}{{ form.induccion_fecha_emision.errors }}</td><td>{{ form.induccion_fecha_vencimiento }}{{ form.induccion_fecha_vencimiento.errors }}</td></tr>
-                          <tr><td>Aptitud médica <span class="text-red-600">*</span></td><td>{{ form.aptitud_medica_archivo }}{% for error in form.aptitud_medica_archivo.errors %}<div class="text-xs text-red-600">{{ error }}</div>{% endfor %}</td><td>{{ form.aptitud_medica_fecha_emision }}{{ form.aptitud_medica_fecha_emision.errors }}</td><td>{{ form.aptitud_medica_fecha_vencimiento }}{{ form.aptitud_medica_fecha_vencimiento.errors }}</td></tr>
+                           <tr><td>Inducción <span class="text-red-600">*</span></td><td>{{ form.induccion_archivo }}<span class="pdf-size-notice">(Máximo 1 MB)</span>{% for error in form.induccion_archivo.errors %}<div class="text-xs text-red-600">{{ error }}</div>{% endfor %}</td><td>{{ form.induccion_fecha_emision }}{{ form.induccion_fecha_emision.errors }}</td><td>{{ form.induccion_fecha_vencimiento }}{{ form.induccion_fecha_vencimiento.errors }}</td></tr>
+                          <tr><td>Aptitud médica <span class="text-red-600">*</span></td><td>{{ form.aptitud_medica_archivo }}<span class="pdf-size-notice">(Máximo 1 MB)</span>{% for error in form.aptitud_medica_archivo.errors %}<div class="text-xs text-red-600">{{ error }}</div>{% endfor %}</td><td>{{ form.aptitud_medica_fecha_emision }}{{ form.aptitud_medica_fecha_emision.errors }}</td><td>{{ form.aptitud_medica_fecha_vencimiento }}{{ form.aptitud_medica_fecha_vencimiento.errors }}</td></tr>
                        </tbody></table></div>
                  </fieldset>
                  {% endif %}
@@ -133,20 +133,20 @@
                 });
                 {% endif %}
 
-                const maxPdfSize = 2 * 1024 * 1024;
+                const maxPdfSize = 1 * 1024 * 1024;
                 document.querySelector('form[data-max-pdf-size]').addEventListener('submit', (event) => {
                     const oversized = [...event.currentTarget.querySelectorAll('input[type="file"]')]
                         .find((input) => input.files[0] && input.files[0].size > maxPdfSize);
                     if (oversized) {
                         event.preventDefault();
-                        oversized.setCustomValidity('El archivo PDF no puede superar los 2 MB.');
+                        oversized.setCustomValidity('El archivo PDF no puede superar 1 MB.');
                         oversized.reportValidity();
                     }
                 });
                 document.querySelectorAll('input[type="file"]').forEach((input) => {
                     input.addEventListener('change', () => input.setCustomValidity(
                         input.files[0] && input.files[0].size > maxPdfSize
-                            ? 'El archivo PDF no puede superar los 2 MB.'
+                            ? 'El archivo PDF no puede superar 1 MB.'
                             : ''
                     ));
                 });

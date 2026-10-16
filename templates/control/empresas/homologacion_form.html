@@ -27,7 +27,7 @@
                 <div class="mb-3"><h2 id="homologacion-documento-heading" class="text-base font-bold text-[var(--ink-900)]">Archivo PDF</h2>{% if homologacion.pk %}<p class="mt-1 text-sm text-[var(--ink-500)]">Reemplaza el archivo solo si necesitas actualizarlo.</p>{% endif %}</div>
                 <div>
                     <label for="{{ form.archivo.id_for_label }}" class="mb-1 block text-sm font-medium text-[var(--ink-900)]">{{ form.archivo.label }}</label>
-                    <input type="file" name="{{ form.archivo.html_name }}" id="{{ form.archivo.id_for_label }}" class="form-control" accept="application/pdf">
+                    <div class="pdf-upload-row"><input type="file" name="{{ form.archivo.html_name }}" id="{{ form.archivo.id_for_label }}" class="form-control" accept="application/pdf"><span class="pdf-size-notice">(Máximo 1 MB)</span></div>
                     {% for error in form.archivo.errors %}<p class="mt-1 text-xs text-red-600">{{ error }}</p>{% endfor %}
                 </div>
                 </div>

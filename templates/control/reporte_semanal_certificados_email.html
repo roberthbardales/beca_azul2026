@@ -1,0 +1,36 @@
+<h1>Reporte semanal de certificados</h1>
+<p>Generado: {{ fecha_generacion|date:'d/m/Y' }}. Incluye certificados vencidos o que vencen en los próximos 30 días.</p>
+
+<h2>Certificados de trabajadores ({{ total_trabajadores }})</h2>
+<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;">
+    <thead><tr><th>Empresa</th><th>Trabajador</th><th>Documento</th><th>Certificado / curso</th><th>Emisión</th><th>Vencimiento</th><th>Estado</th></tr></thead>
+    <tbody>
+    {% for certificado in certificados_trabajadores %}
+    <tr>
+        <td>{{ certificado.trabajador.empresa.nombre }}</td>
+        <td>{{ certificado.trabajador.apellidos }}, {{ certificado.trabajador.nombres }}</td>
+        <td>{{ certificado.trabajador.get_tipo_documento_display }} {{ certificado.trabajador.dni }}</td>
+        <td>{{ certificado.get_tipo_display }}{% if certificado.curso %} - {{ certificado.get_curso_display }}{% endif %}</td>
+        <td>{{ certificado.fecha_emision|date:'d/m/Y' }}</td>
+        <td>{{ certificado.fecha_vencimiento|date:'d/m/Y' }}</td>
+        <td>{% if certificado.fecha_vencimiento < fecha_generacion %}<strong style="color:#b91c1c">Vencido</strong>{% else %}<strong style="color:#b45309">Por vencer</strong>{% endif %}</td>
+    </tr>
+    {% empty %}<tr><td colspan="7">No hay certificados que reportar.</td></tr>{% endfor %}
+    </tbody>
+</table>
+
+<h2>Certificados de empresas ({{ total_empresas }})</h2>
+<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;">
+    <thead><tr><th>Empresa</th><th>Certificado</th><th>Emisión</th><th>Vencimiento</th><th>Estado</th></tr></thead>
+    <tbody>
+    {% for certificado in certificados_empresas %}
+    <tr>
+        <td>{{ certificado.empresa.nombre }}</td>
+        <td>{{ certificado.get_tipo_display }}</td>
+        <td>{{ certificado.fecha_emision|date:'d/m/Y' }}</td>
+        <td>{{ certificado.fecha_vencimiento|date:'d/m/Y' }}</td>
+        <td>{% if certificado.fecha_vencimiento < fecha_generacion %}<strong style="color:#b91c1c">Vencido</strong>{% else %}<strong style="color:#b45309">Por vencer</strong>{% endif %}</td>
+    </tr>
+    {% empty %}<tr><td colspan="5">No hay certificados que reportar.</td></tr>{% endfor %}
+    </tbody>
+</table>

@@ -39,18 +39,27 @@ def _enviar_y_registrar(evento, asunto, destinatarios, envio):
     return enviados
 
 def tabla_notificacion_html(titulo, filas):
-    filas_html = ''.join(
-        '<tr>'
-        f'<th style="border: 1px solid #d1d5db; padding: 8px; text-align: left">{escape(etiqueta)}</th>'
-        f'<td style="border: 1px solid #d1d5db; padding: 8px">{escape(valor or "-")}</td>'
-        '</tr>'
-        for etiqueta, valor in filas
-    )
+    filas_html = []
+    for etiqueta, valor in filas:
+        valor_texto = str(valor or '')
+        estilo_estado = ''
+        if etiqueta.lower() in ('habilitación', 'homologación'):
+            estado = valor_texto.casefold()
+            if any(palabra in estado for palabra in ('deshabilitado', 'no homologada', 'desaprobada', 'vencido')):
+                estilo_estado = 'color:#b91c1c;font-weight:700'
+            elif any(palabra in estado for palabra in ('habilitado', 'aprobada', 'homologada', 'vigente')):
+                estilo_estado = 'color:#15803d;font-weight:700'
+        filas_html.append(
+            '<tr>'
+            f'<th style="border:1px solid #d1d5db;padding:8px;text-align:left;background:#f3f4f6">{escape(etiqueta)}</th>'
+            f'<td style="border:1px solid #d1d5db;padding:8px;{estilo_estado}">{escape(valor_texto or "-")}</td>'
+            '</tr>'
+        )
     return (
         f'<h2>{escape(titulo)}</h2>'
         '<table border="1" cellpadding="6" cellspacing="0" '
-        'style="border-collapse: collapse; width: 100%; max-width: 600px">'
-        f'<tbody>{filas_html}</tbody></table>'
+        'style="border-collapse:collapse;width:100%;max-width:600px;border:1px solid #d1d5db">'
+        f'<tbody>{"".join(filas_html)}</tbody></table>'
     )
 
 

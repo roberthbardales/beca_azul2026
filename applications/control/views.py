@@ -1704,12 +1704,9 @@ class TrabajadorEmpresaUpdateView(TrabajadorActivoRequiredMixin, TrabajadorEmpre
 
 class TrabajadorEmpresaToggleView(EmpresaActivaRequiredMixin, BecaAzulRequiredMixin, View):
     def post(self, request, pk):
-        trabajador = get_object_or_404(Trabajador, pk=pk)
+        trabajador = get_object_or_404(Trabajador.objects.select_related('empresa'), pk=pk)
         trabajador.activo = not trabajador.activo
-        if not trabajador.activo:
-            trabajador.save(update_fields=['activo'])
-        else:
-            trabajador.save(update_fields=['activo'])
+        trabajador.save(update_fields=['activo'])
         estado = 'activado' if trabajador.activo else 'desactivado'
         messages.success(request, f'El trabajador "{trabajador}" fue {estado}.', extra_tags='worker-toggled')
         return redirect('app_control:trabajador_detalle', pk=trabajador.pk)

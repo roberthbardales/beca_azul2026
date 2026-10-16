@@ -24,6 +24,7 @@
 .dashboard-course-metrics .dashboard-summary-card { min-height: 60px !important; padding: 0 8px !important; }
 .dashboard-course-metrics .dashboard-summary-metric { min-height: 60px !important; }
 .dashboard-companies-heading { display: flex; align-items: center; gap: .6rem; }
+.dashboard-companies-heading--center { justify-content: center; text-align: center; }
 .dashboard-summary-companies .dashboard-companies-heading .dashboard-companies-total { position: static; display: block; flex: 0 0 auto; width: auto; min-width: 2.5rem; margin: 0 .2rem 0 auto !important; overflow: visible; font-size: 1.6rem !important; line-height: 1.8rem !important; text-align: right; white-space: nowrap; }
 .dashboard-summary-companies:not(.dashboard-summary-workers) .dashboard-companies-heading .dashboard-companies-total { margin-right: 0 !important; }
 .dashboard-companies-heading h2 { margin: 0; }
@@ -43,7 +44,10 @@
 .dashboard-page article[aria-labelledby="metric-sctr-salud"],
 .dashboard-page article[aria-labelledby="metric-sctr-pension"] { min-height: 0 !important; padding: 0 8px !important; }
 .dashboard-page article[aria-labelledby="metric-empresas"],
-.dashboard-page article[aria-labelledby="metric-trabajadores"] { padding: 0 8px 4px !important; }
+.dashboard-page article[aria-labelledby="metric-trabajadores"] {
+    min-height: 3.8rem !important;
+    padding: 0 8px 4px !important;
+}
 .dashboard-page article[aria-labelledby="metric-empresas"] .dashboard-card-content,
 .dashboard-page article[aria-labelledby="metric-trabajadores"] .dashboard-card-content { position: relative; top: -5px; margin-top: 0 !important; }
 .dashboard-page article[aria-labelledby="metric-empresas"] .dashboard-summary-statuses,
@@ -82,6 +86,11 @@
 .dashboard-page > section[aria-labelledby="dashboard-summary-title"] .dashboard-card-content { margin-bottom: -12px; }
 .dashboard-page > section[aria-labelledby="dashboard-summary-title"] .dashboard-summary-statuses { gap: .5px; }
 .dashboard-page > section[aria-labelledby="dashboard-summary-title"] .dashboard-company-status { padding-block: 0; line-height: .85rem; }
+.dashboard-page > section[aria-labelledby="dashboard-summary-title"] article[aria-labelledby="metric-empresas"],
+.dashboard-page > section[aria-labelledby="dashboard-summary-title"] article[aria-labelledby="metric-trabajadores"] {
+    min-height: 100px !important;
+    align-self: stretch;
+}
 .dashboard-summary-companies .dashboard-companies-total, .dashboard-summary-card .dashboard-companies-total { color: #0f172a; font-size: 2rem !important; line-height: 2.25rem !important; }
 .dashboard-summary-companies .dashboard-summary-statuses, .dashboard-summary-card .dashboard-summary-statuses { gap: .35rem; }
 .dashboard-summary-companies .dashboard-summary-statuses { width: 100%; min-width: 0; }

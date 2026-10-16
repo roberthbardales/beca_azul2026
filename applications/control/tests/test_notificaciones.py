@@ -3,7 +3,7 @@ from unittest.mock import patch
 from django.test import TestCase, override_settings
 
 from applications.control.models import RegistroNotificacion
-from applications.control.services.notificaciones import enviar_notificacion_habilitacion
+from applications.control.services.notificaciones import enviar_notificacion_habilitacion, tabla_notificacion_html
 
 
 @override_settings(
@@ -11,6 +11,16 @@ from applications.control.services.notificaciones import enviar_notificacion_hab
     NOTIFICACIONES_EMAIL_ADICIONAL='interno@example.com',
 )
 class RegistroNotificacionTests(TestCase):
+    def test_tabla_notificacion_colorea_estados_de_habilitacion_y_homologacion(self):
+        html = tabla_notificacion_html('Estados', (
+            ('Habilitación', 'Habilitado'),
+            ('Homologación', 'No homologada'),
+        ))
+
+        self.assertIn('color:#15803d;font-weight:700', html)
+        self.assertIn('color:#b91c1c;font-weight:700', html)
+        self.assertIn('background:#f3f4f6', html)
+
     def enviar(self):
         return enviar_notificacion_habilitacion(
             'Trabajador habilitado',

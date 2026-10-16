@@ -363,6 +363,24 @@ main table.app-table.workers-list-table td {
     padding-left: .5rem !important;
 }
 
+main table.app-table.workers-list-table--garita-compact th,
+main table.app-table.workers-list-table--garita-compact td,
+main table.app-table.workers-list-table--beca-compact th,
+main table.app-table.workers-list-table--beca-compact td,
+main table.app-table.workers-list-table--company-compact th,
+main table.app-table.workers-list-table--company-compact td {
+    padding-right: .2rem !important;
+    padding-left: .2rem !important;
+}
+
+main table.app-table.workers-list-table--beca-compact .worker-name-two-lines {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+}
+
 main table.app-table.company-workers-table td:nth-child(2),
 main table.app-table.company-workers-table td:nth-child(3) {
     text-align: center !important;
@@ -389,12 +407,97 @@ main table.app-table.companies-list-table.companies-list-table--roomy tbody td {
     padding-bottom: .4rem !important;
 }
 
+/* Empresas: ajustar cada columna a su contenido con límites legibles. */
+main table.app-table.companies-list-table.companies-list-table--roomy {
+    width: 100%;
+    min-width: 0 !important;
+    table-layout: auto;
+}
+
+main table.app-table.companies-list-table.companies-list-table--roomy th,
+main table.app-table.companies-list-table.companies-list-table--roomy td {
+    white-space: normal;
+    overflow-wrap: break-word;
+    padding-right: .2rem !important;
+    padding-left: .2rem !important;
+}
+
+main table.app-table.companies-list-table.companies-list-table--roomy th:nth-child(1),
+main table.app-table.companies-list-table.companies-list-table--roomy td:nth-child(1) { width: 22%; }
+main table.app-table.companies-list-table.companies-list-table--roomy th:nth-child(2),
+main table.app-table.companies-list-table.companies-list-table--roomy td:nth-child(2) { width: 9%; }
+main table.app-table.companies-list-table.companies-list-table--roomy th:nth-child(3),
+main table.app-table.companies-list-table.companies-list-table--roomy td:nth-child(3),
+main table.app-table.companies-list-table.companies-list-table--roomy th:nth-child(4),
+main table.app-table.companies-list-table.companies-list-table--roomy td:nth-child(4) { width: 9%; }
+main table.app-table.companies-list-table.companies-list-table--roomy th:nth-child(5),
+main table.app-table.companies-list-table.companies-list-table--roomy td:nth-child(5) { width: 12%; }
+main table.app-table.companies-list-table.companies-list-table--roomy th:nth-child(6),
+main table.app-table.companies-list-table.companies-list-table--roomy td:nth-child(6) { width: 10%; }
+main table.app-table.companies-list-table.companies-list-table--roomy th:nth-child(7),
+main table.app-table.companies-list-table.companies-list-table--roomy td:nth-child(7) { width: 8%; }
+main table.app-table.companies-list-table.companies-list-table--roomy th:nth-child(8),
+main table.app-table.companies-list-table.companies-list-table--roomy td:nth-child(8) { width: 12%; }
+main table.app-table.companies-list-table.companies-list-table--roomy th:nth-child(9),
+main table.app-table.companies-list-table.companies-list-table--roomy td:nth-child(9) { width: 8%; }
+
+main table.app-table.companies-list-table.companies-list-table--roomy th:nth-child(1) { width: 22%; }
+main table.app-table.companies-list-table.companies-list-table--roomy th:nth-child(2) { width: 9%; }
+main table.app-table.companies-list-table.companies-list-table--roomy th:nth-child(3),
+main table.app-table.companies-list-table.companies-list-table--roomy th:nth-child(4) { width: 9%; }
+main table.app-table.companies-list-table.companies-list-table--roomy th:nth-child(5) { width: 12%; }
+main table.app-table.companies-list-table.companies-list-table--roomy th:nth-child(6) { width: 10%; }
+main table.app-table.companies-list-table.companies-list-table--roomy th:nth-child(7) { width: 8%; }
+main table.app-table.companies-list-table.companies-list-table--roomy th:nth-child(8) { width: 12%; }
+main table.app-table.companies-list-table.companies-list-table--roomy th:nth-child(9) { width: 9%; }
+
+@media (max-width: 640px) {
+    main table.app-table.companies-list-table.companies-list-table--roomy th {
+        font-size: .7rem !important;
+        line-height: 1.2;
+    }
+
+    main table.app-table.companies-list-table.companies-list-table--roomy td {
+        font-size: .75rem !important;
+    }
+}
+
 main table.app-table.users-list-table.users-list-table--roomy th,
 main table.app-table.users-list-table.users-list-table--roomy td {
     height: auto !important;
     padding-top: .5rem !important;
     padding-bottom: .5rem !important;
+    padding-right: .2rem !important;
+    padding-left: .2rem !important;
 }
+
+/* Usuarios: mismo ajuste al contenedor y al contenido que la lista de empresas. */
+main table.app-table.users-list-table.users-list-table--roomy {
+    width: 100%;
+    min-width: 0 !important;
+    table-layout: auto;
+}
+
+main table.app-table.users-list-table.users-list-table--roomy th,
+main table.app-table.users-list-table.users-list-table--roomy td {
+    white-space: normal;
+    overflow-wrap: break-word;
+}
+
+main table.app-table.users-list-table.users-list-table--roomy th:nth-child(1),
+main table.app-table.users-list-table.users-list-table--roomy td:nth-child(1) { width: 20%; }
+main table.app-table.users-list-table.users-list-table--roomy th:nth-child(2),
+main table.app-table.users-list-table.users-list-table--roomy td:nth-child(2) { width: 23%; }
+main table.app-table.users-list-table.users-list-table--roomy th:nth-child(3),
+main table.app-table.users-list-table.users-list-table--roomy td:nth-child(3) { width: 14%; }
+main table.app-table.users-list-table.users-list-table--roomy th:nth-child(4),
+main table.app-table.users-list-table.users-list-table--roomy td:nth-child(4) { width: 17%; }
+main table.app-table.users-list-table.users-list-table--roomy th:nth-child(5),
+main table.app-table.users-list-table.users-list-table--roomy td:nth-child(5) { width: 9%; }
+main table.app-table.users-list-table.users-list-table--roomy th:nth-child(6),
+main table.app-table.users-list-table.users-list-table--roomy td:nth-child(6) { width: 12%; }
+main table.app-table.users-list-table.users-list-table--roomy th:nth-child(7),
+main table.app-table.users-list-table.users-list-table--roomy td:nth-child(7) { width: 5%; }
 
 main table.app-table.users-list-table.users-list-table--roomy tbody td {
     height: auto !important;
@@ -463,6 +566,61 @@ main table.app-table.worker-data-table td select {
 .control-form-page table.worker-data-table td:nth-child(3),
 .control-form-page table.worker-data-table th:nth-child(4),
 .control-form-page table.worker-data-table td:nth-child(4) { width: 20%; }
+
+.worker-form-card .pdf-size-notice {
+    display: inline-block;
+    margin-left: .4rem;
+    color: #dc2626;
+    font-weight: 600;
+    font-size: .875rem !important;
+    line-height: 1.25rem !important;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.control-form-page .pdf-upload-row {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+}
+
+.control-form-page .pdf-upload-row input[type="file"] {
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
+.control-form-page .pdf-size-notice {
+    display: inline-block;
+    flex: 0 0 auto;
+    color: #dc2626;
+    font-size: .875rem;
+    font-weight: 600;
+    line-height: 1.25rem;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.control-form-page .pdf-upload-row--inline input[type="file"] {
+    flex: 0 1 auto;
+    width: auto !important;
+    max-width: 100%;
+}
+
+.control-form-page .pdf-upload-row--inline .pdf-size-notice {
+    transform: translateY(-.2rem);
+}
+
+.control-form-page .pdf-upload-row--edit input[type="file"] {
+    display: inline-block;
+    width: auto !important;
+    max-width: 100%;
+}
+
+.control-form-page .pdf-upload-row--edit .pdf-size-notice {
+    margin-left: .4rem;
+    vertical-align: middle;
+    transform: translateY(-.2rem);
+}
 
 main .list-filter input:not([type="checkbox"]):not([type="radio"]),
 main .list-filter select {

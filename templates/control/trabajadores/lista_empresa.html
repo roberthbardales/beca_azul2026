@@ -53,8 +53,8 @@
     </div>
 </form>{% endif %}
 
-<div class="app-table-wrap list-table-wrap workers-list-table-wrap responsive-table">
-    <table class="app-table list-table workers-list-table responsive-table min-w-full divide-y divide-gray-200" aria-label="Trabajadores de {{ empresa.nombre }}">
+<div class="app-table-wrap list-table-wrap workers-list-table-wrap responsive-table {% if es_garita %}workers-list-table-wrap--garita-compact{% endif %}{% if es_beca_azul %} workers-list-table-wrap--beca-compact{% endif %}{% if es_empresa %} workers-list-table-wrap--company-compact{% endif %}">
+    <table class="app-table list-table workers-list-table responsive-table min-w-full divide-y divide-gray-200 {% if es_garita %}workers-list-table--garita-compact{% endif %}{% if es_beca_azul %} workers-list-table--beca-compact{% endif %}{% if es_empresa %} workers-list-table--company-compact{% endif %}" aria-label="Trabajadores de {{ empresa.nombre }}">
         <thead class="bg-gray-50">
             <tr>
                 {% for key, label in sortable_columns.items %}
@@ -71,7 +71,7 @@
             {% for trabajador in trabajadores %}
             <tr>
                 {% if not es_beca_azul %}<td data-label="DNI" class="px-2 py-1 text-sm font-medium">{{ trabajador.dni }}</td>{% endif %}
-                <td data-label="Nombre" class="px-2 py-1 text-sm font-semibold">{{ trabajador.apellidos }}, {{ trabajador.nombres }}</td>
+                <td data-label="Nombre" class="px-2 py-1 text-sm font-semibold"><span{% if es_beca_azul %} class="worker-name-two-lines"{% endif %}>{{ trabajador.apellidos }}, {{ trabajador.nombres }}</span></td>
                   {% if not es_empresa %}<td data-label="Empresa" class="px-2 py-1 text-sm">{{ trabajador.empresa.nombre }}</td>{% endif %}
                    <td data-label="SCTR pensión" class="px-2 py-1 text-center">
                        {% if trabajador.sctr_pension_validado and trabajador.sctr_pension_efectivo %}<span class="inline-flex items-center justify-center" role="img" aria-label="Vigente" title="Vigente"><svg class="h-5 w-5" aria-hidden="true" viewBox="0 0 24 24" style="color: #fff !important; fill: #16a34a !important"><circle cx="12" cy="12" r="11"/><path d="m6.5 12.2 3.6 3.6 7.5-7.5" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>

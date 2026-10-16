@@ -5,11 +5,10 @@
     <div class="dashboard-metrics grid items-stretch gap-4 sm:grid-cols-2 2xl:grid-cols-6">
     <article class="dashboard-metric dashboard-summary-metric dashboard-summary-companies rounded-lg border border-gray-100 bg-white p-4 shadow-sm"
              aria-labelledby="metric-empresas">
-        <div class="dashboard-companies-heading">
+        <div class="dashboard-companies-heading dashboard-companies-heading--center">
         <h2 id="metric-empresas" class="text-xs font-semibold uppercase tracking-wide text-[#A5A5A5]">
-            Empresas
+            Empresas ({{ total_empresas }})
         </h2>
-        <p class="dashboard-companies-total text-3xl font-bold tabular-nums text-[#0f172a]">{{ total_empresas }}</p>
         </div>
         <div class="dashboard-card-content">
             <div class="dashboard-summary-statuses">
@@ -21,11 +20,11 @@
 
     <article class="dashboard-metric dashboard-summary-metric dashboard-summary-companies dashboard-summary-workers rounded-lg border border-gray-100 bg-white p-4 shadow-sm"
              aria-labelledby="metric-trabajadores">
-        <div class="dashboard-companies-heading"><h2 id="metric-trabajadores" class="text-xs font-semibold uppercase tracking-wide text-[#A5A5A5]">Trabajadores</h2><p class="dashboard-companies-total text-3xl font-bold tabular-nums text-[#0f172a]">{{ total_trabajadores }}</p></div>
+        <div class="dashboard-companies-heading dashboard-companies-heading--center"><h2 id="metric-trabajadores" class="text-xs font-semibold uppercase tracking-wide text-[#A5A5A5]">Trabajadores ({{ total_trabajadores }})</h2></div>
         <div class="dashboard-card-content">
             <div class="dashboard-summary-statuses">
-                <span class="dashboard-company-status dashboard-company-status--positive"><span>Total habilitados</span><strong>{{ trabajadores_habilitados }}</strong></span>
-                <span class="dashboard-company-status dashboard-company-status--negative"><span>Total no habilitados</span><strong>{{ trabajadores_no_habilitados }}</strong></span>
+                <span class="dashboard-company-status dashboard-company-status--positive"><span>Habilitados</span><strong>{{ trabajadores_habilitados }}</strong></span>
+                <span class="dashboard-company-status dashboard-company-status--negative"><span>No Habilitados</span><strong>{{ trabajadores_no_habilitados }}</strong></span>
             </div>
         </div>
     </article>
@@ -36,7 +35,7 @@
         <div class="dashboard-card-content">
             <div class="dashboard-summary-statuses">
                 <span class="dashboard-company-status dashboard-company-status--positive"><span>Vigentes</span><strong>{{ inducciones_vigentes }}</strong></span>
-                <span class="dashboard-company-status dashboard-company-status--warning"><span>Próximas a vencer</span><strong>{{ inducciones_proximas_30 }}</strong></span>
+                <span class="dashboard-company-status dashboard-company-status--warning"><span>Por Vencer</span><strong>{{ inducciones_proximas_30 }}</strong></span>
                 <span class="dashboard-company-status dashboard-company-status--negative"><span>Vencidas</span><strong>{{ inducciones_vencidas }}</strong></span>
             </div>
         </div>
@@ -48,7 +47,7 @@
         <div class="dashboard-card-content">
             <div class="dashboard-summary-statuses">
                 <span class="dashboard-company-status dashboard-company-status--positive"><span>Vigentes</span><strong>{{ aptitudes_medicas_vigentes }}</strong></span>
-                <span class="dashboard-company-status dashboard-company-status--warning"><span>Próximas a vencer</span><strong>{{ aptitudes_medicas_proximas_30 }}</strong></span>
+                <span class="dashboard-company-status dashboard-company-status--warning"><span>Por Vencer</span><strong>{{ aptitudes_medicas_proximas_30 }}</strong></span>
                 <span class="dashboard-company-status dashboard-company-status--negative"><span>Vencidos</span><strong>{{ aptitudes_medicas_vencidas }}</strong></span>
             </div>
         </div>
@@ -59,7 +58,7 @@
             <div class="dashboard-card-content">
                 <div class="dashboard-summary-statuses">
                     <span class="dashboard-company-status dashboard-company-status--positive"><span>Vigentes</span><strong>{{ trabajadores_con_sctr_salud }}</strong></span>
-                    <span class="dashboard-company-status dashboard-company-status--warning"><span>Próximos a vencer</span><strong>{{ sctr_salud_proximos_vencer }}</strong></span>
+                    <span class="dashboard-company-status dashboard-company-status--warning"><span>Por Vencer</span><strong>{{ sctr_salud_proximos_vencer }}</strong></span>
                     <span class="dashboard-company-status dashboard-company-status--negative"><span>Vencidos</span><strong>{{ trabajadores_sin_sctr_salud }}</strong></span>
                 </div>
             </div>
@@ -69,7 +68,7 @@
             <div class="dashboard-card-content">
                 <div class="dashboard-summary-statuses">
                     <span class="dashboard-company-status dashboard-company-status--positive"><span>Vigentes</span><strong>{{ trabajadores_con_sctr_pension }}</strong></span>
-                    <span class="dashboard-company-status dashboard-company-status--warning"><span>Próximos a vencer</span><strong>{{ sctr_pension_proximos_vencer }}</strong></span>
+                    <span class="dashboard-company-status dashboard-company-status--warning"><span>Por Vencer</span><strong>{{ sctr_pension_proximos_vencer }}</strong></span>
                     <span class="dashboard-company-status dashboard-company-status--negative"><span>Vencidos</span><strong>{{ trabajadores_sin_sctr_pension }}</strong></span>
                 </div>
             </div>
