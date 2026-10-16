@@ -54,6 +54,21 @@ class DashboardViewTests(TestCase):
         self.assertEqual(response.context['dashboard_charts']['cumplimiento'], [0, 1])
         self.assertEqual(response.context['certificados_sin_vencimiento'], 0)
 
+    def test_grafica_documentos_por_vencer_cuenta_solo_documentos_validos(self):
+        hoy = date.today()
+        self.crear_certificado(Certificado.INDUCCION, hoy + timedelta(days=10))
+        self.crear_certificado(Certificado.APTITUD_MEDICA, hoy + timedelta(days=5))
+        Certificado.objects.filter(tipo=Certificado.APTITUD_MEDICA).update(archivo='')
+        self.crear_certificado(Certificado.SCTR, hoy + timedelta(days=31))
+
+        response = self.client.get(reverse('app_control:dashboard'))
+        chart = response.context['dashboard_charts']['documentos_por_vencer']
+        induction_index = chart['labels'].index('Inducción')
+        medical_index = chart['labels'].index('Aptitud médica')
+
+        self.assertEqual(chart['data'][induction_index], 1)
+        self.assertEqual(chart['data'][medical_index], 0)
+
     def test_dashboard_cuenta_empresas_homologadas_y_no_homologadas(self):
         Empresa.objects.create(
             nombre='Empresa desactivada',
@@ -157,10 +172,10 @@ class DashboardViewTests(TestCase):
 
         response = self.client.get(reverse('app_control:dashboard'))
 
-        self.assertEqual(response.context['trabajadores_sctr_salud'], 2)
-        self.assertEqual(response.context['trabajadores_sctr_pension'], 2)
-        self.assertEqual(response.context['trabajadores_sin_sctr_salud'], 1)
-        self.assertEqual(response.context['trabajadores_sin_sctr_pension'], 1)
+        self.assertEqual(response.context['certificados_sctr_salud_vigentes'], 1)
+        self.assertEqual(response.context['certificados_sctr_pension_vigentes'], 1)
+        self.assertEqual(response.context['certificados_sctr_salud_vencidos'], 0)
+        self.assertEqual(response.context['certificados_sctr_pension_vencidos'], 0)
         self.assertEqual(response.context['sctr_salud_proximos_vencer'], 1)
         self.assertEqual(response.context['sctr_pension_proximos_vencer'], 1)
         self.assertContains(response, 'SCTR Salud')

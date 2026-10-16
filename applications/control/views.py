@@ -226,14 +226,22 @@ class DashboardView(LoginRequiredMixin, View):
 
         total_trabajadores = Trabajador.objects.count()
         certificados_trabajador_activo = Q(trabajador__activo=True)
-        inducciones = Certificado.objects.filter(tipo=Certificado.INDUCCION, trabajador__isnull=False).filter(certificados_trabajador_activo)
+        inducciones = Certificado.objects.filter(
+            tipo=Certificado.INDUCCION,
+            trabajador__activo=True,
+            archivo__gt='',
+        )
         inducciones_vigentes = sum(certificado.validacion_vigente for certificado in inducciones)
         inducciones_vencidas = inducciones.filter(fecha_emision__lte=hoy, fecha_vencimiento__lt=hoy).count()
         inducciones_proximas_30 = inducciones.filter(
             fecha_emision__lte=hoy, fecha_vencimiento__gte=hoy, fecha_vencimiento__lte=limite_30,
             archivo__gt='',
         ).count()
-        aptitudes_medicas = Certificado.objects.filter(tipo=Certificado.APTITUD_MEDICA, trabajador__isnull=False).filter(certificados_trabajador_activo)
+        aptitudes_medicas = Certificado.objects.filter(
+            tipo=Certificado.APTITUD_MEDICA,
+            trabajador__activo=True,
+            archivo__gt='',
+        )
         aptitudes_medicas_vigentes = sum(certificado.validacion_vigente for certificado in aptitudes_medicas)
         aptitudes_medicas_vencidas = aptitudes_medicas.filter(fecha_emision__lte=hoy, fecha_vencimiento__lt=hoy).count()
         aptitudes_medicas_proximas_30 = aptitudes_medicas.filter(
@@ -258,30 +266,41 @@ class DashboardView(LoginRequiredMixin, View):
         )
         trabajadores_habilitados = len(trabajadores) - trabajadores_no_habilitados
         trabajadores_activos = [trabajador for trabajador in trabajadores if trabajador.activo]
-        trabajadores_sctr_salud = sum(
-            trabajador.empresa.sctr_salud_aprobado and trabajador.sctr_salud_efectivo
-            for trabajador in trabajadores_activos
-        )
-        trabajadores_sctr_pension = sum(
-            trabajador.empresa.sctr_pension_aprobado and trabajador.sctr_pension_efectivo
-            for trabajador in trabajadores_activos
-        )
         total_trabajadores_activos = len(trabajadores_activos)
-        sctr_salud_proximos_vencer = Certificado.objects.filter(
-            empresa__isnull=False,
+        certificados_sctr_salud = Certificado.objects.filter(
+            empresa__activo=True,
             tipo=Certificado.SCTR_SALUD,
-            fecha_emision__lte=hoy,
-            fecha_vencimiento__gte=hoy,
-            fecha_vencimiento__lte=limite_30,
+            empresa__sctr_salud_aprobado=True,
             archivo__gt='',
-        ).count()
-        sctr_pension_proximos_vencer = Certificado.objects.filter(
-            empresa__isnull=False,
+        )
+        certificados_sctr_pension = Certificado.objects.filter(
+            empresa__activo=True,
             tipo=Certificado.SCTR_PENSION,
+            empresa__sctr_pension_aprobado=True,
+            archivo__gt='',
+        )
+        sctr_salud_vigentes = certificados_sctr_salud.filter(
+            fecha_emision__lte=hoy,
+            fecha_vencimiento__gte=hoy,
+        ).count()
+        sctr_salud_proximos_vencer = certificados_sctr_salud.filter(
             fecha_emision__lte=hoy,
             fecha_vencimiento__gte=hoy,
             fecha_vencimiento__lte=limite_30,
-            archivo__gt='',
+        ).count()
+        sctr_salud_vencidos = certificados_sctr_salud.filter(
+            fecha_emision__lte=hoy, fecha_vencimiento__lt=hoy,
+        ).count()
+        sctr_pension_vigentes = certificados_sctr_pension.filter(
+            fecha_emision__lte=hoy, fecha_vencimiento__gte=hoy,
+        ).count()
+        sctr_pension_proximos_vencer = certificados_sctr_pension.filter(
+            fecha_emision__lte=hoy,
+            fecha_vencimiento__gte=hoy,
+            fecha_vencimiento__lte=limite_30,
+        ).count()
+        sctr_pension_vencidos = certificados_sctr_pension.filter(
+            fecha_emision__lte=hoy, fecha_vencimiento__lt=hoy,
         ).count()
         cursos_vigentes = []
         for codigo, etiqueta in Certificado.CURSO_CHOICES:
@@ -290,6 +309,7 @@ class DashboardView(LoginRequiredMixin, View):
                 curso=codigo,
                 trabajador__activo=True,
                 archivo__gt='',
+                fecha_emision__lte=hoy,
             )
             vigentes = sum(certificado.validacion_vigente for certificado in certificados_curso)
             vencidos = certificados_curso.filter(fecha_emision__lte=hoy, fecha_vencimiento__lt=hoy).count()
@@ -314,7 +334,7 @@ class DashboardView(LoginRequiredMixin, View):
         ).count()
         certificados_sin_vencimiento = 0
         certificados_con_archivo = Certificado.objects.filter(archivo__gt='').filter(
-            Q(empresa__isnull=False) | Q(trabajador__activo=True)
+            Q(empresa__activo=True) | Q(trabajador__activo=True)
         )
         certificados_vencidos = certificados_con_archivo.filter(
             fecha_emision__lte=hoy, fecha_vencimiento__lt=hoy
@@ -322,7 +342,8 @@ class DashboardView(LoginRequiredMixin, View):
         certificados_proximos_30 = certificados_con_archivo.filter(
             fecha_emision__lte=hoy, fecha_vencimiento__gte=hoy, fecha_vencimiento__lte=limite_30
         ).count()
-        certificados_por_vencer = Certificado.objects.filter(
+        certificados_por_vencer = certificados_con_archivo.filter(
+            fecha_emision__lte=hoy,
             fecha_vencimiento__gte=hoy,
             fecha_vencimiento__lte=limite_30,
         )
@@ -464,12 +485,10 @@ class DashboardView(LoginRequiredMixin, View):
             'aptitudes_medicas_proximas_30': aptitudes_medicas_proximas_30,
             'trabajadores_habilitados': trabajadores_habilitados,
             'trabajadores_no_habilitados': trabajadores_no_habilitados,
-            'trabajadores_sctr_salud': total_trabajadores_activos,
-            'trabajadores_sctr_pension': total_trabajadores_activos,
-            'trabajadores_con_sctr_salud': trabajadores_sctr_salud,
-            'trabajadores_con_sctr_pension': trabajadores_sctr_pension,
-            'trabajadores_sin_sctr_salud': total_trabajadores_activos - trabajadores_sctr_salud,
-            'trabajadores_sin_sctr_pension': total_trabajadores_activos - trabajadores_sctr_pension,
+            'certificados_sctr_salud_vigentes': sctr_salud_vigentes,
+            'certificados_sctr_pension_vigentes': sctr_pension_vigentes,
+            'certificados_sctr_salud_vencidos': sctr_salud_vencidos,
+            'certificados_sctr_pension_vencidos': sctr_pension_vencidos,
             'total_trabajadores_activos': total_trabajadores_activos,
             'sctr_salud_proximos_vencer': sctr_salud_proximos_vencer,
             'sctr_pension_proximos_vencer': sctr_pension_proximos_vencer,

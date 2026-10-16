@@ -45,8 +45,8 @@ main .workers-list-filter--compact select { border-color: #f8fafc !important; }
 }
 
 .app-table td {
-    height: 3.2rem;
-    padding: .5rem .375rem !important;
+    height: 0.3rem;
+    padding: .3rem .375rem !important;
     border-bottom: 1px solid #b8c0cc !important;
     color: #111827 !important;
     vertical-align: middle;

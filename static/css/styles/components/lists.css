@@ -216,6 +216,15 @@
     min-width: 70rem;
 }
 
+.companies-list-table-wrap {
+    overflow-x: auto;
+}
+
+.companies-list-table-wrap .companies-list-table {
+    width: 100%;
+    min-width: 70rem;
+}
+
 .list-table-wrap--strong .list-table th,
 .list-table-wrap--strong .list-table td,
 .list-table-wrap--strong .list-table th:not(:last-child),
@@ -321,6 +330,74 @@
 
     .list-table-wrap {
         overflow-x: auto;
+    }
+}
+
+@media (max-width: 640px) {
+    main .companies-list-table-wrap {
+        overflow: visible !important;
+    }
+
+    main .companies-list-table-wrap table.companies-list-table {
+        display: block !important;
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    main .companies-list-table-wrap table.companies-list-table thead {
+        position: absolute !important;
+        width: 1px !important;
+        height: 1px !important;
+        overflow: hidden !important;
+        clip: rect(0, 0, 0, 0) !important;
+        white-space: nowrap !important;
+    }
+
+    main .companies-list-table-wrap table.companies-list-table tbody {
+        display: grid !important;
+        width: 100% !important;
+        gap: .75rem;
+        padding: .5rem 0;
+    }
+
+    main .companies-list-table-wrap table.companies-list-table tbody tr:not(.list-empty-row) {
+        display: block !important;
+        width: 100% !important;
+        overflow: hidden;
+        border: 1px solid var(--ink-200);
+        border-radius: .75rem;
+        background: #fff;
+        box-shadow: var(--shadow-card);
+    }
+
+    main .companies-list-table-wrap table.companies-list-table tbody tr:not(.list-empty-row) td[data-label] {
+        display: grid !important;
+        width: 100% !important;
+        grid-template-columns: minmax(7.5rem, .8fr) minmax(0, 1.2fr);
+        align-items: center;
+        gap: .75rem;
+        padding: .65rem .75rem !important;
+        text-align: right !important;
+        overflow-wrap: anywhere;
+    }
+
+    main .companies-list-table-wrap table.companies-list-table tbody tr:not(.list-empty-row) td[data-label]::before {
+        content: attr(data-label);
+        color: var(--ink-500);
+        font-size: .6875rem;
+        font-weight: 600;
+        letter-spacing: .04em;
+        text-align: left;
+        text-transform: uppercase;
+    }
+
+    main .companies-list-table-wrap table.companies-list-table tbody tr.list-empty-row {
+        display: table-row !important;
+    }
+
+    main .companies-list-table-wrap table.companies-list-table tbody tr.list-empty-row td {
+        display: table-cell !important;
+        width: auto !important;
     }
 }
 
@@ -519,7 +596,7 @@ main table.app-table td {
     padding: .5rem .375rem !important;
     border-color: #b8c0cc !important;
     color: #111827 !important;
-    font-size: .875rem !important;
+    font-size: .95rem;
     line-height: 1.35;
     vertical-align: middle;
 }
@@ -672,5 +749,72 @@ main .list-filter select:focus {
         height: 0 !important;
         padding-top: .5rem !important;
         padding-bottom: .5rem !important;
+    }
+}
+
+@media (max-width: 640px) {
+    main .workers-list-table-wrap--company-compact {
+        overflow: visible !important;
+    }
+
+    main .workers-list-table-wrap--company-compact table.workers-list-table {
+        display: block !important;
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    main .workers-list-table-wrap--company-compact table.workers-list-table thead {
+        position: absolute !important;
+        width: 1px !important;
+        height: 1px !important;
+        overflow: hidden !important;
+        clip: rect(0, 0, 0, 0) !important;
+        white-space: nowrap !important;
+    }
+
+    main .workers-list-table-wrap--company-compact table.workers-list-table tbody {
+        display: grid !important;
+        width: 100% !important;
+        gap: .75rem;
+        padding: .5rem 0;
+    }
+
+    main .workers-list-table-wrap--company-compact table.workers-list-table tbody tr:not(.list-empty-row) {
+        display: block !important;
+        width: 100% !important;
+        overflow: hidden;
+        border: 1px solid var(--ink-200);
+        border-radius: .75rem;
+        background: #fff;
+        box-shadow: var(--shadow-card);
+    }
+
+    main .workers-list-table-wrap--company-compact table.workers-list-table tbody tr:not(.list-empty-row) td[data-label] {
+        display: grid !important;
+        width: 100% !important;
+        grid-template-columns: minmax(7.5rem, .8fr) minmax(0, 1.2fr);
+        align-items: center;
+        gap: .75rem;
+        padding: .65rem .75rem !important;
+        text-align: right !important;
+    }
+
+    main .workers-list-table-wrap--company-compact table.workers-list-table tbody tr:not(.list-empty-row) td[data-label]::before {
+        color: var(--ink-500);
+        content: attr(data-label);
+        font-size: .6875rem;
+        font-weight: 600;
+        letter-spacing: .04em;
+        text-align: left;
+        text-transform: uppercase;
+    }
+
+    main .workers-list-table-wrap--company-compact table.workers-list-table .list-empty-row {
+        display: table-row !important;
+    }
+
+    main .workers-list-table-wrap--company-compact table.workers-list-table .list-empty-row td {
+        display: table-cell !important;
+        width: 100% !important;
     }
 }

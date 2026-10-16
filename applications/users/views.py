@@ -31,6 +31,21 @@ class LoginUser(FormView):
     form_class = LoginForm
     success_url = reverse_lazy('app_users:dashboard')
 
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            user = request.user
+            if user.is_superuser:
+                return redirect('app_users:dashboard')
+            if user.role == User.USUARIO_EMPRESA:
+                if not user.empresa or not user.empresa.activo:
+                    services.logout_user(request)
+                    return super().dispatch(request, *args, **kwargs)
+                return redirect('app_control:trabajador_lista')
+            if user.role == User.GARITA:
+                return redirect('app_control:trabajador_buscar')
+            return redirect('app_users:dashboard')
+        return super().dispatch(request, *args, **kwargs)
+
     def form_invalid(self, form):
         if not form.non_field_errors():
             form.add_error(None, 'Email o contraseña incorrectos.')

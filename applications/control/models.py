@@ -17,7 +17,7 @@ class CursoTipo(models.TextChoices):
     ESPACIO_CONFINADO = 'ESPACIO_CONFINADO', 'Trab. Esp. Confinado'
     ELECTRICO = 'ELECTRICO', 'Trab. Eléctrico'
     EXCAVACION = 'EXCAVACION', 'Trab. Exca/Perfo'
-    IZAJE = 'IZAJE', 'Trab. de Izaje'
+    IZAJE = 'IZAJE', 'Trab. Izaje'
 
 
 class CertificadoTipo(models.TextChoices):
